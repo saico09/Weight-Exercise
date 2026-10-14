@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'cl.forma.weightexercise',
-  appName: 'Forma',
+  appName: 'Weight&Exercise',
   webDir: 'dist',
   android: { backgroundColor: '#101311' },
   plugins: {

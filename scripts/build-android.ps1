@@ -59,7 +59,7 @@ try {
     }
     $outputDirectory = Join-Path $projectRoot 'output'
     New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null
-    $deliveryPath = Join-Path $outputDirectory 'Forma-debug.apk'
+    $deliveryPath = Join-Path $outputDirectory 'WeightExercise-debug.apk'
     Copy-Item -LiteralPath $apkPath -Destination $deliveryPath -Force
     Write-Host ''
     Write-Host "APK de prueba listo: $deliveryPath" -ForegroundColor Green

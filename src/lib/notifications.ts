@@ -1,3 +1,5 @@
+import type { Language } from './model';
+import { translate } from './i18n';
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications, type Weekday } from '@capacitor/local-notifications';
 
@@ -42,12 +44,13 @@ async function requestNativePermission(): Promise<boolean> {
   return display === 'granted';
 }
 
-async function ensureChannel(): Promise<void> {
+async function ensureChannel(language: Language): Promise<void> {
+  const t = (source: string) => translate(source, language);
   if (Capacitor.getPlatform() === 'android') {
     await LocalNotifications.createChannel({
       id: CHANNEL_ID,
-      name: 'Tu registro diario',
-      description: 'Un recordatorio para registrar tu peso y tus hábitos.',
+      name: t('Tu registro diario'),
+      description: t('Un recordatorio para registrar tu peso y tus hábitos.'),
       importance: 3,
       visibility: 0,
       vibration: true,
@@ -65,33 +68,34 @@ export function cancelNotifications(): Promise<void> {
 }
 
 /** Invoke from the user's explicit enable/save action, never from app startup. */
-export function configureNotifications(settings: ReminderSettings): Promise<NotificationResult> {
+export function configureNotifications(settings: ReminderSettings, language: Language = 'es'): Promise<NotificationResult> {
+  const t = (source: string) => translate(source, language);
   const requested = { ...settings, days: [...settings.days] };
   return enqueue(async () => {
     if (!requested.enabled) {
       await cancelOwnedNotifications();
-      return { enabled: false, message: 'Recordatorios desactivados.' };
+      return { enabled: false, message: t('Recordatorios desactivados.') };
     }
     if (!Capacitor.isNativePlatform()) {
-      return { enabled: false, message: WEB_LIMITATION };
+      return { enabled: false, message: t(WEB_LIMITATION) };
     }
     const days = [...new Set(requested.days)].sort((a, b) => a - b);
     if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(requested.time) || days.length === 0 || days.some((day) => !Number.isInteger(day) || day < 0 || day > 6)) {
-      throw new Error('Elige una hora válida y al menos un día para tus recordatorios.');
+      throw new Error(t('Elige una hora válida y al menos un día para tus recordatorios.'));
     }
     if (!(await requestNativePermission())) {
       await cancelOwnedNotifications();
-      return { enabled: false, message: PERMISSION_DENIED };
+      return { enabled: false, message: t(PERMISSION_DENIED) };
     }
     const [hour, minute] = requested.time.split(':').map(Number);
-    await ensureChannel();
+    await ensureChannel(language);
     await cancelOwnedNotifications();
     try {
       await LocalNotifications.schedule({
         notifications: days.map((day) => ({
           id: REMINDER_ID_BASE + day,
-          title: 'Un momento para ti',
-          body: 'Registra tu peso y tus hábitos de hoy. Cada día cuenta.',
+          title: t('Un momento para ti'),
+          body: t('Registra tu peso y tus hábitos de hoy. Cada día cuenta.'),
           channelId: CHANNEL_ID,
           // Gentle reminders don't need Android's exact-alarm permission.
           isExactNotification: false,
@@ -102,49 +106,50 @@ export function configureNotifications(settings: ReminderSettings): Promise<Noti
           extra: { screen: 'daily-record', owner: 'weight-exercise' },
         })),
       });
-      return { enabled: true, message: `Listo. Te recordaremos registrar tu día cerca de las ${requested.time}, los días que elegiste.` };
+      return { enabled: true, message: translate('Listo. Te recordaremos registrar tu día cerca de las {time}, los días que elegiste.', language, { time: requested.time }) };
     } catch {
       await cancelOwnedNotifications();
-      return { enabled: false, message: 'No pudimos programar los recordatorios. Revisa los permisos del dispositivo e inténtalo otra vez.' };
+      return { enabled: false, message: t('No pudimos programar los recordatorios. Revisa los permisos del dispositivo e inténtalo otra vez.') };
     }
   });
 }
 
 /** Optional explicit preview button. A successful test does not enable reminders. */
-export async function testNotification(): Promise<NotificationResult> {
+export async function testNotification(language: Language = 'es'): Promise<NotificationResult> {
+  const t = (source: string) => translate(source, language);
   if (!Capacitor.isNativePlatform()) {
-    if (!supportsBrowserNotifications()) return { enabled: false, message: 'Este navegador no admite una notificación de prueba.' };
+    if (!supportsBrowserNotifications()) return { enabled: false, message: t('Este navegador no admite una notificación de prueba.') };
     // Request immediately within the click handler, before any queued operation.
     const permission = Notification.permission === 'default'
       ? await Notification.requestPermission()
       : Notification.permission;
-    if (permission !== 'granted') return { enabled: false, message: PERMISSION_DENIED };
+    if (permission !== 'granted') return { enabled: false, message: t(PERMISSION_DENIED) };
     try {
-      const notification = new Notification('Un momento para ti', {
-        body: 'Así se verá tu recordatorio de Forma.',
+      const notification = new Notification(t('Un momento para ti'), {
+        body: t('Así se verá tu recordatorio de Weight&Exercise.'),
         tag: 'weight-exercise-test',
       });
       notification.onclick = () => { window.focus(); notification.close(); };
-      return { enabled: false, message: 'Notificación de prueba enviada. Los recordatorios programados requieren la app para teléfono.' };
+      return { enabled: false, message: t('Notificación de prueba enviada. Los recordatorios programados requieren la app para teléfono.') };
     } catch {
-      return { enabled: false, message: 'Este navegador no pudo mostrar la prueba. Los recordatorios están disponibles en la app para teléfono.' };
+      return { enabled: false, message: t('Este navegador no pudo mostrar la prueba. Los recordatorios están disponibles en la app para teléfono.') };
     }
   }
 
   return enqueue(async () => {
-    if (!(await requestNativePermission())) return { enabled: false, message: PERMISSION_DENIED };
-    await ensureChannel();
+    if (!(await requestNativePermission())) return { enabled: false, message: t(PERMISSION_DENIED) };
+    await ensureChannel(language);
     await LocalNotifications.schedule({
       notifications: [{
         id: TEST_ID,
-        title: 'Un momento para ti',
-        body: 'Así se verá tu recordatorio de Forma.',
+        title: t('Un momento para ti'),
+        body: t('Así se verá tu recordatorio de Weight&Exercise.'),
         channelId: CHANNEL_ID,
         isExactNotification: false,
         schedule: { at: new Date(Date.now() + 3000) },
         extra: { owner: 'weight-exercise', test: true },
       }],
     });
-    return { enabled: false, message: 'Prueba programada para dentro de unos segundos. Esto no cambia tus recordatorios.' };
+    return { enabled: false, message: t('Prueba programada para dentro de unos segundos. Esto no cambia tus recordatorios.') };
   });
 }

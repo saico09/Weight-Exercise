@@ -1,0 +1,17 @@
+.weight-exercise-brand { gap: 8px; letter-spacing: -.9px; }
+.weight-exercise-brand .brand-mark { width: 40px; height: 34px; flex-shrink: 0; }
+.weight-exercise-brand .brand-mark svg { width: 40px; height: 32px; }
+.brand-wordmark { font: 650 21px 'DM Sans', sans-serif; letter-spacing: -1px; white-space: nowrap; }
+.brand-ampersand { color: var(--accent-ink); margin: 0 1px; }
+.language-control { display: inline-flex; align-items: center; gap: 9px; color: var(--muted); }
+.language-switch { display: flex; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 50px; padding: 3px; }
+.language-switch button { border-radius: 40px; padding: 7px 11px; font-size: 11px; color: var(--muted); min-height: 32px; transition: background .2s, color .2s; }
+.language-switch button.active { background: var(--accent-soft); color: var(--accent-ink); }
+.settings-language { display: flex; justify-content: space-between; align-items: center; gap: 16px; border-top: 1px solid var(--border); padding-top: 20px; margin-top: 24px; }
+.settings-language > span { font-size: 13px; }
+.profile-birthday { margin: 22px 0; }
+.profile-birthday .birth-date-picker { max-width: 100%; }
+.profile-birthday .legacy-age { margin-top: 12px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.profile-birthday .legacy-age button { color: var(--accent-ink); }
+@media (max-width: 600px) { .weight-exercise-brand .brand-wordmark { font-size: 18px; letter-spacing: -.8px; } .weight-exercise-brand .brand-mark, .weight-exercise-brand .brand-mark svg { width: 32px; } .weight-exercise-brand { gap: 5px; } }
+@media (max-width: 360px) { .app-header .weight-exercise-brand .brand-wordmark { font-size: 15px; } .app-header .weight-exercise-brand .brand-mark { width: 27px; } .settings-language { flex-wrap: wrap; } .settings-theme { padding: 8px; } .settings-themes { gap: 8px; } }

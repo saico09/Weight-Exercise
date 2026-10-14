@@ -1,4 +1,4 @@
-# Forma · Weight & Exercise
+# Weight&Exercise
 
 Una app personal para registrar el peso, el ejercicio y la intención de comer sano. Desarrollada con Ionic React, TypeScript y Capacitor, con una vista adaptable al teléfono y al computador. Todo se guarda en el dispositivo, sin cuenta, servidor ni respaldo en la nube.
 
@@ -8,7 +8,7 @@ En Windows, haz doble clic en **INICIAR-APP.cmd**. Inicia el servidor local en s
 
 **http://127.0.0.1:5173**
 
-Si Forma ya está abierta, el iniciador reutiliza el servidor. Si otra app ocupa el puerto, muestra un error y no cierra ningún proceso. Para elegir otro puerto:
+Si Weight&Exercise ya está abierta, el iniciador reutiliza el servidor. Si otra app ocupa el puerto, muestra un error y no cierra ningún proceso. Para elegir otro puerto:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\start-preview.ps1 -Port 5174
@@ -27,12 +27,14 @@ La dirección del navegador importa: `localhost`, `127.0.0.1` y distintos puerto
 ## Qué incluye
 
 - Tema **Dark** con negro, verde `#42FF85` y tipografía contundente; tema **Light** con azul `#91F8FF`, transparencias y tipografía suave.
-- Inicio por pasos: tema, altura, peso actual, objetivo y edad.
+- Español e inglés desde la bienvenida y configuración, con idioma persistente.
+- Inicio por pasos: tema, altura, peso actual, objetivo y fecha de nacimiento. Reglas arrastrables y ruedas independientes para día, mes y año, con entrada directa por calendario.
 - Registro diario de peso, ejercicio y la pregunta «¿Toca comer sano hoy?».
-- Progreso del peso, avance a la meta y seguimiento de hábitos.
-- Estadísticas, promedios semanales y logros.
-- IMC con indicador semicircular, categorías y equivalencias en peso.
-- Historial editable y selección de un registro como punto de partida.
+- Gráfico de peso con desplazamiento, zoom, pellizco y controles de teclado; avance a la meta.
+- Calendario de hábitos editable: ninguno, solo ejercicio, solo comer sano o ambos, y días sin registro diferenciados.
+- Estadísticas, promedios semanales y 14 logros con progreso real.
+- IMC con indicador semicircular en los tonos del tema, categorías y equivalencias en peso.
+- Historial compacto con filtros por íconos, calendario, edición y selección de un registro como punto de partida.
 - Cambio de unidades, preferencias de recordatorios y reinicio de datos.
 
 El IMC es una referencia orientativa y no un diagnóstico. La app muestra categorías adultas desde los 20 años y no calcula percentiles de IMC por edad para menores. Referencia: [categorías de IMC para adultos del CDC](https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html).
@@ -51,11 +53,13 @@ Los scripts ejecutan las herramientas mediante Node directamente para funcionar 
 
 ## Android
 
-La versión **0.1.0** se compiló y verificó el 14 de octubre de 2026. El APK local está en **[output/Forma-debug.apk](output/Forma-debug.apk)** (5,8 MB), compatible con Android 7.0 o superior.
+La versión **0.2.0** se compiló y verificó el 14 de octubre de 2026. El APK local está en **[output/WeightExercise-debug.apk](output/WeightExercise-debug.apk)**, compatible con Android 7.0 o superior.
+
+La identidad de paquete y la clave de desarrollo se conservan: puedes actualizar sobre la versión anterior sin desinstalarla. El cambio de marca no borra datos. Los perfiles anteriores conservan su edad hasta que se agregue una fecha de nacimiento desde el perfil.
 
 Para instalarlo, copia ese archivo al teléfono, ábrelo desde el administrador de archivos y pulsa **Instalar**. Si Android lo solicita, permite instalar aplicaciones desde ese administrador de archivos. La app funciona con sus recursos incluidos y no necesita mantener abierta la PC.
 
-Se verificaron la compilación nativa y la firma del APK. Queda pendiente probar esta primera versión en un teléfono físico, especialmente los permisos y la entrega de recordatorios.
+Se verificaron la compilación nativa y la firma del APK. Queda pendiente probar esta actualización en un teléfono físico, especialmente los permisos y la entrega de recordatorios.
 
 El proyecto nativo está en `android/`. Requiere JDK 21 y Android SDK 36; la versión mínima del dispositivo es Android 7.0 (API 24). Para desarrollo habitual, instala Android Studio y su SDK, acepta personalmente las licencias del SDK e instala `platforms;android-36` y `build-tools;36.0.0` desde SDK Manager. Después ejecuta `npm run android`.
 
@@ -81,13 +85,13 @@ El script busca un JDK 21 instalado y el SDK en `ANDROID_HOME`, `ANDROID_SDK_ROO
 android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
-El script verifica la firma y copia el resultado a **`output/Forma-debug.apk`**. Es un APK firmado con una clave de desarrollo para pruebas locales; publicar en una tienda requiere preparar una firma de distribución.
+El script verifica la firma y copia el resultado a **`output/WeightExercise-debug.apk`**. Es un APK firmado con una clave de desarrollo para pruebas locales; publicar en una tienda requiere preparar una firma de distribución.
 
 ## Datos y notificaciones
 
-En Android, [Capacitor Preferences](https://capacitorjs.com/docs/apis/preferences) guarda los datos localmente en las preferencias privadas de la app. En el navegador utiliza el almacenamiento local del sitio. No hay sincronización entre la PC y el teléfono. La configuración nativa desactiva los respaldos y la transferencia de datos de Android. Eliminar los datos de la app, desinstalarla o borrar los datos del sitio puede eliminar los registros. La opción de reinicio elimina el perfil, los registros y las preferencias de Forma.
+En Android, [Capacitor Preferences](https://capacitorjs.com/docs/apis/preferences) guarda los datos localmente en las preferencias privadas de la app. En el navegador utiliza el almacenamiento local del sitio. No hay sincronización entre la PC y el teléfono. La configuración nativa desactiva los respaldos y la transferencia de datos de Android. Eliminar los datos de la app, desinstalarla o borrar los datos del sitio puede eliminar los registros. La opción de reinicio elimina el perfil, los registros y las preferencias de Weight&Exercise.
 
-En Android, los recordatorios usan notificaciones locales y solicitan permiso cuando eliges activarlos. El sistema puede retrasarlos por ahorro de batería. Si rechazas el permiso, debes habilitarlo desde la configuración del dispositivo antes de activarlos en Forma.
+En Android, los recordatorios usan notificaciones locales y solicitan permiso cuando eliges activarlos. El sistema puede retrasarlos por ahorro de batería. Si rechazas el permiso, debes habilitarlo desde la configuración del dispositivo antes de activarlos en Weight&Exercise.
 
 La vista del navegador permite probar la interfaz, pero no sustituye los recordatorios nativos: no puede garantizar avisos con la app o el navegador cerrados.
 

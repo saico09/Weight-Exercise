@@ -24,10 +24,10 @@ function Test-PreviewPort {
     }
 }
 
-function Test-FormaPreview {
+function Test-WeightExercisePreview {
     try {
         $response = Invoke-WebRequest -Uri $previewUrl -UseBasicParsing -TimeoutSec 2
-        return $response.Content -match '<title>\s*Forma\b[^<]*Weight\s*(?:&|&amp;)\s*Exercise\s*</title>'
+        return $response.Content -match '<title>\s*Weight\s*(?:&|&amp;)\s*Exercise\s*</title>'
     } catch {
         return $false
     }
@@ -35,17 +35,17 @@ function Test-FormaPreview {
 
 try {
     if (Test-PreviewPort) {
-        if (-not (Test-FormaPreview)) {
+        if (-not (Test-WeightExercisePreview)) {
             throw "El puerto $Port pertenece a otra aplicacion. No se ha cerrado ningun proceso. Usa otro puerto: powershell -ExecutionPolicy Bypass -File `"scripts\start-preview.ps1`" -Port 5174"
         }
-        Write-Host "Forma ya esta disponible en $previewUrl" -ForegroundColor Green
+        Write-Host "Weight&Exercise ya esta disponible en $previewUrl" -ForegroundColor Green
     } else {
         $nodeCommand = Get-Command node -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
         if (-not $nodeCommand) {
             throw 'Instala Node.js 22 o superior, vuelve a abrir la terminal y ejecuta este archivo otra vez.'
         }
         if (-not (Test-Path -LiteralPath $vitePath -PathType Leaf)) {
-            throw 'Faltan las dependencias. Abre una terminal en esta carpeta, ejecuta npm install y vuelve a iniciar Forma.'
+            throw 'Faltan las dependencias. Abre una terminal en esta carpeta, ejecuta npm install y vuelve a iniciar Weight&Exercise.'
         }
 
         # Invocar Vite con Node evita los problemas de los .cmd con el & de la carpeta.
@@ -56,7 +56,7 @@ try {
 
         $ready = $false
         for ($attempt = 0; $attempt -lt 40; $attempt++) {
-            if (Test-FormaPreview) {
+            if (Test-WeightExercisePreview) {
                 $ready = $true
                 break
             }
@@ -65,9 +65,9 @@ try {
             Start-Sleep -Milliseconds 500
         }
         if (-not $ready) {
-            throw "No se pudo iniciar Forma. Revisa los archivos $outputLog y $errorLog."
+            throw "No se pudo iniciar Weight&Exercise. Revisa los archivos $outputLog y $errorLog."
         }
-        Write-Host "Forma esta lista en $previewUrl" -ForegroundColor Green
+        Write-Host "Weight&Exercise esta lista en $previewUrl" -ForegroundColor Green
         Write-Host "Servidor local PID: $($previewProcess.Id). Para detenerlo: Stop-Process -Id $($previewProcess.Id)"
     }
 

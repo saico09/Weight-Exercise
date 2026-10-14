@@ -1,0 +1,73 @@
+.compact-section-heading, .history-topline { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 0 0 20px; }
+.compact-section-heading h1, .history-topline h1 { margin: 0; font-size: 13px; font-family: var(--body-font); font-weight: 600; }
+.history-tools { display: flex; align-items: center; gap: 8px; }
+.compact-history { gap: 16px; }
+.compact-history .history-topline { margin-bottom: 0; }
+.compact-history .history-list { margin-top: 0; }
+.compact-history .history-month { margin-top: 0; }
+.compact-history .history-month + .history-month { margin-top: 24px; }
+.compact-history .history-baseline { color: var(--accent-ink); }
+.history-segments { display: flex; border-radius: 30px; padding: 4px; background: var(--surface-soft); border: 1px solid var(--border); }
+.history-segments button { width: 40px; height: 36px; border-radius: 50%; color: var(--muted); display: grid; place-items: center; transition: background .2s, color .2s; }
+.history-segments button.active { background: var(--accent); color: #133129; }
+.round-action { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; position: relative; }
+.calendar-action { background: var(--surface-soft); border: 1px solid var(--border); color: var(--muted); }
+.calendar-action.selected { color: var(--accent-ink); border-color: var(--accent-ink); }
+.calendar-action i { position: absolute; right: 7px; top: 7px; width: 5px; height: 5px; border-radius: 50%; background: var(--accent-ink); }
+.add-action { background: var(--accent); color: #133129; }
+.history-month-chip { display: flex; align-items: center; gap: 10px; border-radius: 20px; padding: 8px 12px; color: var(--accent-ink); background: var(--surface-soft); font-size: 11px; margin: -5px 0 18px; }
+.history-month-input { display: block; width: 100%; background: var(--surface-soft); border: 1px solid var(--border); padding: 14px; border-radius: 12px; margin: 10px 0 26px; color: var(--text); }
+.compact-history .history-month > .card-head { margin-bottom: 10px; }
+.compact-history .history-month > .card-head h2 { font: 600 15px var(--body-font); text-transform: capitalize; }
+.compact-history .history-month > .card-head > span { font-size: 10px; }
+.compact-history .history-month > .card { padding: 0 20px; }
+.compact-history .history-record { display: flex; align-items: center; padding: 18px 0; margin: 0; width: 100%; gap: 14px; min-height: 88px; }
+.compact-history .history-record-main { min-width: 0; flex: 1; align-items: center; }
+.compact-history .history-day { flex-shrink: 0; font: 28px/1 var(--heading-font); }
+.history-day-detail { display: flex; flex-direction: column; justify-content: center; min-width: 0; gap: 5px; }
+.history-day-detail > strong { font-size: 13px; line-height: 1.25; text-transform: capitalize; }
+.compact-history .history-record-meta { margin: 0; gap: 3px; font-size: 10px; line-height: 1.4; }
+.history-baseline { display: flex; align-items: center; gap: 4px; color: var(--accent-ink); font-size: 9px; }
+.compact-history .history-habits { display: flex; flex-shrink: 0; }
+.compact-history .history-weight { margin: 0; line-height: 1; align-self: center; min-width: 70px; white-space: nowrap; font-size: 29px; }
+.compact-history .record-note { display: block; max-width: 220px; }
+.history-baseline-note { margin-top: 22px; font-size: 11px; line-height: 1.7; }
+.achievement-progress { display: flex; align-items: center; gap: 10px; margin: 15px 0; }
+.achievement-progress progress { width: 100%; min-width: 0; height: 4px; border: none; border-radius: 10px; overflow: hidden; background: var(--border); accent-color: var(--accent-ink); }
+.achievement-progress progress::-webkit-progress-bar { background: var(--border); }
+.achievement-progress progress::-webkit-progress-value { background: var(--accent-ink); border-radius: 10px; }
+.achievement-progress progress::-moz-progress-bar { background: var(--accent-ink); }
+.achievement-progress span { font-size: 10px; white-space: nowrap; color: var(--muted); }
+.bmi-current-category { border: 1px solid var(--accent-ink); color: var(--accent-ink); }
+.bmi-range-row .range-dot { background: var(--faint); }
+.bmi-range-row.current .range-dot { background: var(--accent-ink); }
+.bmi-range-row.current { color: var(--accent-ink); }
+@media(max-width: 740px) {
+  .compact-history .history-record { gap: 10px; }
+  .compact-history .history-month > .card { padding: 0 16px; }
+  .history-day-detail > strong { font-size: 12px; }
+  .compact-history .history-record-main { gap: 10px; }
+  .compact-history .history-day { font-size: 24px; width: 26px; }
+  .compact-history .history-weight { font-size: 27px; min-width: 67px; }
+  .compact-history .history-habits { gap: 3px; }
+  .compact-history .habit-indicator { width: 23px; height: 23px; }
+  .history-topline { flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+  .history-topline h1 { font-size: 12px; }
+  .compact-history .record-note { max-width: 120px; }
+  .bmi-range-row { gap: 12px; }
+  .bmi-range-row > span { flex-wrap: wrap; }
+  .bmi-range-row > strong { flex-shrink: 0; }
+}
+@media(max-width: 390px) {
+  .history-topline { gap: 8px; }
+  .history-tools { gap: 5px; }
+  .history-segments button { width: 32px; height: 34px; }
+  .round-action { width: 40px; height: 40px; }
+  .compact-history .history-record { gap: 7px; }
+  .compact-history .history-month > .card { padding: 0 12px; }
+  .compact-history .record-chevron { display: none; }
+  .compact-history .history-weight { font-size: 24px; min-width: 61px; }
+  .compact-history .history-habits { flex-direction: column; gap: 3px; }
+  .compact-history .history-record-meta > span { font-size: 8px; }
+  .compact-history .record-note { max-width: 105px; }
+}

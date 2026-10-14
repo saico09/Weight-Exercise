@@ -1,5 +1,6 @@
 /** All stored measurements use kg and cm; units only affect presentation. */
 export type Theme = 'dark' | 'light';
+export type Language = 'es' | 'en';
 export type WeightUnit = 'kg' | 'lb';
 export type HeightUnit = 'cm' | 'ft';
 
@@ -8,6 +9,7 @@ export interface Profile {
   initialWeightKg: number;
   goalWeightKg: number;
   age: number;
+  birthDate?: string;
   initialDate: string;
 }
 
@@ -22,6 +24,7 @@ export interface DailyRecord {
 
 export interface Settings {
   theme: Theme;
+  language: Language;
   weightUnit: WeightUnit;
   heightUnit: HeightUnit;
   notifications: { enabled: boolean; time: string; days: number[] };
@@ -43,6 +46,7 @@ export function defaultData(): AppData {
     records: [],
     settings: {
       theme: 'dark',
+      language: 'es',
       weightUnit: 'kg',
       heightUnit: 'cm',
       notifications: { enabled: false, time: '20:00', days: [0, 1, 2, 3, 4, 5, 6] },
@@ -65,6 +69,18 @@ export function shiftDate(key: string, days: number): string {
   return dateKey(date);
 }
 
+/** Completed calendar years; returns NaN for impossible/future dates. */
+export function ageFromBirthDate(birthDate: string, asOf = dateKey()): number {
+  if (!validDate(birthDate) || !validDate(asOf) || birthDate > asOf) return NaN;
+  const [year, month, day] = birthDate.split('-').map(Number);
+  const [nowYear, nowMonth, nowDay] = asOf.split('-').map(Number);
+  return nowYear - year - (nowMonth < month || (nowMonth === month && nowDay < day) ? 1 : 0);
+}
+
+export function profileAge(profile: Profile, asOf = dateKey()): number {
+  return profile.birthDate ? ageFromBirthDate(profile.birthDate, asOf) : profile.age;
+}
+
 const KG_PER_LB = 0.45359237;
 
 export function fromKg(kg: number, unit: WeightUnit = 'kg'): number {
@@ -76,15 +92,15 @@ export function toKg(weight: number, unit: WeightUnit = 'kg'): number {
 }
 
 /** Formatted numeric value only; the caller supplies its unit label. */
-export function displayWeight(kg: number, unit: WeightUnit = 'kg', digits = 1): string {
-  return fromKg(kg, unit).toLocaleString('es-CL', {
+export function displayWeight(kg: number, unit: WeightUnit = 'kg', digits = 1, locale = 'es-CL'): string {
+  return fromKg(kg, unit).toLocaleString(locale, {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   });
 }
 
-export function displayHeight(cm: number, unit: HeightUnit = 'cm'): string {
-  if (unit === 'cm') return `${cm.toLocaleString('es-CL', { maximumFractionDigits: 1 })} cm`;
+export function displayHeight(cm: number, unit: HeightUnit = 'cm', locale = 'es-CL'): string {
+  if (unit === 'cm') return `${cm.toLocaleString(locale, { maximumFractionDigits: 1 })} cm`;
   const inches = Math.round(cm / 2.54);
   return `${Math.floor(inches / 12)}′ ${inches % 12}″`;
 }
@@ -244,7 +260,7 @@ export function getStats(data: AppData, now = new Date()): Stats {
     weeklyExerciseAverage: weeks.length ? exerciseDays / weeks.length : 0,
     weeks,
     currentBmi: data.profile ? bmi(currentWeight, data.profile.heightCm) : null,
-    adultBmi: !!data.profile && data.profile.age >= 20,
+    adultBmi: !!data.profile && profileAge(data.profile, today) >= 20,
   };
 }
 
@@ -303,6 +319,10 @@ export function validateData(raw: unknown): AppData | null {
       heightCm: profile.heightCm, initialWeightKg: profile.initialWeightKg,
       goalWeightKg: profile.goalWeightKg, age: profile.age, initialDate: profile.initialDate,
     };
+    // Optional migration: old age-only profiles remain valid. Never invent a birthday.
+    if (validDate(profile.birthDate) && ageFromBirthDate(profile.birthDate) >= 5 && ageFromBirthDate(profile.birthDate) <= 120) {
+      result.profile.birthDate = profile.birthDate;
+    }
   }
 
   const seenDates = new Set<string>();
@@ -325,6 +345,7 @@ export function validateData(raw: unknown): AppData | null {
   const settings = object(input.settings);
   if (settings) {
     if (settings.theme === 'dark' || settings.theme === 'light') result.settings.theme = settings.theme;
+    if (settings.language === 'es' || settings.language === 'en') result.settings.language = settings.language;
     if (settings.weightUnit === 'kg' || settings.weightUnit === 'lb') result.settings.weightUnit = settings.weightUnit;
     if (settings.heightUnit === 'cm' || settings.heightUnit === 'ft') result.settings.heightUnit = settings.heightUnit;
     const notifications = object(settings.notifications);

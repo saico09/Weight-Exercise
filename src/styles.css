@@ -418,3 +418,10 @@ ion-app[data-theme=light] { --bg: #edf5f5; --surface: #ffffffb8; --surface-raise
 [data-theme=light] .progress-ring .ring-value { stroke: #58d5df; }
 .modal { max-height: calc(100dvh - 24px - var(--safe-area-inset-top, env(safe-area-inset-top, 0px)) - var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px))); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+
+/* Keep identity and unit controls comfortably inside compact phone headers. */
+@media (max-width: 380px) {
+  .app-header .brand-wordmark { display: none; }
+  .app-header .header-right { gap: 12px; }
+  .app-header .weight-exercise-brand .brand-mark { width: 36px; }
+}

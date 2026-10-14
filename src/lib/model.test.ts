@@ -1,11 +1,48 @@
 import { describe, expect, it } from 'vitest';
 import {
   BMI_RANGES, bmi, bmiCategory, dateKey, defaultData, demoData,
-  displayHeight, displayWeight, fromKg, getStats, shiftDate, toKg, validateData,
+  displayHeight, displayWeight, fromKg, getStats, shiftDate, toKg, validateData, ageFromBirthDate, profileAge,
 } from './model';
 import type { AppData, DailyRecord } from './model';
 
 const today = new Date(2026, 9, 14, 12);
+
+describe('birth dates and language migration', () => {
+  it('changes age on the birthday and rejects impossible or future dates', () => {
+    expect(ageFromBirthDate('2006-10-15', '2026-10-14')).toBe(19);
+    expect(ageFromBirthDate('2006-10-14', '2026-10-14')).toBe(20);
+    expect(ageFromBirthDate('2006-10-13', '2026-10-14')).toBe(20);
+    expect(ageFromBirthDate('2024-02-29', '2026-02-28')).toBe(1);
+    expect(ageFromBirthDate('2024-02-29', '2026-03-01')).toBe(2);
+    expect(ageFromBirthDate('2001-02-29', '2026-10-14')).toBeNaN();
+    expect(ageFromBirthDate('2027-01-01', '2026-10-14')).toBeNaN();
+  });
+
+  it('keeps legacy profiles intact and defaults missing language to Spanish', () => {
+    const data = demoData(today);
+    const { language: _, ...legacySettings } = data.settings;
+    const migrated = validateData({ ...data, settings: legacySettings });
+    expect(migrated?.settings.language).toBe('es');
+    expect(migrated?.records).toEqual(data.records);
+    expect(migrated?.profile?.birthDate).toBeUndefined();
+    expect(profileAge(migrated!.profile!, '2026-10-14')).toBe(28);
+    expect(validateData({ ...data, settings: { ...data.settings, language: 'en' } })?.settings.language).toBe('en');
+  });
+
+  it('uses birth date rather than stale saved age for BMI eligibility', () => {
+    const data = demoData(today);
+    data.profile = { ...data.profile!, age: 19, birthDate: '2006-10-14' };
+    expect(getStats(data, new Date(2026, 9, 13, 12)).adultBmi).toBe(false);
+    expect(getStats(data, today).adultBmi).toBe(true);
+    expect(validateData(data)?.profile?.birthDate).toBe('2006-10-14');
+  });
+
+  it('uses the selected locale without changing canonical values', () => {
+    expect(displayWeight(81.2, 'kg', 1, 'en-US')).toBe('81.2');
+    expect(displayWeight(81.2, 'kg', 1, 'es-CL')).toBe('81,2');
+    expect(displayHeight(170.5, 'cm', 'en-US')).toBe('170.5 cm');
+  });
+});
 
 function record(date: string, weightKg: number, exercise = true): DailyRecord {
   return { id: `record-${date}`, date, weightKg, exercise, healthy: true, note: '' };
@@ -223,7 +260,7 @@ describe('persisted schema validation', () => {
       } },
     });
     expect(result?.settings).toEqual({
-      theme: 'dark', weightUnit: 'kg', heightUnit: 'ft',
+      theme: 'dark', language: 'es', weightUnit: 'kg', heightUnit: 'ft',
       notifications: { enabled: true, time: '20:00', days: [0, 1] },
     });
     expect(result?.initialRecordId).toBeNull();

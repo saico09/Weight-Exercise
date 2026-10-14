@@ -65,6 +65,19 @@ describe('native reminders', () => {
     expect(local.cancel).toHaveBeenCalledOnce();
   });
 
+  it('schedules English content and returns an interpolated confirmation in the chosen language', async () => {
+    const result = await reminders.configureNotifications({ enabled: true, time: '08:35', days: [1] }, 'en');
+    expect(result.message).toBe('Done. We will remind you to check in around 08:35 on your chosen days.');
+    expect(local.createChannel).toHaveBeenCalledWith(expect.objectContaining({ name: 'Your daily check-in' }));
+    expect(local.schedule.mock.calls[0][0].notifications[0]).toMatchObject({
+      title: 'A moment for you', body: 'Log your weight and habits today. Every day counts.',
+    });
+    await reminders.testNotification('en');
+    expect(local.schedule.mock.calls[1][0].notifications[0]).toMatchObject({
+      title: 'A moment for you', body: 'This is what your Weight&Exercise reminder will look like.',
+    });
+  });
+
   it('uses granted permission directly and skips Android channel creation on iOS', async () => {
     native.getPlatform.mockReturnValue('ios');
     local.checkPermissions.mockResolvedValue({ display: 'granted' });

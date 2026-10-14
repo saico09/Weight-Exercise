@@ -1,54 +1,208 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import type { PointerEvent as ReactPointerEvent } from 'react';
+import { Maximize2, Minus, Plus, MoveHorizontal } from 'lucide-react';
 import type { DailyRecord, WeightUnit } from '../lib/model';
 import { displayWeight, fromKg } from '../lib/model';
+import { useI18n } from '../lib/i18n';
+import { chartDay, clampChartWindow, sampleChartPoints, zoomChartWindow } from './chartUtils';
+import type { ChartWindow } from './chartUtils';
+import './charts-dashboard.css';
+
+type Gesture = { window: ChartWindow; x: number; midpoint: number; distance: number; moved: boolean };
 
 export function WeightChart({ records, unit, goal }: { records: DailyRecord[]; unit: WeightUnit; goal: number }) {
+  const { t, locale } = useI18n();
   const id = useId().replace(/:/g, '');
-  const [active, setActive] = useState<number | null>(null);
+  const [active, setActive] = useState<string | null>(null);
   const container = useRef<HTMLDivElement>(null);
+  const surface = useRef<SVGSVGElement>(null);
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const gesture = useRef<Gesture | null>(null);
   const [chartWidth, setChartWidth] = useState(720);
-  useEffect(() => { const element = container.current; if (!element) return; const observer = new ResizeObserver(([entry]) => setChartWidth(Math.max(260, Math.min(720, entry.contentRect.width)))); observer.observe(element); return () => observer.disconnect(); }, [records.length]);
-  const W = chartWidth, H = chartWidth < 450 ? 220 : 245, left = 35, right = 12, top = 22, bottom = 34;
-  if (!records.length) return <div className="chart-empty"><span>Tu historia empieza con un punto.</span><p>Guarda tu primer peso para ver tu evolución aquí.</p></div>;
-  const values = records.map(r => fromKg(r.weightKg, unit));
+  const [view, setView] = useState<ChartWindow | null>(null);
+  const sorted = useMemo(() => [...records].sort((a, b) => a.date.localeCompare(b.date)), [records]);
+  const points = useMemo(() => sorted.map(record => ({ record, x: chartDay(record.date), value: fromKg(record.weightKg, unit) })), [sorted, unit]);
+  const first = points[0]?.x ?? 0, last = points[points.length - 1]?.x ?? 1;
+  const bounds = useMemo(() => ({ start: first === last ? first - 1 : first, end: first === last ? last + 1 : last }), [first, last]);
+  const window = view ? clampChartWindow(view, bounds) : bounds;
+  const viewRef = useRef(window);
+  viewRef.current = window;
+  const W = chartWidth, H = chartWidth < 450 ? 220 : 245, left = 38, right = 13, top = 21, bottom = 33;
+  const plotWidth = W - left - right;
+  const span = window.end - window.start || 1;
+  const total = bounds.end - bounds.start;
+  const isZoomed = span < total - .001;
+
+  useEffect(() => {
+    const element = container.current;
+    if (!element) return;
+    const observer = new ResizeObserver(([entry]) => setChartWidth(Math.max(180, Math.min(900, entry.contentRect.width))));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => { setView(null); setActive(null); pointers.current.clear(); gesture.current = null; }, [first, last, records.length]);
+
+  const changeView = (next: ChartWindow) => {
+    const bounded = clampChartWindow(next, bounds);
+    viewRef.current = bounded;
+    setView(bounded);
+  };
+  const zoom = (factor: number, anchor = .5) => changeView(zoomChartWindow(viewRef.current, bounds, factor, anchor));
+  const localFraction = (clientX: number) => {
+    const rect = surface.current?.getBoundingClientRect();
+    return rect ? Math.max(0, Math.min(1, ((clientX - rect.left) / rect.width * W - left) / plotWidth)) : .5;
+  };
+
+  useEffect(() => {
+    const element = surface.current;
+    if (!element) return;
+    const wheel = (event: WheelEvent) => {
+      if (event.ctrlKey || event.metaKey) {
+        event.preventDefault();
+        zoom(Math.exp(Math.max(-1, Math.min(1, event.deltaY * .007))), localFraction(event.clientX));
+      } else if (Math.abs(event.deltaX) > Math.abs(event.deltaY) || event.shiftKey) {
+        if (!isZoomed) return;
+        event.preventDefault();
+        const delta = event.deltaX || event.deltaY;
+        const current = viewRef.current;
+        const offset = delta / plotWidth * (current.end - current.start);
+        changeView({ start: current.start + offset, end: current.end + offset });
+      }
+    };
+    element.addEventListener('wheel', wheel, { passive: false });
+    return () => element.removeEventListener('wheel', wheel);
+  });
+
+  const visible = points.filter(point => point.x >= window.start - .00001 && point.x <= window.end + .00001);
+  const before = [...points].reverse().find(point => point.x < window.start);
+  const after = points.find(point => point.x > window.end);
+  const linePoints = [...(before ? [before] : []), ...visible, ...(after ? [after] : [])];
+  const valueRange = (linePoints.length ? linePoints : points).reduce((range, point) => ({ min: Math.min(range.min, point.value), max: Math.max(range.max, point.value) }), { min: Infinity, max: -Infinity });
+  const spread = valueRange.max - valueRange.min;
   const goalValue = fromKg(goal, unit);
-  const spread = Math.max(...values) - Math.min(...values);
-  const showGoal = Math.abs(goalValue - values[values.length - 1]) < Math.max(spread * 1.7, 3);
-  const all = showGoal ? [...values, goalValue] : values;
-  const min = Math.min(...all) - Math.max(.5, spread * .2), max = Math.max(...all) + Math.max(.5, spread * .2);
-  const start = Date.parse(`${records[0].date}T12:00:00Z`);
-  const end = Date.parse(`${records[records.length - 1].date}T12:00:00Z`);
-  const x = (i: number) => records.length === 1 ? (W + left - right) / 2 : left + ((Date.parse(`${records[i].date}T12:00:00Z`) - start) / (end - start || 1)) * (W - left - right);
-  const y = (v: number) => top + (max - v) / (max - min) * (H - top - bottom);
-  const line = values.map((v, i) => `${i ? 'L' : 'M'}${x(i)},${y(v)}`).join(' ');
-  const idx = active !== null && active < records.length ? active : records.length - 1;
-  const dateLabel = (date: string) => new Date(`${date}T12:00:00`).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' });
-  const tickIndices = Array.from(new Set([0, Math.floor((records.length - 1) / 3), Math.floor((records.length - 1) * 2 / 3), records.length - 1]));
-  return <div className="weight-chart" ref={container}>
-    <div className="chart-tooltip"><span className="dot" />{dateLabel(records[idx].date)} <strong>{displayWeight(records[idx].weightKg, unit)} {unit}</strong></div>
-    <svg viewBox={`0 0 ${W} ${H}`} role="group" aria-label={`Peso desde ${displayWeight(records[0].weightKg, unit)} hasta ${displayWeight(records[records.length - 1].weightKg, unit)} ${unit}. ${records.length} registros.`}>
-      <defs><linearGradient id={id} x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="var(--accent)" stopOpacity=".23" /><stop offset="100%" stopColor="var(--accent)" stopOpacity="0" /></linearGradient></defs>
-      {[0, 1, 2, 3].map(t => { const val = min + (max - min) * t / 3; return <g key={t}><line className="chart-grid" x1={left} x2={W - right} y1={y(val)} y2={y(val)} /><text x={0} y={y(val) + 4} className="chart-label">{val.toFixed(1)}</text></g>; })}
-      {showGoal && <g><line x1={left} x2={W - right} y1={y(goalValue)} y2={y(goalValue)} stroke="var(--accent)" strokeOpacity=".35" strokeDasharray="4 6" /><text x={W - right} y={y(goalValue) - 8} textAnchor="end" className="chart-label">META</text></g>}
-      {records.length > 1 && <path d={`${line} L${x(records.length - 1)},${H - bottom} L${x(0)},${H - bottom} Z`} fill={`url(#${id})`} />}
-      <path d={line} fill="none" stroke="var(--chart-accent, var(--accent))" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" className="chart-line" />
-      <line x1={x(idx)} x2={x(idx)} y1={top} y2={H - bottom} stroke="var(--accent)" strokeOpacity=".22" strokeDasharray="3 5" />
-      {values.map((v, i) => <g key={records[i].id} onMouseEnter={() => setActive(i)} onFocus={() => setActive(i)} onClick={() => setActive(i)} role="button" tabIndex={0} aria-label={`${dateLabel(records[i].date)}: ${v.toFixed(1)} ${unit}`} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActive(i); } }}><circle cx={x(i)} cy={y(v)} r={15} fill="transparent" /><circle cx={x(i)} cy={y(v)} r={i === idx ? 5 : 2.7} fill={i === idx ? 'var(--accent)' : 'var(--surface)'} stroke="var(--accent)" strokeWidth={i === idx ? 3 : 1.5} /></g>)}
-      {tickIndices.map(i => <text key={i} x={x(i)} y={H - 5} textAnchor={i === 0 ? 'start' : i === records.length - 1 ? 'end' : 'middle'} className="chart-label">{dateLabel(records[i].date)}</text>)}
-    </svg>
+  const showGoal = Math.abs(goalValue - (visible[visible.length - 1]?.value ?? points[points.length - 1]?.value ?? 0)) < Math.max(spread * 1.7, 3);
+  const min = Math.min(valueRange.min, showGoal ? goalValue : Infinity) - Math.max(.5, spread * .2);
+  const max = Math.max(valueRange.max, showGoal ? goalValue : -Infinity) + Math.max(.5, spread * .2);
+  const x = (day: number) => left + (day - window.start) / span * plotWidth;
+  const y = (value: number) => top + (max - value) / (max - min || 1) * (H - top - bottom);
+  const rendered = [...(before ? [before] : []), ...sampleChartPoints(visible, Math.floor(plotWidth / 2)), ...(after ? [after] : [])];
+  const line = rendered.map((point, index) => `${index ? 'L' : 'M'}${x(point.x)},${y(point.value)}`).join(' ');
+  const selected = visible.find(point => point.record.id === active) ?? visible[visible.length - 1];
+  const markers = visible.reduce<typeof points>((result, point, index) => {
+    if (!result.length || x(point.x) - x(result[result.length - 1].x) >= 25) result.push(point);
+    else if (index === visible.length - 1 && result.length > 1) result[result.length - 1] = point;
+    return result;
+  }, []);
+  const dateLabel = (day: number, year = false) => new Date(day * 86_400_000).toLocaleDateString(locale, { day: 'numeric', month: 'short', ...(year ? { year: '2-digit' as const } : {}), timeZone: 'UTC' });
+  const rangeText = `${dateLabel(window.start, total > 365)} — ${dateLabel(window.end, total > 365)}`;
+
+  const selectAt = (clientX: number) => {
+    const day = viewRef.current.start + localFraction(clientX) * (viewRef.current.end - viewRef.current.start);
+    const candidates = points.filter(point => point.x >= viewRef.current.start && point.x <= viewRef.current.end);
+    const nearest = candidates.reduce<typeof points[number] | undefined>((best, point) => !best || Math.abs(point.x - day) < Math.abs(best.x - day) ? point : best, undefined);
+    if (nearest) setActive(nearest.record.id);
+  };
+  const beginGesture = () => {
+    const values = [...pointers.current.values()];
+    if (!values.length) { gesture.current = null; return; }
+    const [a, b] = values;
+    gesture.current = { window: viewRef.current, x: a.x, midpoint: b ? (a.x + b.x) / 2 : a.x, distance: b ? Math.max(1, Math.hypot(b.x - a.x, b.y - a.y)) : 0, moved: false };
+  };
+  const pointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    event.currentTarget.setPointerCapture(event.pointerId);
+    beginGesture();
+  };
+  const pointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
+    if (!pointers.current.has(event.pointerId)) { if (event.pointerType === 'mouse') selectAt(event.clientX); return; }
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const current = gesture.current;
+    if (!current) return;
+    const [a, b] = [...pointers.current.values()];
+    if (b && current.distance) {
+      current.moved = true;
+      const distance = Math.max(1, Math.hypot(b.x - a.x, b.y - a.y));
+      const newSpan = Math.min(total, Math.max(Math.min(3, total), (current.window.end - current.window.start) * current.distance / distance));
+      const anchorDay = current.window.start + localFraction(current.midpoint) * (current.window.end - current.window.start);
+      const start = anchorDay - localFraction((a.x + b.x) / 2) * newSpan;
+      changeView({ start, end: start + newSpan });
+    } else {
+      const delta = a.x - current.x;
+      if (Math.abs(delta) < 4 && !current.moved) return;
+      current.moved = true;
+      const renderedWidth = surface.current?.getBoundingClientRect().width ?? W;
+      const offset = delta / (renderedWidth * plotWidth / W) * (current.window.end - current.window.start);
+      changeView({ start: current.window.start - offset, end: current.window.end - offset });
+    }
+  };
+  const pointerEnd = (event: ReactPointerEvent<SVGSVGElement>) => {
+    if (event.type !== 'pointercancel' && gesture.current && !gesture.current.moved && pointers.current.size === 1) selectAt(event.clientX);
+    pointers.current.delete(event.pointerId);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    beginGesture();
+    if (gesture.current) gesture.current.moved = true;
+  };
+  const pointerCaptureLost = (event: ReactPointerEvent<SVGSVGElement>) => {
+    // Capture can be interrupted by the OS without an ordinary pointer-up.
+    // Ignore the normal release already handled by pointerEnd.
+    if (!pointers.current.delete(event.pointerId)) return;
+    beginGesture();
+    if (gesture.current) gesture.current.moved = true;
+  };
+  const keyboardPoint = (index: number) => {
+    const point = points[Math.max(0, Math.min(points.length - 1, index))];
+    if (!point) return;
+    setActive(point.record.id);
+    if (point.x < window.start || point.x > window.end) changeView({ start: point.x - span / 2, end: point.x + span / 2 });
+  };
+
+  return <div className="weight-chart interactive-weight-chart" ref={container}>
+    {!points.length ? <div className="chart-empty"><span>{t('Tu historia empieza con un punto.')}</span><p>{t('Guarda tu primer peso para ver tu evolución aquí.')}</p></div> : <>
+      <div className="chart-readout"><div className="chart-tooltip"><span className="dot" />{selected ? <>{dateLabel(selected.x, total > 365)} <strong>{displayWeight(selected.record.weightKg, unit, 1, locale)} {unit}</strong></> : t('Sin registros en este intervalo')}</div><span className="chart-visible-count">{visible.length} {t(visible.length === 1 ? 'registro' : 'registros')}</span></div>
+      <svg ref={surface} viewBox={`0 0 ${W} ${H}`} className={`chart-gesture-surface ${isZoomed ? 'is-zoomed' : ''}`} role="group" tabIndex={0} aria-label={t('Gráfico interactivo de peso')} aria-describedby={`${id}-instructions`} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerEnd} onPointerCancel={pointerEnd} onLostPointerCapture={pointerCaptureLost} onKeyDown={event => {
+        const index = selected ? points.findIndex(point => point.record.id === selected.record.id) : 0;
+        if (['ArrowLeft', 'ArrowRight', 'Home', 'End', '+', '=', '-'].includes(event.key)) event.preventDefault();
+        if (event.key === 'ArrowLeft') keyboardPoint(index - 1);
+        if (event.key === 'ArrowRight') keyboardPoint(index + 1);
+        if (event.key === 'Home') keyboardPoint(0);
+        if (event.key === 'End') keyboardPoint(points.length - 1);
+        if (event.key === '+' || event.key === '=') zoom(.6);
+        if (event.key === '-') zoom(1 / .6);
+      }}>
+        <title>{t('Peso registrado')}: {rangeText}</title>
+        <defs><linearGradient id={id} x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="var(--accent)" stopOpacity=".23" /><stop offset="100%" stopColor="var(--accent)" stopOpacity="0" /></linearGradient><clipPath id={`${id}-clip`}><rect x={left - 7} y={top - 9} width={plotWidth + 14} height={H - top - bottom + 18} /></clipPath></defs>
+        {[0, 1, 2, 3].map(tick => { const value = min + (max - min) * tick / 3; return <g key={tick} aria-hidden="true"><line className="chart-grid" x1={left} x2={W - right} y1={y(value)} y2={y(value)} /><text x={0} y={y(value) + 4} className="chart-label">{value.toLocaleString(locale, { maximumFractionDigits: 1 })}</text></g>; })}
+        {showGoal && <g aria-hidden="true"><line x1={left} x2={W - right} y1={y(goalValue)} y2={y(goalValue)} stroke="var(--accent)" strokeOpacity=".35" strokeDasharray="4 6" /><text x={W - right} y={y(goalValue) - 8} textAnchor="end" className="chart-label">{t('META')}</text></g>}
+        <g clipPath={`url(#${id}-clip)`} aria-hidden="true">
+          {rendered.length > 1 && <path d={`${line} L${x(rendered[rendered.length - 1].x)},${H - bottom} L${x(rendered[0].x)},${H - bottom} Z`} fill={`url(#${id})`} />}
+          <path d={line} fill="none" stroke="var(--chart-accent, var(--accent))" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" className="chart-line" />
+          {markers.map(point => <circle key={point.record.id} cx={x(point.x)} cy={y(point.value)} r="2.5" fill="var(--surface)" stroke="var(--chart-accent, var(--accent))" strokeWidth="1.5" />)}
+          {selected && <><line x1={x(selected.x)} x2={x(selected.x)} y1={top} y2={H - bottom} stroke="var(--accent)" strokeOpacity=".25" strokeDasharray="3 5" /><circle cx={x(selected.x)} cy={y(selected.value)} r="5" fill="var(--accent)" stroke="var(--surface)" strokeWidth="2.5" /></>}
+        </g>
+        {(points.length === 1 ? [first] : [window.start, ...(span < 3 ? [] : W >= 400 ? [window.start + span / 3, window.start + span * 2 / 3] : [window.start + span / 2]), window.end]).map((day, index, ticks) => <text key={index} aria-hidden="true" x={x(day)} y={H - 5} textAnchor={ticks.length === 1 ? 'middle' : index === 0 ? 'start' : index === ticks.length - 1 ? 'end' : 'middle'} className="chart-label">{dateLabel(day, total > 365)}</text>)}
+      </svg>
+      <div className="chart-navigation"><span className="chart-gesture-hint"><MoveHorizontal size={14} />{t(isZoomed ? 'Desliza para explorar' : total > 3 ? 'Amplía para explorar' : 'Vista completa')}</span><div className="chart-zoom-controls" role="group" aria-label={t('Zoom del gráfico')}><button type="button" disabled={!isZoomed} onClick={() => zoom(1 / .6)} aria-label={t('Alejar gráfico')} title={t('Alejar gráfico')}><Minus size={16} /></button><button type="button" disabled={span <= Math.min(3, total) + .001} onClick={() => zoom(.6)} aria-label={t('Acercar gráfico')} title={t('Acercar gráfico')}><Plus size={16} /></button><button type="button" disabled={!isZoomed} onClick={() => { setView(null); viewRef.current = bounds; }} aria-label={t('Ver todo el período')} title={t('Ver todo el período')}><Maximize2 size={14} /></button></div></div>
+      {isZoomed && <div className="chart-window-track" aria-hidden="true"><span style={{ left: `${(window.start - bounds.start) / total * 100}%`, width: `${span / total * 100}%` }} /></div>}
+      <span className="chart-sr-only" id={`${id}-instructions`}>{t('Arrastra para desplazarte. Pellizca o usa los botones para cambiar el zoom. Con teclado, usa las flechas para recorrer los registros y + o − para ampliar o reducir.')}</span>
+      <span className="chart-sr-only" aria-live="polite">{selected ? `${dateLabel(selected.x, true)}: ${displayWeight(selected.record.weightKg, unit, 1, locale)} ${unit}` : t('Sin registros en este intervalo')}</span>
+    </>}
   </div>;
 }
 
 export function ProgressRing({ progress, remaining, unit }: { progress: number; remaining: number; unit: WeightUnit }) {
+  const { t, locale } = useI18n();
   const radius = 87, length = 2 * Math.PI * radius;
-  return <div className="progress-ring"><svg viewBox="0 0 220 220" aria-label={`${Math.round(progress)}% del camino a tu meta`} role="img"><circle cx="110" cy="110" r={radius} fill="none" stroke="var(--track)" strokeWidth="12" /><circle cx="110" cy="110" r={radius} fill="none" stroke="var(--accent)" strokeWidth="12" strokeLinecap="round" strokeDasharray={length} strokeDashoffset={length * (1 - progress / 100)} transform="rotate(-90 110 110)" className="ring-value" /><circle cx="110" cy="23" r="3" fill="var(--surface)" /></svg><div><span className="ring-percentage">{Math.round(progress)}<small>%</small></span><span>de tu camino</span><strong>{remaining < .05 ? '¡Meta alcanzada!' : `${displayWeight(remaining, unit)} ${unit} para tu meta`}</strong></div></div>;
+  return <div className="progress-ring"><svg viewBox="0 0 220 220" aria-label={`${Math.round(progress)}% ${t('del camino a tu meta')}`} role="img"><circle cx="110" cy="110" r={radius} fill="none" stroke="var(--track)" strokeWidth="12" /><circle cx="110" cy="110" r={radius} fill="none" stroke="var(--accent)" strokeWidth="12" strokeLinecap="round" strokeDasharray={length} strokeDashoffset={length * (1 - progress / 100)} transform="rotate(-90 110 110)" className="ring-value" /><circle cx="110" cy="23" r="3" fill="var(--surface)" /></svg><div><span className="ring-percentage">{Math.round(progress)}<small>%</small></span><span>{t('de tu camino')}</span><strong>{remaining < .05 ? t('¡Meta alcanzada!') : `${displayWeight(remaining, unit, 1, locale)} ${unit} ${t('para tu meta')}`}</strong></div></div>;
 }
 
 export function BmiGauge({ value, adult }: { value: number; adult: boolean }) {
+  const { t, locale } = useI18n();
   const clamped = Math.max(14, Math.min(42, value));
   const angle = Math.PI - (clamped - 14) / 28 * Math.PI;
   const x = 180 + 140 * Math.cos(angle), y = 175 - 140 * Math.sin(angle);
-  const ranges = [[14, 16, '#8ba2d8'], [16, 17, '#83bbdf'], [17, 18.5, '#86d7e0'], [18.5, 25, '#42ff85'], [25, 30, '#e0d179'], [30, 35, '#eeb17f'], [35, 40, '#e98f89'], [40, 42, '#bd849f']] as const;
+  const ranges = [[14, 16], [16, 17], [17, 18.5], [18.5, 25], [25, 30], [30, 35], [35, 40], [40, 42]] as const;
   const point = (v: number) => { const a = Math.PI - (v - 14) / 28 * Math.PI; return `${180 + 140 * Math.cos(a)} ${175 - 140 * Math.sin(a)}`; };
-  return <div className="bmi-gauge"><svg viewBox="0 0 360 205" aria-label={`IMC ${value.toFixed(1)}`} role="img">{ranges.map(([start, end, color]) => <path key={start} d={`M ${point(start + .12)} A 140 140 0 0 1 ${point(end - .12)}`} fill="none" stroke={adult ? color : 'var(--track)'} strokeWidth="14" strokeLinecap="round" />)}{adult && <><circle cx={x} cy={y} r="12" fill="var(--text)" stroke="var(--surface)" strokeWidth="5" /><text x="28" y="202" className="chart-label">14</text><text x="320" y="202" className="chart-label">42+</text></>}</svg><div><span>Tu IMC actual</span><strong>{value.toFixed(1)}</strong><span>kg/m²</span></div></div>;
+  const number = value.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  return <div className="bmi-gauge tonal-bmi-gauge"><svg viewBox="0 0 360 211" aria-label={`${t('IMC')} ${number}`} role="img">{ranges.map(([start, end], index) => <path key={start} d={`M ${point(start + .12)} A 140 140 0 0 1 ${point(end - .12)}`} fill="none" stroke={adult ? 'var(--chart-accent, var(--accent))' : 'var(--track)'} strokeOpacity={adult ? start === 18.5 ? .95 : .22 + index * .055 : 1} strokeWidth="13" strokeLinecap="round" />)}{adult && <><circle cx={x} cy={y} r="12" fill="var(--text)" stroke="var(--surface)" strokeWidth="5" />{[14, 18.5, 25, 30, 42].map(boundary => { const a = Math.PI - (boundary - 14) / 28 * Math.PI; return <text key={boundary} x={180 + 165 * Math.cos(a)} y={179 - 165 * Math.sin(a)} textAnchor="middle" className="chart-label bmi-boundary">{boundary === 42 ? '42+' : boundary.toLocaleString(locale)}</text>; })}</>}</svg><div><span>{t('Tu IMC actual')}</span><strong>{number}</strong><span>kg/m²</span></div></div>;
 }

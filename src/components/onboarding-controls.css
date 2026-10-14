@@ -1,0 +1,81 @@
+.onboarding-refined .onboarding-header { gap: 16px; }
+.onboarding-refined .onboarding-header .text-link { flex-shrink: 0; }
+.onboarding-language { display: flex; margin-bottom: 30px; }
+.onboarding-refined .theme-start-footer .primary-button { justify-content: center; }
+.onboarding-refined .theme-panel-tag { font-size: 10px; letter-spacing: 1.5px; }
+.onboarding-refined .large-measure > label { flex: 1; }
+.onboarding-refined .large-measure input { width: min(175px, 100%); min-width: 0; }
+.onboarding-refined .large-measure .icon-button { flex-shrink: 0; }
+.measure-ruler-wrap { margin: 0 0 29px; text-align: center; }
+.interactive-ruler { height: 75px; position: relative; overflow: hidden; touch-action: pan-y pinch-zoom; user-select: none; cursor: grab; border-radius: 6px; }
+.interactive-ruler.is-dragging { cursor: grabbing; }
+.interactive-ruler:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 5px; }
+.ruler-ticks { height: 100%; mask-image: linear-gradient(90deg, transparent, black 18%, black 82%, transparent); }
+.ruler-tick { top: 13px; position: absolute; width: 1px; height: 17px; background: var(--faint); }
+.ruler-tick.middle { height: 26px; }
+.ruler-tick.major { height: 33px; background: var(--muted); }
+.ruler-tick > span { position: absolute; top: 42px; left: 50%; transform: translateX(-50%); color: var(--muted); font: 10px/1 var(--body-font); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ruler-fixed-marker { position: absolute; pointer-events: none; left: calc(50% - 1px); top: 8px; height: 41px; width: 2px; background: var(--accent-ink); border-radius: 3px; box-shadow: 0 0 13px color-mix(in srgb, var(--accent) 45%, transparent); }
+.ruler-fixed-marker::before { content: ''; position: absolute; top: -4px; left: -3px; width: 8px; height: 8px; background: var(--accent-ink); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.ruler-instructions { display: block; margin-top: 6px; font-size: 10px; color: var(--muted); }
+.birth-date-picker { margin: 23px 0 27px; }
+.birth-date-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.birth-date-toolbar > span { font-size: 12px; color: var(--muted); }
+.birth-calendar-button { border: 1px solid var(--border); width: 39px; height: 39px; color: var(--accent-ink); }
+.birth-calendar-button.active { background: var(--accent); color: #133129; }
+.birth-wheels { position: relative; display: grid; grid-template-columns: 1fr 1fr 1.25fr; gap: 8px; margin-top: 16px; }
+.birth-wheel-column { text-align: center; min-width: 0; position: relative; }
+.birth-wheel-label { height: 22px; display: block; text-transform: uppercase; color: var(--muted); font-size: 9px; letter-spacing: 1.5px; }
+.birth-wheel-arrow { height: 24px; width: 100%; display: grid; place-items: center; color: var(--muted); background: none; border: 0; }
+.birth-wheel-arrow:hover { color: var(--accent-ink); }
+.birth-wheel-arrow:disabled { opacity: .2; }
+.birth-wheel { position: relative; height: 176px; padding-block: 66px; overflow-y: auto; scrollbar-width: none; scroll-snap-type: y mandatory; overscroll-behavior-y: contain; touch-action: pan-y pinch-zoom; mask-image: linear-gradient(0deg, transparent, black 35%, black 65%, transparent); border-radius: 9px; }
+.birth-wheel::-webkit-scrollbar { display: none; }
+.birth-wheel:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: -2px; }
+.birth-wheel-number { display: flex; justify-content: center; align-items: center; height: 44px; min-height: 44px; width: 100%; scroll-snap-align: center; border: 0; padding: 0; color: var(--muted); background: transparent; font: 30px/1 var(--heading-font); font-variant-numeric: tabular-nums; transition: color .15s, transform .15s; }
+.birth-wheel-number.selected { color: var(--text); transform: scale(1.09); }
+[data-theme=light] .birth-wheel-number { font-size: 25px; }
+.birth-selection-band { position: absolute; top: 112px; height: 44px; inset-inline: 0; pointer-events: none; background: color-mix(in srgb, var(--accent) 9%, transparent); border-block: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: 10px; }
+.birth-date-hint { display: block; text-align: center; font-size: 10px; line-height: 1.5; color: var(--muted); margin-top: 10px; }
+.birth-date-direct { display: flex; flex-direction: column; gap: 8px; padding: 14px; border: 1px solid var(--border); border-radius: 13px; margin-top: 14px; }
+.birth-date-direct > span { font-size: 10px; color: var(--muted); }
+.birth-date-direct > input { width: 100%; min-width: 0; background: transparent; color: var(--text); padding: 5px 0; border: none; font-size: 17px; }
+.birth-date-direct > .birth-date-error { color: var(--danger, #ef7c7c); line-height: 1.5; }
+[data-theme=dark] .birth-date-direct > input { color-scheme: dark; }
+.birthdate-step .step-dots { margin-bottom: 24px; }
+.birthdate-step h1 { font-size: 45px; }
+@media (max-width: 700px) {
+  .onboarding-refined .onboarding-header { gap: 8px; }
+  .onboarding-refined .onboarding-header .text-link { font-size: 10px; gap: 4px; }
+  .onboarding-refined .onboarding-header .text-link svg { width: 13px; }
+  .onboarding-language { justify-content: center; margin-bottom: 22px; }
+  .onboarding-refined .theme-panel-tag { font-size: 8px; letter-spacing: .5px; }
+  .onboarding-refined .large-measure { padding-inline: 6px; }
+  .onboarding-refined .large-measure input { width: min(175px, 100%); font-size: 76px; }
+  [data-theme=light] .onboarding-refined .large-measure input { font-size: 59px; }
+  .birthdate-step .birth-date-picker { margin-top: 16px; }
+}
+@media (max-width: 370px) {
+  .onboarding-refined .theme-title { letter-spacing: -1px; }
+  .onboarding-refined .theme-select-circle { width: 22px; height: 22px; flex-shrink: 0; }
+  .onboarding-refined .theme-panel { padding-inline: 10px; }
+  .onboarding-refined .theme-panel-tag { font-size: 7px; }
+  .onboarding-refined .large-measure input { width: 142px; font-size: 66px; }
+  [data-theme=light] .onboarding-refined .large-measure input { font-size: 52px; }
+  .onboarding-refined .large-measure label > span { font-size: 13px; }
+  .onboarding-refined .measure-content h1 { font-size: 47px; }
+  [data-theme=light] .onboarding-refined .measure-content h1 { font-size: 33px; }
+  .birthdate-step h1 { font-size: 41px; }
+}
+@media (max-height: 740px) and (max-width: 700px) {
+  .onboarding-refined .onboarding-header { padding-block: 17px; }
+  .onboarding-refined .theme-start { padding-top: 5px; gap: 20px; }
+  .onboarding-refined .onboarding-language { margin-bottom: 16px; }
+  .onboarding-refined .onboarding-intro h1 { font-size: 47px; }
+  [data-theme=light] .onboarding-refined .onboarding-intro h1 { font-size: 35px; }
+  .onboarding-refined .theme-panels { height: 290px; }
+  .onboarding-refined .step-dots { margin-bottom: 22px; }
+  .onboarding-refined .measure-unit { margin-top: 24px; }
+  .onboarding-refined .large-measure { padding-block: 17px; }
+  .onboarding-refined .private-note { margin-top: 16px; }
+}
