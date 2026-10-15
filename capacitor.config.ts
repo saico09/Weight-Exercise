@@ -3,6 +3,7 @@ const config: CapacitorConfig = {
   appId: 'cl.forma.weightexercise.basic',
   appName: 'Weight&Exercise Basic',
   webDir: 'dist',
+  loggingBehavior: 'none',
   android: { backgroundColor: '#101311' },
   plugins: {
     SystemBars: {

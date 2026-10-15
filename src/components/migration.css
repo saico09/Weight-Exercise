@@ -1,0 +1,29 @@
+.settings-layout > .migration-card { grid-column: 1 / -1; }
+.migration-card { min-width: 0; }
+.migration-card-heading { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.migration-card-heading > div { min-width: 0; }
+.migration-card-heading h3 { margin: 6px 0 0; font-size: 17px; line-height: 1.3; }
+.migration-symbol { display: grid; place-items: center; flex: 0 0 42px; width: 42px; height: 42px; border: 1px solid var(--border); border-radius: 13px; background: var(--accent-soft); color: var(--accent-ink); }
+.migration-card > p, .migration-intro { color: var(--muted); font-size: 12px; line-height: 1.7; }
+.migration-card > .secondary-button { margin-top: 7px; justify-content: space-between; min-height: 44px; }
+.migration-route { display: flex; align-items: center; justify-content: center; gap: 22px; margin: 5px 0 22px; color: var(--accent-ink); }
+.migration-route > span, .migration-route > strong { display: grid; place-items: center; min-width: 70px; min-height: 46px; padding: 10px 16px; border: 1px solid var(--border); border-radius: 13px; font-size: 13px; color: var(--text); background: var(--surface); }
+.migration-route > strong { background: var(--accent-soft); color: var(--accent-ink); }
+.migration-summary { display: grid; gap: 9px; padding: 16px; margin: 19px 0; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
+.migration-summary > strong { font-size: 14px; line-height: 1.4; }
+.migration-summary > span { font-size: 11px; line-height: 1.65; color: var(--muted); }
+.migration-privacy { display: flex; align-items: flex-start; gap: 9px; margin: 16px 0; color: var(--accent-ink); }
+.migration-privacy > svg { flex-shrink: 0; margin-top: 2px; }
+.migration-privacy > p { margin: 0; font-size: 11px; line-height: 1.6; color: var(--muted); }
+.migration-footnote { font-size: 10px !important; color: var(--muted); line-height: 1.6; }
+.migration-status { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); min-height: 30px; }
+.migration-confirm { margin-top: 15px; min-height: 46px; white-space: normal; text-align: center; }
+.migration-confirm > svg { flex-shrink: 0; }
+.migration-success { text-align: center; }
+.migration-success > .migration-symbol { margin: 0 auto 13px; }
+.migration-success h3 { font-size: 20px; }
+.migration-success p { font-size: 12px; color: var(--muted); line-height: 1.7; margin: 16px 0 24px; }
+.migration-spinner { animation: migration-spin 1s linear infinite; }
+@keyframes migration-spin { to { transform: rotate(360deg); } }
+@media (max-width: 350px) { .migration-card-heading { gap: 9px; } .migration-card-heading h3 { font-size: 15px; } .migration-card-heading .migration-symbol { flex-basis: 36px; width: 36px; height: 38px; } .migration-route { gap: 15px; } }
+@media (prefers-reduced-motion: reduce) { .migration-spinner { animation: none; } }

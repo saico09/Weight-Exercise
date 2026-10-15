@@ -1,4 +1,4 @@
-# Weight&Exercise · Basic v0.7
+# Weight&Exercise · Basic v0.8
 
 Esta carpeta corresponde a la rama **`basic`**. Su vista local usa el puerto **5174** y su APK tiene el identificador `cl.forma.weightexercise.basic`. Es una app Android gratuita de registro de peso, ejercicio y alimentación, con datos guardados en el propio dispositivo. No necesita cuenta ni servidor.
 
@@ -8,6 +8,16 @@ Esta carpeta corresponde a la rama **`basic`**. Su vista local usa el puerto **5
 - Foto de perfil personalizable y copa actual junto a «Tú». La imagen se prepara en el dispositivo antes de guardarse.
 - Los logros de Oro y Platino desbloquean sus temas especiales en **Basic y Pro**, sin compra. Son recompensas por constancia, distintas de los temas comerciales de Pro.
 - Algunas opciones Pro se muestran como vistas informativas bloqueadas: informes, colores, estilos Aurora/Sand, recuentos y cuenta/pasos. Al tocarlas se explica que Pro es una app independiente y que estará disponible en Google Play. No hay compras, precios ni enlaces de tienda simulados.
+
+## Llevar tus datos a Pro (v0.8)
+
+Mantén ambas apps actualizadas e instaladas en el mismo teléfono. En **Ajustes → Transferir a Pro**, revisa el recuento y pulsa **Copiar y abrir Pro**. Pro mostrará lo recibido y pedirá confirmar. Basic no borra ni cambia sus datos. La copia incluye perfil/foto, registros, hábitos, notas, motivación, preferencias compartidas y logros; no necesita cuenta ni internet. Los permisos y sesiones no se transfieren.
+
+Si ya hay registros en Pro, se combinan por fecha sin duplicarlos. Se conservan los registros de Pro en días con diferencias salvo que el usuario elija los de Basic. Si Pro ya tiene perfil, conserva su perfil, preferencias y meta. Basic incluye únicamente el exportador y puente de envío: el importador y la combinación de datos viven en la rama Pro.
+
+Para probar en PC se descarga `WeightExercise.we-transfer` desde el mismo diálogo y se selecciona en **Pro → Importar desde Basic**. El archivo contiene datos personales; guárdalo de forma privada. En Android se abre Pro directamente mediante un permiso temporal y un proveedor de archivos privado, sin selector de otras apps ni almacenamiento público. Límite: 4 MiB. No hay un botón de compra hasta publicar Pro.
+
+**Publicación:** ambas apps deben compartir la clave de **Play App Signing** (la firma instalada, no basta compartir la clave de subida), y tener versión 0.8 o posterior. Al configurar la segunda app en Google Play, reutiliza la clave de firma de la primera. De lo contrario, la comprobación de firmas rechazará la migración. [Documentación de firma](https://developer.android.com/studio/publish/app-signing). La compilación y las pruebas del protocolo están verificadas; aún falta probar la entrega entre ambas apps en un teléfono o emulador.
 
 ## Una separación real de ediciones
 

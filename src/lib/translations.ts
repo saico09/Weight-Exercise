@@ -1,4 +1,5 @@
 import { proTeaserEnglish } from './proTeaserTranslations';
+import { migrationEnglish } from './migrationTranslations';
 import { rewardThemeEnglish } from './rewardThemeTranslations';
 import { profileEnglish } from './profileTranslations';
 import { metricCardEnglish } from './metricCardTranslations';
@@ -10,6 +11,7 @@ import { editionEnglish } from './editionTranslations';
 import { motivationReportEnglish } from './motivationReportTranslations';
 /** English copy keyed by the Spanish source. Dates and numbers use Intl separately. */
 export const english: Record<string, string> = {
+  ...migrationEnglish,
   ...profileEnglish,
   ...proTeaserEnglish,
   ...rewardThemeEnglish,

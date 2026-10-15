@@ -8,6 +8,7 @@ import { useI18n } from '../lib/i18n';
 import { HeightSwitch, LanguageSwitch, SectionHeading, UnitSwitch } from './UI';
 import ProTeaser from './ProTeaser';
 import RewardThemes from './RewardThemes';
+import BasicMigration from './BasicMigration';
 
 export default function SettingsPage({ data, demo, onSettings, onReset, notify }: { data: AppData; demo: boolean; onSettings: (settings: Partial<Settings>) => void; onReset: () => void; notify: (message: string) => void }) {
   const { t, language, locale } = useI18n();
@@ -67,6 +68,7 @@ export default function SettingsPage({ data, demo, onSettings, onReset, notify }
         <div className="list-row"><div><strong>{t('Altura')}</strong><span>{t('Centímetros o pies y pulgadas')}</span></div><HeightSwitch value={data.settings.heightUnit} onChange={heightUnit => onSettings({ heightUnit })} /></div>
       </section>
       <ProTeaser feature="connected" />
+      <BasicMigration data={data} demo={demo} />
       <section className="card privacy-card"><div className="soft-icon"><ShieldCheck size={22} /></div><h3>{t('Tu historia se queda contigo.')}</h3><p>{t('Los registros se guardan solo en este dispositivo, sin cuenta ni respaldo en la nube. Si borras los datos de la app o la desinstalas, se perderán.')}</p><button className="reset-button" onClick={onReset}><Trash2 size={17} /><span>{t(demo ? 'Reiniciar la demo' : 'Empezar de cero')}</span><ChevronRight size={17} /></button><span className="app-version">WEIGHT&EXERCISE · {EDITION.toUpperCase()} · V{APP_VERSION}</span></section>
     </div></>;
 }
