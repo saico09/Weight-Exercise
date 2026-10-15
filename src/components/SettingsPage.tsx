@@ -1,3 +1,4 @@
+import RewardThemes from './RewardThemes';
 import { useState } from 'react';
 import { Bell, ChevronRight, ShieldCheck, Sparkles, Trash2 } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
@@ -36,6 +37,7 @@ export default function SettingsPage({ data, demo, onSettings, onReset, notify }
         <p className="muted">{t('Elige cómo quieres vivir tu progreso.')}</p>
         <ThemeChoices value={data.settings.theme} onChange={theme => onSettings({ theme })} />
         {IS_PRO && <div className="settings-accent"><span>{t('Color principal')}</span><AccentPicker theme={data.settings.theme} value={data.settings.accentColor} onChange={accentColor => onSettings({ accentColor })} /></div>}
+        <RewardThemes data={data} onSelect={theme => onSettings({ theme })} />
         <div className="settings-language"><span>{t('Idioma')}</span><LanguageSwitch value={language} onChange={next => { onSettings({ language: next }); setMessage(''); }} /></div>
       </section>
       <section className="card notification-card">

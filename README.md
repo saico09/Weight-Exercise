@@ -1,10 +1,10 @@
-# Weight&Exercise · Pro y Basic v0.6
+# Weight&Exercise · Pro y Basic v0.7
 
-App Android para registrar peso, ejercicio y alimentación, con interfaz adaptable a teléfono y PC. Ionic React, TypeScript y Capacitor. Los registros se guardan primero en el dispositivo; Pro incorpora respaldo manual con cuenta y resúmenes por correo, ejecutados por un servidor Docker local. La versión 0.6 renueva la bienvenida de Pro, los gráficos y la comparación del historial, y añade minigráficos expandibles a las estadísticas de ambas ediciones.
+App Android para registrar peso, ejercicio y alimentación, con interfaz adaptable a teléfono y PC. Ionic React, TypeScript y Capacitor. Los registros se guardan primero en el dispositivo; Pro incorpora respaldo manual con cuenta y resúmenes por correo, ejecutados por un servidor Docker local. La versión 0.7 mantiene alineadas las acciones en pantallas pequeñas, unifica las tarjetas de estadísticas, añade foto de perfil y copa en la cabecera, y desbloquea los temas Oro y Platino con los logros. Aurora y Sand incluyen movimiento ambiental discreto.
 
 ## Basic y Pro
 
-Las ediciones se mantienen en las ramas **`basic`** y **`pro`**, con dos carpetas de trabajo independientes para ejecutarlas simultáneamente. `src/lib/edition.ts` define la edición de cada rama. Esta separación es para desarrollo y revisión: todavía no hay compras, cobros ni integración con Google Play Billing.
+Las ediciones se mantienen en las ramas **`basic`** y **`pro`**, con dos carpetas de trabajo independientes para ejecutarlas simultáneamente. `src/lib/edition.ts` define la edición de cada rama. Son artefactos separados: Basic elimina las implementaciones Pro de nube, PDF, recuentos y color personalizado, y muestra únicamente vistas promocionales. Su compilación comprueba fuentes, dependencias, permisos y bundle para impedir la reincorporación accidental de esas funciones. No hay un interruptor de edición que las active. Todavía no hay compras ni cobros: el aviso indica «Próximamente en Google Play» hasta disponer de la ficha pública de Pro.
 
 | Funcionalidad | Basic gratuita | Pro |
 | --- | --- | --- |
@@ -14,6 +14,8 @@ Las ediciones se mantienen en las ramas **`basic`** y **`pro`**, con dos carpeta
 | Gráfico de peso, meta, IMC y estadísticas esenciales | Sí | Sí |
 | Minigráficos en las métricas; expansión al ancho de dos tarjetas | Sí | Sí |
 | Logros, copas y celebraciones | Sí | Sí |
+| Foto de perfil local y copa en la cabecera | Sí | Sí |
+| Temas Oro y Platino obtenidos con logros | Sí | Sí |
 | Motivación con foto y mensaje personalizables | Sí | Sí |
 | Recordatorio para registrar el peso | Sí | Sí |
 | Colores personalizados | — | Sí |
@@ -31,6 +33,14 @@ Las ediciones se mantienen en las ramas **`basic`** y **`pro`**, con dos carpeta
 | Progreso diario de pasos y meta personal ajustable | — | Sí |
 
 El botón **Necesito Motivación** aparece en Inicio y en el editor diario. Abre un gatito con «Hazlo por él»; permite reemplazar la foto y el mensaje. Las fotos se redimensionan y se eliminan sus metadatos en el dispositivo antes de guardarlas. La imagen preparada ocupa como máximo unos 183 KiB.
+
+## Perfil, recompensas y movimiento
+
+Toca «Tú» para elegir, reemplazar o quitar una foto de perfil. La foto se recorta al centro y se convierte localmente en un JPEG de 256×256, sin metadatos y con un límite de 80.000 caracteres. Solo se guarda al confirmar los ajustes; en Pro forma parte del respaldo manual si decides enviarlo. La copa contigua abre Logros.
+
+Las copas generales de Oro (20 logros) y Platino (30) habilitan sus respectivos estilos desde Ajustes → Estilos que te ganas. Son recompensas gratuitas en ambas ediciones y siguen disponibles después de editar el historial. La felicitación al alcanzar el nivel muestra el nuevo tema; nunca cambia el estilo automáticamente. Los desbloqueos locales motivacionales no son licencias de compra.
+
+Aurora y Sand tienen campos de luz de movimiento lento y entradas breves de componentes. Respetan la preferencia de movimiento reducido del sistema; las animaciones no desplazan la distribución ni bloquean controles. Las tarjetas contraídas de estadísticas tienen la misma altura, y al expandir muestran las notas completas.
 
 ## Abrir ambas versiones en tu PC
 

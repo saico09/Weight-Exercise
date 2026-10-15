@@ -39,3 +39,19 @@ test('step targets and goal display round-trip without accepting unsafe values',
   for (const invalid of [0, 50001, 100.5, '7000']) { data.settings.stepGoal = invalid; assert.throws(() => validateSnapshot(data)); }
   data.settings.stepGoal = null; assert.equal(validateSnapshot(data).settings.stepGoal, null);
 });
+
+test('profile photos are bounded embedded rasters and reward palettes round-trip', () => {
+  const data = sample();
+  const photo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aNc8AAAAASUVORK5CYII=';
+  data.profile.photo = photo;
+  for (const theme of ['gold', 'platinum']) {
+    data.settings.theme = theme;
+    assert.equal(validateSnapshot(data).profile.photo, photo);
+    assert.equal(validateSnapshot(data).settings.theme, theme);
+  }
+  for (const invalid of ['https://example.com/avatar.jpg', 'data:image/svg+xml;base64,PHN2Zz4=', photo.replace('image/png', 'image/jpeg'), 'x'.repeat(80001)]) {
+    data.profile.photo = invalid; assert.throws(() => validateSnapshot(data));
+  }
+  delete data.profile.photo;
+  assert.ok(validateSnapshot(data));
+});

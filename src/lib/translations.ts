@@ -1,3 +1,5 @@
+import { rewardThemeEnglish } from './rewardThemeTranslations';
+import { profileEnglish } from './profileTranslations';
 import { metricCardEnglish } from './metricCardTranslations';
 import { progressChartEnglish } from './progressChartTranslations';
 import { accentTranslations } from './accent-translations';
@@ -12,6 +14,8 @@ import { emailSummaryEnglish } from './emailSummaryTranslations';
 import { themeShowcaseEnglish } from './themeShowcaseTranslations';
 /** English copy keyed by the Spanish source. Dates and numbers use Intl separately. */
 export const english: Record<string, string> = {
+  ...profileEnglish,
+  ...rewardThemeEnglish,
   ...metricCardEnglish,
   ...progressChartEnglish,
   ...editionEnglish,

@@ -39,3 +39,34 @@ ion-app[data-theme=sand] { --bg:#f5efe5; --surface:#fffaf2; --surface-raised:#ed
 @media(max-width:600px) { .extra-theme-choices { margin-top:0; } .settings-page-heading { margin-top:28px; } [data-theme=aurora] .section-heading h1,[data-theme=sand] .section-heading h1 { max-width:100%; overflow-wrap:break-word; } }
 @media(prefers-reduced-motion:no-preference) { [data-theme=aurora] .main-content { animation:aurora-enter .65s cubic-bezier(.16,1,.3,1) both; } [data-theme=sand] .main-content { animation:page-enter .6s ease both; } }
 @keyframes aurora-enter { from { opacity:0; transform:translateY(10px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
+
+/* Two quiet light fields sit behind the scroll surface. Their animation never
+   changes layout, intercepts input or places a transformed ancestor above dialogs. */
+[data-theme=aurora] .app-root,[data-theme=sand] .app-root { position:relative; isolation:isolate; }
+[data-theme=aurora] .app-root::before,[data-theme=aurora] .app-root::after,
+[data-theme=sand] .app-root::before,[data-theme=sand] .app-root::after { content:''; position:absolute; pointer-events:none; z-index:0; width:min(80vw,620px); height:min(80vw,620px); border-radius:50%; }
+[data-theme=aurora] .app-root::before { right:-15%; top:2%; background:radial-gradient(circle,#a98aff17,transparent 68%); }
+[data-theme=aurora] .app-root::after { left:-18%; bottom:6%; background:radial-gradient(circle,#6886ff13,transparent 69%); }
+[data-theme=sand] .app-root::before { right:-12%; top:6%; background:radial-gradient(ellipse,#e4b77529,transparent 67%); }
+[data-theme=sand] .app-root::after { left:-18%; bottom:8%; background:radial-gradient(ellipse,#fffdfb9c,transparent 68%); }
+[data-theme=aurora] .app-scroll,[data-theme=sand] .app-scroll { position:relative; z-index:1; }
+@media(prefers-reduced-motion:no-preference) {
+  [data-theme=aurora] .app-root::before { animation:aurora-atmosphere 22s ease-in-out infinite alternate; }
+  [data-theme=aurora] .app-root::after { animation:aurora-atmosphere 28s -8s ease-in-out infinite alternate-reverse; }
+  [data-theme=sand] .app-root::before { animation:sand-atmosphere 30s ease-in-out infinite alternate; }
+  [data-theme=sand] .app-root::after { animation:sand-atmosphere 35s -10s ease-in-out infinite alternate-reverse; }
+  /* One short entrance per section, followed by still surfaces for reading. */
+  [data-theme=aurora] .main-content .card,[data-theme=sand] .main-content .card { animation:pro-surface-arrive .5s cubic-bezier(.2,.7,.3,1) backwards; }
+  [data-theme=aurora] .main-content .card:nth-child(2),[data-theme=sand] .main-content .card:nth-child(2) { animation-delay:45ms; }
+  [data-theme=aurora] .main-content .card:nth-child(3),[data-theme=sand] .main-content .card:nth-child(3) { animation-delay:90ms; }
+  [data-theme=aurora] .main-content .card:nth-child(n+4),[data-theme=sand] .main-content .card:nth-child(n+4) { animation-delay:120ms; }
+}
+@keyframes aurora-atmosphere { from { opacity:.55; transform:translate3d(-2%,0,0) scale(.96); } to { opacity:1; transform:translate3d(7%,-4%,0) scale(1.08); } }
+@keyframes sand-atmosphere { from { opacity:.5; transform:translate3d(3%,-2%,0) scale(.97); } to { opacity:.95; transform:translate3d(-5%,5%,0) scale(1.06); } }
+@keyframes pro-surface-arrive { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+@media(prefers-reduced-motion:reduce) {
+  [data-theme=aurora] .main-content,[data-theme=sand] .main-content,
+  [data-theme=aurora] .main-content .card,[data-theme=sand] .main-content .card,
+  [data-theme=aurora] .app-root::before,[data-theme=aurora] .app-root::after,
+  [data-theme=sand] .app-root::before,[data-theme=sand] .app-root::after { animation:none; transform:none; }
+}

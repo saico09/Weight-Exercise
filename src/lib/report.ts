@@ -18,11 +18,11 @@ export interface ReportOverview {
 }
 export interface ReportFonts { body: string; bold: string; heading: string }
 export function reportFontFiles(theme: Theme): ReportFonts {
-  const family = theme === 'light' ? 'manrope' : theme === 'aurora' ? 'space-grotesk' : 'dm-sans';
+  const family = (theme === 'light' || theme === 'platinum') ? 'manrope' : theme === 'aurora' ? 'space-grotesk' : 'dm-sans';
   return {
     body: `/fonts/report/${family}-400.ttf`,
-    bold: `/fonts/report/${family}-${theme === 'light' ? 700 : 600}.ttf`,
-    heading: `/fonts/report/${theme === 'dark' ? 'barlow-condensed-600' : theme === 'light' ? 'manrope-700' : theme === 'aurora' ? 'space-grotesk-600' : 'fraunces-600'}.ttf`,
+    bold: `/fonts/report/${family}-${family === 'manrope' ? 700 : 600}.ttf`,
+    heading: `/fonts/report/${(theme === 'dark' || theme === 'gold') ? 'barlow-condensed-600' : (theme === 'light' || theme === 'platinum') ? 'manrope-700' : theme === 'aurora' ? 'space-grotesk-600' : 'fraunces-600'}.ttf`,
   };
 }
 const fontCache = new Map<string, Promise<string>>();

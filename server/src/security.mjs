@@ -7,6 +7,15 @@ export function input(condition, message = 'Revisa los datos ingresados.') {
   if (!condition) throw new ApiError(400, 'invalid_input', message);
 }
 export const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+export function validProfilePhoto(value) {
+  if (typeof value !== 'string' || value.length > 80000) return false;
+  const match = /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/]+={0,2})$/.exec(value);
+  if (!match || match[2].length % 4 !== 0) return false;
+  const prefix = Buffer.from(match[2].slice(0, 48), 'base64');
+  if (match[1] === 'jpeg') return prefix[0] === 255 && prefix[1] === 216 && prefix[2] === 255;
+  if (match[1] === 'png') return prefix.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+  return prefix.toString('ascii', 0, 4) === 'RIFF' && prefix.toString('ascii', 8, 12) === 'WEBP';
+}
 export function email(value) {
   input(typeof value === 'string');
   const normalized = value.trim().toLowerCase();
@@ -33,6 +42,7 @@ export function validateSnapshot(data) {
     input(p.goalWeightKg >= 10 && p.goalWeightKg <= 650 && Number.isFinite(p.goalWeightKg));
     input(Number.isInteger(p.age) && p.age >= 5 && p.age <= 120 && date(p.initialDate));
     input(p.birthDate === undefined || date(p.birthDate));
+    input(p.photo === undefined || validProfilePhoto(p.photo), 'La foto de perfil no es válida.');
   }
   const ids = new Set(); const dates = new Set();
   for (const record of data.records) {
@@ -46,7 +56,7 @@ export function validateSnapshot(data) {
   }
   input(data.initialRecordId === null || (typeof data.initialRecordId === 'string' && ids.has(data.initialRecordId)));
   input(data.lastPromptDate === null || date(data.lastPromptDate));
-  input(['dark', 'light', 'aurora', 'sand'].includes(data.settings.theme) && ['es', 'en'].includes(data.settings.language));
+  input(['dark', 'light', 'aurora', 'sand', 'gold', 'platinum'].includes(data.settings.theme) && ['es', 'en'].includes(data.settings.language));
   input(['kg', 'lb'].includes(data.settings.weightUnit) && ['cm', 'ft'].includes(data.settings.heightUnit));
   input(data.settings.chartStyle === undefined || ['area','line','bars','depth'].includes(data.settings.chartStyle));
   input(data.settings.goalChartStyle === undefined || ['ring','depth'].includes(data.settings.goalChartStyle));

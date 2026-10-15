@@ -1,6 +1,7 @@
 import { normalizeMotivation } from './motivation';
+import { validProfilePhoto } from './profilePhoto';
 /** All stored measurements use kg and cm; units only affect presentation. */
-export type Theme = 'dark' | 'light' | 'aurora' | 'sand';
+export type Theme = 'dark' | 'light' | 'aurora' | 'sand' | 'gold' | 'platinum';
 export type Language = 'es' | 'en';
 export type WeightUnit = 'kg' | 'lb';
 export type HeightUnit = 'cm' | 'ft';
@@ -8,6 +9,7 @@ export type ChartStyle = 'area' | 'line' | 'bars';
 export type GoalChartStyle = 'ring' | 'depth';
 
 export interface Profile {
+  photo?: string;
   heightCm: number;
   initialWeightKg: number;
   goalWeightKg: number;
@@ -343,6 +345,7 @@ export function validateData(raw: unknown): AppData | null {
       heightCm: profile.heightCm, initialWeightKg: profile.initialWeightKg,
       goalWeightKg: profile.goalWeightKg, age: profile.age, initialDate: profile.initialDate,
     };
+    if (validProfilePhoto(profile.photo)) result.profile.photo = profile.photo;
     // Optional migration: old age-only profiles remain valid. Never invent a birthday.
     if (validDate(profile.birthDate) && ageFromBirthDate(profile.birthDate) >= 5 && ageFromBirthDate(profile.birthDate) <= 120) {
       result.profile.birthDate = profile.birthDate;
@@ -386,7 +389,7 @@ export function validateData(raw: unknown): AppData | null {
       if (recap.period === 'weekly' || recap.period === 'monthly') result.settings.recap.period = recap.period;
       if (typeof recap.time === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(recap.time)) result.settings.recap.time = recap.time;
     }
-    if (settings.theme === 'dark' || settings.theme === 'light' || settings.theme === 'aurora' || settings.theme === 'sand') result.settings.theme = settings.theme;
+    if (settings.theme === 'dark' || settings.theme === 'light' || settings.theme === 'gold' || settings.theme === 'platinum' || settings.theme === 'aurora' || settings.theme === 'sand') result.settings.theme = settings.theme;
     if (typeof settings.accentColor === 'string' && /^#[0-9a-f]{6}$/i.test(settings.accentColor)) result.settings.accentColor = settings.accentColor.toUpperCase();
     if (settings.language === 'es' || settings.language === 'en') result.settings.language = settings.language;
     if (settings.weightUnit === 'kg' || settings.weightUnit === 'lb') result.settings.weightUnit = settings.weightUnit;

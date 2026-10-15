@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { defaultData, shiftDate } from './model';
 import { buildProgressReport, buildReportOverview, createProgressPdf, previousReportRange, reportDayCount, reportRange, reportFontFiles } from './report';
@@ -91,11 +92,14 @@ describe('Pro reports', () => {
     const pdf = await createProgressPdf(data, report.selected.range);
     expect(pdf.getNumberOfPages()).toBe(3);
   });
-  it('selects bundled typography for all four themes', () => {
+  it('selects existing bundled typography for all six themes', () => {
     expect(reportFontFiles('dark').heading).toContain('barlow-condensed');
     expect(reportFontFiles('light').body).toContain('manrope');
     expect(reportFontFiles('aurora').body).toContain('space-grotesk');
     expect(reportFontFiles('sand').heading).toContain('fraunces');
+    for (const theme of ['dark','light','aurora','sand','gold','platinum'] as const) {
+      for (const path of Object.values(reportFontFiles(theme))) expect(existsSync('public' + path), path).toBe(true);
+    }
   });
   it('does not create an invented report when no history exists', async () => {
     await expect(createProgressPdf(defaultData(), { start: today, end: today })).rejects.toThrow('No hay registros');

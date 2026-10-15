@@ -28,7 +28,7 @@ export function contrastRatio(first: string, second: string): number {
 function readableAccent(color: string, theme: Theme): string {
   const base = rgb(color);
   const light = isLightTheme(theme);
-  const surfaces = theme === 'aurora' ? ['#12152a', '#1b203b', '#252b49'] : theme === 'sand' ? ['#f5efe5', '#fffaf2', '#ede3d6'] : !light ? ['#101411', '#191e1a', '#202721', '#1c251f'] : ['#edf5f5', '#f1f8f9', '#ffffff', '#e6f0f0'];
+  const surfaces = theme === 'gold' ? ['#19160f', '#242017', '#302a1e'] : theme === 'platinum' ? ['#edf0f4', '#fafbfd', '#e3e9f1'] : theme === 'aurora' ? ['#12152a', '#1b203b', '#252b49'] : theme === 'sand' ? ['#f5efe5', '#fffaf2', '#ede3d6'] : !light ? ['#101411', '#191e1a', '#202721', '#1c251f'] : ['#edf5f5', '#f1f8f9', '#ffffff', '#e6f0f0'];
   const alpha = light ? .16 : .09;
   // Selected pills and rows add a translucent tint over the normal surface.
   // Checking both avoids contrast loss for custom mid-tone colors.

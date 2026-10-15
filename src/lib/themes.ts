@@ -5,6 +5,10 @@ export const themeInfo = {
   light: { name: 'Light', tagline: 'Minimalista', description: 'Ligero. Sereno. Muy tú.', light: true, background: '#edf5f5', surface: '#f5fafb', text: '#203b40', muted: '#6f858a', accent: '#91f8ff', ink: '#187d87', headingFont: 'Manrope', bodyFont: 'Manrope' },
   aurora: { name: 'Aurora', tagline: 'smart modern', description: 'Nocturno. Fluido. Magnético.', light: false, background: '#12152a', surface: '#1b203b', text: '#eef0ff', muted: '#a0a9ca', accent: '#c4b5ff', ink: '#c4b5ff', headingFont: 'Space Grotesk', bodyFont: 'Space Grotesk' },
   sand: { name: 'Sand', tagline: 'Tranquilidad', description: 'Cálido. Editorial. En equilibrio.', light: true, background: '#f5efe5', surface: '#fffaf2', text: '#3a3028', muted: '#807063', accent: '#cc774f', ink: '#995032', headingFont: 'Fraunces', bodyFont: 'DM Sans' },
+  gold: { name: 'Oro', tagline: 'Tu constancia brilla', description: 'Dorado. Elegante. Ganado por ti.', light: false, background: '#19160f', surface: '#242017', text: '#fff5df', muted: '#b7a78b', accent: '#efd080', ink: '#efd080', headingFont: 'Barlow Condensed', bodyFont: 'DM Sans' },
+  platinum: { name: 'Platino', tagline: 'Una historia extraordinaria', description: 'Plata. Precisión. Tu colección completa.', light: true, background: '#edf0f4', surface: '#fafbfd', text: '#293443', muted: '#657489', accent: '#becbdd', ink: '#526981', headingFont: 'Manrope', bodyFont: 'Manrope' },
 } satisfies Record<Theme, { name: string; tagline: string; description: string; light: boolean; background: string; surface: string; text: string; muted: string; accent: string; ink: string; headingFont: string; bodyFont: string }>;
 export const isLightTheme = (theme: Theme) => themeInfo[theme].light;
-export const availableThemes = (pro: boolean): Theme[] => pro ? ['dark', 'light', 'aurora', 'sand'] : ['dark', 'light'];
+export type BaseTheme = 'dark' | 'light' | 'aurora' | 'sand';
+/** Earned themes are selected from the rewards gallery, never the first-run chooser. */
+export const availableThemes = (pro: boolean): BaseTheme[] => pro ? ['dark', 'light', 'aurora', 'sand'] : ['dark', 'light'];
