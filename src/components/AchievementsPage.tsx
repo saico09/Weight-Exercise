@@ -19,7 +19,7 @@ const FAMILIES = Object.keys(FAMILY_LABELS) as AchievementFamily[];
 function AchievementDetail({ achievement, onClose }: { achievement: Achievement; onClose: () => void }) {
   const { t } = useI18n();
   const progress = Math.min(100, achievement.current / achievement.target * 100);
-  return <Modal title={t(achievement.name)} onClose={onClose}>
+  return <Modal title={t(achievement.name)} subtitle={achievement.earned ? t('¡Felicitaciones, lo lograste!') : undefined} onClose={onClose}>
     <div className={`achievement-detail metal-${achievement.tier}`}>
       <TrophyMark tier={achievement.tier} size="large" />
       <span className="achievement-metal-label">{t(TIER_LABELS[achievement.tier])} · {t(FAMILY_LABELS[achievement.family])}</span>
@@ -67,7 +67,7 @@ export function AchievementsPage({ data, onRecord }: { data: AppData; onRecord?:
       <div className="achievement-hero-copy">
         <span className="eyebrow">{t('TU VITRINA')}</span>
         <h2 id="achievement-cup-title">{cup.current ? t('Copa de {tier}', { tier: t(TIER_LABELS[cup.current.tier]) }) : t('Tu primera copa te espera')}</h2>
-        <p>{cup.next ? t(cup.remaining === 1 ? 'A un logro de tu copa de {tier}.' : 'A {count} logros de tu copa de {tier}.', { count: cup.remaining, tier: t(TIER_LABELS[cup.next.tier]) }) : t('La colección completa. Cada copa cuenta tu historia.')}</p>
+        <p>{cup.next ? t(cup.remaining === 1 ? 'A un logro de tu copa de {tier}.' : 'A {count} logros de tu copa de {tier}.', { count: cup.remaining, tier: t(TIER_LABELS[cup.next.tier]) }) : t('Eres el auténtico pro')}</p>
         <div className="achievement-cup-path" aria-label={t('Progresión de copas')}>
           {CUP_LEVELS.map(level => <div key={level.tier} className={`${cup.earned >= level.target ? 'reached' : ''} ${cup.current?.tier === level.tier ? 'current' : ''}`}>
             {cup.earned >= level.target && (level.tier === 'gold' || level.tier === 'platinum') ? <button type="button" className={`achievement-cup-step replay-cup metal-${level.tier}`} aria-label={t('Volver a celebrar tu copa de {tier}', { tier: t(TIER_LABELS[level.tier]) })} onClick={() => setCelebrationCup(level.tier as RewardTheme)}><TrophyMark tier={level.tier} size="small" /><i><Check size={8} /></i></button> : <span className={`achievement-cup-step metal-${level.tier}`}><TrophyMark tier={level.tier} size="small" />{cup.earned >= level.target && <i><Check size={8} /></i>}</span>}

@@ -13,6 +13,17 @@
 .achievement-trophy.large .trophy-metal-sheen { animation: trophy-metal-reflection 7s ease-in-out infinite; }
 .achievement-trophy.large .trophy-glints { transform-origin: 64px 17px; animation: trophy-glint-breathe 5s ease-in-out infinite; }
 .achievement-badge.pending .trophy-glints { display: none; }
+.trophy-platinum-glints { pointer-events: none; }
+.platinum-glint { transform-box: fill-box; transform-origin: center; opacity: .75; }
+.platinum-glint-gem { opacity: .85; }
+.achievement-trophy.small .trophy-platinum-glints { display: none; }
+.achievement-badge.pending .trophy-platinum-glints { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .achievement-trophy.large .platinum-glint { animation: trophy-platinum-scintillation 8s ease-in-out infinite; }
+  .achievement-trophy.large .platinum-glint-base { animation-delay: -3s; }
+  .achievement-trophy.large .platinum-glint-gem { animation-delay: -5.5s; }
+}
+@keyframes trophy-platinum-scintillation { 0%, 34%, 72%, 100% { opacity: .3; transform: scale(.65) rotate(-9deg); } 48% { opacity: 1; transform: scale(1.1) rotate(8deg); } 58% { opacity: .65; transform: scale(.9) rotate(0); } }
 .achievement-cup-step.replay-cup { padding: 0; transition: transform .2s, box-shadow .2s; }
 .achievement-cup-step.replay-cup:hover { transform: translateY(-2px); box-shadow: 0 0 15px color-mix(in srgb, var(--metal) 30%, transparent); }
 .achievement-cup-step.replay-cup:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 5px; }

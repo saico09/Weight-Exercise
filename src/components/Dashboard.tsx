@@ -7,6 +7,7 @@ import { ProgressRing, WeightChart } from './Charts';
 import { chartPeriod } from './chartUtils';
 import { SectionHeading, SmallLink } from './UI';
 import Motivation from './Motivation';
+import { ProTeaserShelf } from './ProTeaser';
 import type { MotivationPreferences } from '../lib/motivation';
 import './charts-dashboard.css';
 import './responsive-layout.css';
@@ -27,7 +28,7 @@ export default function Dashboard({ data, onDaily, onProfile, onHistory, onEditD
   const weekHealthy = weekRecords.filter(record => record.healthy).length;
   const ratio = stats.totalDays ? stats.exerciseDays / stats.totalDays * 100 : 0;
   const healthyRatio = stats.totalDays ? stats.healthyDays / stats.totalDays * 100 : 0;
-  const headlines = { dark: 'Activa el beast mode', light: 'Tu mejor versión', gold: 'Tu constancia brilla', platinum: 'Cada paso deja huella' };
+  const headlines = { dark: 'Activa el beast mode', light: 'Tu mejor versión', gold: 'Tu constancia brilla', platinum: 'Eres el auténtico pro' };
 
   return <>
     <div className="dashboard-heading"><SectionHeading eyebrow={t('CADA DÍA CUENTA')} title={t(headlines[data.settings.theme])} action={<div className="dashboard-actions"><button className={`primary-button ${todayRecord ? 'recorded-button' : ''}`} onClick={onDaily}>{todayRecord ? <Check size={18} /> : <Plus size={18} />}<span>{t(todayRecord ? 'Hoy ya cuenta' : 'Registrar mi día')}</span><ChevronRight size={17} /></button><Motivation value={data.settings.motivation} onChange={onMotivationChange} /></div>} /></div>
@@ -75,7 +76,7 @@ export default function Dashboard({ data, onDaily, onProfile, onHistory, onEditD
           <div className="activity-bottom"><span>{Math.round(healthyRatio)}% {t('de tus días registrados')}</span><Leaf size={15} /></div>
         </div>
       </section>
-    </div><div className="bottom-quote"><span className="quote-line" /><span>{t('EL ÚNICO RITMO QUE IMPORTA ES EL TUYO.')}</span><span className="quote-line" /></div>
+    </div><ProTeaserShelf features={['charts', 'steps']} /><div className="bottom-quote"><span className="quote-line" /><span>{t('EL ÚNICO RITMO QUE IMPORTA ES EL TUYO.')}</span><span className="quote-line" /></div>
   </>;
 }
 

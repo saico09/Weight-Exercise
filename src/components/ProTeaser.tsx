@@ -1,34 +1,47 @@
 import { useState } from 'react';
-import { ArrowUpRight, BellRing, Cloud, FileChartColumn, LockKeyhole, Palette, Sparkles } from 'lucide-react';
+import { ArrowDownRight, ArrowRight, ArrowUpRight, BellRing, ChartNoAxesCombined, Check, Cloud, FileChartColumn, FileSpreadsheet, Footprints, GitCompareArrows, LockKeyhole, Palette, RotateCcw, ShieldCheck, Smartphone, Sparkles } from 'lucide-react';
 import { useI18n } from '../lib/i18n';
 import { Modal } from './UI';
 import './pro-teaser.css';
 
 const previews = {
-  reports: { icon: FileChartColumn, title: 'Tu progreso, en detalle', note: 'Informes PDF, Excel y análisis semanales.', benefits: ['Informes con tu estilo y tus colores', 'Comparación de registros y evolución semanal', 'Historial para descargar en Excel'] },
-  style: { icon: Palette, title: 'Más formas de ser tú', note: 'Aurora, Sand y colores a tu medida.', benefits: ['Dos estilos exclusivos: Aurora y Sand', 'Ambientes con movimiento suave', 'Personaliza el color principal de tu espacio'] },
-  recaps: { icon: BellRing, title: 'Avisos que cuentan tu historia', note: 'Recuentos semanales o mensuales de tu progreso.', benefits: ['Compara tus registros a lo largo del tiempo', 'Elige recuentos semanales o mensuales', 'Recibe un resumen de tus hábitos'] },
-  connected: { icon: Cloud, title: 'Tu camino, más conectado', note: 'Respaldo con cuenta y pasos desde Health Connect.', benefits: ['Cuenta personal y respaldo opcional', 'Pasos de Health Connect junto a tu registro diario', 'Una meta de pasos que puedes adaptar'] },
+  charts: { icon: ChartNoAxesCombined, label: 'Gráficos Pro', title: 'Mira tu progreso de otra forma', note: 'Más gráficos y una meta con profundidad.', benefits: ['Alterna entre líneas y barras para explorar tu evolución', 'Dale profundidad a tu próxima meta con una vista 3D'], caption: 'Ejemplo de evolución y progreso de meta.' },
+  compare: { icon: GitCompareArrows, label: 'Comparar', title: 'Dos momentos. Todo tu avance.', note: 'Selecciona registros y ve qué cambió.', benefits: ['Elige varios registros de tu historial para compararlos', 'Ve la diferencia de peso y tus hábitos de un vistazo'], caption: 'Dos registros ficticios, una diferencia clara.' },
+  excel: { icon: FileSpreadsheet, label: 'Excel', title: 'Tu historial, listo para llevar', note: 'Descarga tus registros en una hoja de cálculo.', benefits: ['Descarga tu historial en formato XLSX', 'Conserva fechas, peso, ejercicio y alimentación en columnas'], caption: 'Ejemplo visual de una hoja de cálculo.' },
+  reports: { icon: FileChartColumn, label: 'Informes PDF', title: 'Tu progreso, en detalle', note: 'Resumen, comparativas y detalles con tu estilo.', benefits: ['Un resumen de tu recorrido y comparativas por período', 'Informes PDF con tu tema y tus colores'], caption: 'Así podría verse una página de tu informe.' },
+  style: { icon: Palette, label: 'Temas y colores', title: 'Más formas de ser tú', note: 'Aurora, Sand y colores a tu medida.', benefits: ['Dos estilos exclusivos: Aurora y Sand', 'Ambientes con movimiento suave y tu propio color principal'], caption: 'Una muestra de estilos y colores de Pro.' },
+  steps: { icon: Footprints, label: 'Tus pasos', title: 'Tu movimiento también cuenta', note: 'Pasos junto a tu registro diario.', benefits: ['Conecta Health Connect en Android, con tu permiso', 'Añade pasos a un registro existente y adapta tu meta diaria'], caption: 'Ejemplo con una meta de pasos personalizable.' },
+  backup: { icon: Cloud, label: 'Cuenta y respaldo', title: 'Tu camino, más conectado', note: 'Una cuenta y un respaldo opcional en la nube.', benefits: ['Accede a tu cuenta con un código enviado a tu correo', 'Guarda y recupera tus registros desde tu respaldo'], caption: 'Tu cuenta conecta el dispositivo con su respaldo.' },
+  recaps: { icon: BellRing, label: 'Resúmenes de progreso', title: 'Avisos que cuentan tu historia', note: 'Recuentos semanales o mensuales de tu progreso.', benefits: ['Recibe notificaciones que comparan tu progreso', 'Activa por separado resúmenes por correo con tu historial XLSX'], caption: 'Una muestra de un recuento de progreso.' },
 } as const;
+type PreviewFeature = keyof typeof previews;
 
-/** This is a description of a separate app, not a disabled implementation or an entitlement switch. */
-export default function ProTeaser({ feature, compact = false }: { feature: keyof typeof previews; compact?: boolean }) {
+/** Decorative samples only: no app data, permissions, API or Pro implementation. */
+function PreviewIllustration({ feature }: { feature: PreviewFeature }) {
   const { t } = useI18n();
-  const [open, setOpen] = useState(false);
-  const { icon: Icon, title, note, benefits } = previews[feature];
-  return <>
-    <button type="button" className={`pro-teaser ${compact ? 'pro-teaser-compact' : 'card'}`} onClick={() => setOpen(true)} aria-label={t('{feature} · Disponible en Pro', { feature: t(title) })}>
-      <span className="pro-teaser-icon"><Icon size={19} /></span>
-      <span className="pro-teaser-copy"><strong>{t(title)}</strong><span>{t(note)}</span></span>
-      <span className="pro-teaser-lock"><LockKeyhole size={12} /><span>PRO</span></span>
-    </button>
-    {open && <Modal title={t(title)} subtitle={t('Un poco más de espacio para tu progreso.')} onClose={() => setOpen(false)}>
-      <div className="pro-preview-mark"><Sparkles size={26} /><span>WEIGHT&EXERCISE PRO</span></div>
-      <ul className="pro-preview-benefits">{benefits.map(benefit => <li key={benefit}><ArrowUpRight size={16} /><span>{t(benefit)}</span></li>)}</ul>
-      <p className="pro-preview-explanation">{t('Esta función forma parte de Weight&Exercise Pro, una app independiente. Podrás comprarla en Google Play cuando esté disponible.')}</p>
-      <div className="pro-preview-coming"><LockKeyhole size={15} /><span>{t('Próximamente en Google Play')}</span></div>
-      <p className="pro-preview-basic">{t('Mientras tanto, tu versión Basic sigue siendo gratuita.')}</p>
-      <button type="button" className="secondary-button full-width" onClick={() => setOpen(false)}>{t('Seguir con Basic')}</button>
-    </Modal>}
+  return <figure className={`pro-preview-art pro-preview-${feature}`}><div className="pro-preview-scene" aria-hidden="true">
+    {feature === 'charts' && <><div className="preview-chart-demo"><span>{t('Tu evolución')}</span><svg viewBox="0 0 190 98" fill="none"><path className="preview-chart-grid" d="M8 16H182M8 49H182M8 82H182" /><path className="preview-chart-line" pathLength="1" d="M8 21L32 34L56 30L80 48L104 44L128 66L152 62L182 82" /><circle cx="182" cy="82" r="4" fill="currentColor" /></svg></div><div className="preview-depth-goal"><div className="preview-depth-disc"><div /></div><strong>68<span>%</span></strong><span>{t('Tu meta, en 3D')}</span></div></>}
+    {feature === 'compare' && <div className="preview-compare-demo"><div className="preview-compare-values"><div><span>{t('01 mayo')}</span><strong>82,4<small> kg</small></strong><i><Check size={12} />{t('Ejercicio')}</i></div><ArrowRight size={18} /><div><span>{t('01 junio')}</span><strong>79,8<small> kg</small></strong><i><Check size={12} />{t('Ejercicio')}</i></div></div><div className="preview-compare-result"><ArrowDownRight size={22} /><strong>−2,6 kg</strong><span>{t('Diferencia entre registros')}</span></div></div>}
+    {feature === 'excel' && <div className="preview-sheet-demo"><div><FileSpreadsheet size={17} /><strong>Weight&Exercise</strong><span>XLSX</span></div><table><thead><tr><th>{t('Fecha')}</th><th>kg</th><th>{t('Ejercicio')}</th><th>{t('Comer sano')}</th></tr></thead><tbody>{[['01/06', '79,8', '✓', '✓'], ['02/06', '79,6', '—', '✓'], ['03/06', '79,5', '✓', '✓']].map((row, i) => <tr key={i}>{row.map((cell, j) => <td key={j}>{cell}</td>)}</tr>)}</tbody></table></div>}
+    {feature === 'reports' && <div className="preview-report-demo"><div className="preview-report-paper"><div className="preview-report-heading"><strong>Weight&Exercise</strong><span>PDF</span></div><span>{t('Todo tu progreso')}</span><div className="preview-report-metrics"><div><small>{t('Inicio')}</small><strong>83,2 kg</strong></div><ArrowRight size={15} /><div><small>{t('Ahora')}</small><strong>79,4 kg</strong></div></div><svg viewBox="0 0 210 40"><path d="M0 3L24 8L42 6L68 17L92 14L120 29L148 24L176 34L210 38" fill="none" stroke="currentColor" strokeWidth="2.5" /></svg><div className="preview-report-lines"><i /><i /><i /></div></div><span className="preview-report-detail"><Sparkles size={14} />{t('Resumen + detalle')}</span></div>}
+    {feature === 'style' && <div className="preview-style-demo"><div className="preview-style-aurora"><i /><Sparkles size={18} /><strong>Aurora</strong><small>smart modern</small><div className="preview-style-mini"><span /><span /><span /></div></div><div className="preview-style-sand"><i /><Sparkles size={18} /><strong>Sand</strong><small>quiet vibes</small><div className="preview-style-mini"><span /><span /><span /></div></div><div className="preview-color-dots"><i /><i /><i /><i /><span>{t('Tu color. Tu espacio.')}</span></div></div>}
+    {feature === 'steps' && <div className="preview-steps-demo"><div className="preview-steps-ring"><svg viewBox="0 0 112 112"><circle className="preview-steps-track" cx="56" cy="56" r="45" /><circle className="preview-steps-fill" cx="56" cy="56" r="45" pathLength="100" /></svg><Footprints size={28} /></div><div><span>{t('Pasos de hoy')}</span><strong>7.200</strong><small>{t('de una meta de 10.000')}</small><i><Check size={12} />{t('En tu registro diario')}</i></div></div>}
+    {feature === 'backup' && <div className="preview-backup-demo"><div className="preview-backup-symbol"><Smartphone size={36} /><span>{t('Tu teléfono')}</span></div><div className="preview-backup-path"><i /><i /><i /></div><div className="preview-backup-symbol"><Cloud size={39} /><span>{t('Tu respaldo')}</span></div><div className="preview-backup-note"><ShieldCheck size={14} />{t('Cuenta con código por correo')}</div></div>}
+    {feature === 'recaps' && <div className="preview-recap-demo"><div className="preview-recap-bell"><BellRing size={24} /></div><div className="preview-recap-note"><span>Weight&Exercise <small>PRO</small></span><strong>{t('Tu mes en perspectiva')}</strong><p>{t('Antes: 82,4 kg. Ahora: 79,8 kg.')}</p><span className="preview-recap-change">−2,6 kg <small>{t('en tus registros')}</small></span></div></div>}
+  </div><figcaption>{t(previews[feature].caption)}</figcaption></figure>;
+}
+
+export function ProTeaserShelf({ features }: { features: readonly PreviewFeature[] }) {
+  const { t } = useI18n();
+  return <div className="pro-teaser-shelf" role="group" aria-label={t('Explora lo que ofrece Pro')}>{features.map(feature => <ProTeaser key={feature} feature={feature} compact short />)}</div>;
+}
+
+/** Basic ships these descriptions; the separate Pro app contains the working features. */
+export default function ProTeaser({ feature, compact = false, short = false }: { feature: PreviewFeature; compact?: boolean; short?: boolean }) {
+  const { t } = useI18n();
+  const [open, setOpen] = useState(false); const [replay, setReplay] = useState(0);
+  const { icon: Icon, label, title, note, benefits } = previews[feature];
+  return <><button type="button" className={`pro-teaser ${compact ? 'pro-teaser-compact' : 'card'} ${short ? 'pro-teaser-short' : ''}`} onClick={() => setOpen(true)} aria-label={t('{feature} · Vista previa de Pro', { feature: t(label) })}><span className="pro-teaser-icon"><Icon size={19} /></span><span className="pro-teaser-copy"><strong>{t(short ? label : title)}</strong>{!short && <span>{t(note)}</span>}</span><span className="pro-teaser-lock"><LockKeyhole size={12} /><span>PRO</span></span></button>
+    {open && <Modal title={t(title)} subtitle={t('VISTA PREVIA DE PRO · DATOS DE EJEMPLO')} onClose={() => setOpen(false)}><div className="pro-preview"><PreviewIllustration key={replay} feature={feature} /><button className="pro-preview-replay" type="button" onClick={() => setReplay(value => value + 1)}><RotateCcw size={12} />{t('Repetir vista previa')}</button><ul className="pro-preview-benefits">{benefits.map(benefit => <li key={benefit}><ArrowUpRight size={15} /><span>{t(benefit)}</span></li>)}</ul><p className="pro-preview-example-note">{t('Esta muestra usa datos ficticios. No modifica tus registros.')}</p><p className="pro-preview-explanation">{t('Disponible en Weight&Exercise Pro, una app independiente de pago.')}</p><div className="pro-preview-coming"><LockKeyhole size={14} /><span>{t('Próximamente en Google Play')}</span></div><button type="button" className="secondary-button full-width" onClick={() => setOpen(false)}>{t('Seguir con Basic')}</button></div></Modal>}
   </>;
 }

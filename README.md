@@ -90,3 +90,11 @@ npm run android   # Compilar, sincronizar y abrir Android Studio
 Los comandos usan Node directamente para admitir rutas con `&`. `npm run dev` y `npm run preview` escuchan en la red local; los iniciadores de Windows escuchan solo en `127.0.0.1`.
 
 [Fotografías y licencias](ASSETS.md) · [Ideas de la edición Pro](docs/PRO-ROADMAP.md)
+
+## Detalles de la versión 0.8.4
+
+Platino añade pulido de facetas y destellos pausados en la copa, la meta, la navegación y el selector de tema. El movimiento reducido conserva una presentación estática. En Inicio, la vitrina completa y la celebración de Platino aparece «Eres el auténtico pro»: es un reconocimiento por los logros y no cambia la edición de la app.
+
+Cada logro nuevo recibe una felicitación explícita. Si se consiguen varios juntos, una sola ventana los enumera a todos; tocar un logro conseguido vuelve a felicitar al usuario. Oro y Platino mantienen sus celebraciones especiales.
+
+Basic expone vistas previas bloqueadas de gráficos avanzados, meta 3D, pasos, comparación, Excel, informes PDF, estilos, resúmenes y respaldo. Están situadas junto a las secciones relacionadas y abren ejemplos visuales animados con datos ficticios o una explicación. No consultan registros reales, exportan archivos, crean cuentas ni solicitan permisos de Pro. Las animaciones son breves, se pueden repetir y respetan el movimiento reducido. Se mantiene «Próximamente en Google Play» hasta tener una ficha pública. La verificación de aislamiento durante la compilación sigue comprobando que no se distribuyan implementaciones, bibliotecas ni permisos exclusivos de Pro.

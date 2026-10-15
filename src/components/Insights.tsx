@@ -14,7 +14,7 @@ import { matchesHistoryDate, type HistoryDateFilter } from '../lib/calendar';
 import { useI18n } from '../lib/i18n';
 import { metricSeries } from '../lib/metricSeries';
 import { Metric, MetricGrid } from './MetricCards';
-import ProTeaser from './ProTeaser';
+import ProTeaser, { ProTeaserShelf } from './ProTeaser';
 import './insights.css';
 
 export interface InsightsProps {
@@ -155,6 +155,7 @@ export function HistoryPage({ data, onRecord, onNewRecord }: InsightsProps) {
       <button className={`round-action calendar-action ${dateFilter ? 'selected' : ''}`} aria-label={t('Filtrar por fecha')} onClick={() => setCalendarOpen(true)}><CalendarDays size={19} />{dateFilter && <i />}</button>
       <button className="round-action add-action" aria-label={t('Añadir registro')} onClick={onNewRecord}><Plus size={21} /></button>
     </div></div>
+    <ProTeaserShelf features={['compare', 'excel']} />
     {dateFilter && <button className="history-month-chip" onClick={() => setDateFilter(null)} aria-label={`${filterDateLabel} · ${t('Quitar filtro de fecha')}`}><CalendarDays size={13} /><span>{filterDateLabel}</span><X size={13} /></button>}
     {calendarOpen && <HistoryCalendar value={dateFilter} recordDates={data.records.map(record => record.date)} onClose={() => setCalendarOpen(false)} onApply={value => { setDateFilter(value); setCalendarOpen(false); }} />}
     {records.length === 0 ? <div className="card empty-state"><CalendarDays size={32} /><h2>{t(data.records.length ? 'No hay registros con estos filtros.' : 'La primera página está por escribirse.')}</h2><p className="muted">{t(data.records.length ? 'Prueba otras fechas o muestra todos tus hábitos.' : 'Un peso, un hábito, un pequeño momento para ti.')}</p>{data.records.length ? <button className="secondary-button" onClick={() => { setDateFilter(null); setFilter('all'); }}>{t('Ver todos los registros')} <ArrowRight size={16} /></button> : <button className="primary-button" onClick={onNewRecord}>{t('Crear mi primer registro')} <Plus size={16} /></button>}</div> :
