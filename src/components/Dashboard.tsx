@@ -28,7 +28,7 @@ export default function Dashboard({ data, onDaily, onProfile, onHistory, onEditD
   const healthyRatio = stats.totalDays ? stats.healthyDays / stats.totalDays * 100 : 0;
 
   return <>
-    <SectionHeading eyebrow={t('CADA DÍA CUENTA')} title={t(data.settings.theme === 'dark' ? 'TU MEJOR VERSIÓN.' : 'Todo empieza contigo.')} action={<div className="dashboard-actions"><button className={`primary-button ${todayRecord ? 'recorded-button' : ''}`} onClick={onDaily}>{todayRecord ? <Check size={18} /> : <Plus size={18} />}{t(todayRecord ? 'Hoy ya cuenta' : 'Registrar mi día')}<ChevronRight size={17} /></button><Motivation value={data.settings.motivation} onChange={onMotivationChange} /></div>} />
+    <SectionHeading eyebrow={t('CADA DÍA CUENTA')} title={t(data.settings.theme === 'dark' ? 'Activa el beast mode' : 'Tu mejor versión')} action={<div className="dashboard-actions"><button className={`primary-button ${todayRecord ? 'recorded-button' : ''}`} onClick={onDaily}>{todayRecord ? <Check size={18} /> : <Plus size={18} />}{t(todayRecord ? 'Hoy ya cuenta' : 'Registrar mi día')}<ChevronRight size={17} /></button><Motivation value={data.settings.motivation} onChange={onMotivationChange} /></div>} />
     <div className="dashboard-grid">
       <section className="card weight-card">
         <div className="card-head"><span className="card-title"><TrendingUp size={18} />{t('Tu evolución')}</span><span className="pill subtle"><span className="dot" />{chart.records.length} {t(chart.records.length === 1 ? 'registro' : 'registros')}</span></div>

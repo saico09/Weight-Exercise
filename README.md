@@ -1,8 +1,16 @@
-# Weight&Exercise · v0.4
+# Weight&Exercise · Basic v0.6
 
 **Esta carpeta corresponde a la rama `basic`.** Su vista local usa el puerto **5174** y su APK lleva el identificador `cl.forma.weightexercise.basic`. La infraestructura de cuenta y respaldo se ejecuta desde la carpeta de la rama `pro`; Basic funciona completamente sin servidor.
 
 App Android para registrar peso, ejercicio y alimentación, con interfaz adaptable a teléfono y PC. Ionic React, TypeScript y Capacitor. Los registros se guardan primero en el dispositivo; Pro incorpora un prototipo de respaldo manual con cuenta, probado en un servidor Docker local.
+
+## Novedades de Basic v0.6
+
+- Inicio adapta su frase al tema: **«Activa el beast mode»** en Dark y **«Tu mejor versión»** en Light, con traducción al inglés.
+- Las cuatro estadísticas esenciales incluyen un mini gráfico junto al valor, sin aumentar la altura habitual de la tarjeta. Peso actual y cambio total muestran su evolución desde el inicio elegido; mínimo y máximo muestran sus valores acumulados en cada fecha.
+- Tocar una tarjeta la amplía al ancho de dos columnas y reacomoda las siguientes. El gráfico crece y muestra fechas, rango y explicación; otro toque la contrae. También funciona con teclado y respeta la preferencia de movimiento reducido. Sin historial suficiente se muestra un punto o un estado vacío, sin inventar mediciones.
+
+Basic conserva sus dos temas y estadísticas esenciales. Los temas adicionales, promedios semanales, informes y cuenta siguen siendo funciones Pro.
 
 ## Basic y Pro
 
@@ -14,6 +22,7 @@ Las ediciones se mantienen en las ramas **`basic`** y **`pro`**, con dos carpeta
 | Editar registros, hábitos y punto de partida | Sí | Sí |
 | Temas Dark y Light; español e inglés; kg/lb y cm/pies | Sí | Sí |
 | Gráfico de peso, meta, IMC y estadísticas esenciales | Sí | Sí |
+| Mini gráficos y tarjetas de estadísticas expandibles | Sí | Sí |
 | Logros, copas y celebraciones | Sí | Sí |
 | Motivación con foto y mensaje personalizables | Sí | Sí |
 | Recordatorio para registrar el peso | Sí | Sí |
@@ -39,7 +48,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\start-both.ps1 -Ba
 | --- | --- |
 | Pro | http://127.0.0.1:5173 |
 | Basic | http://127.0.0.1:5174 |
-| Bandeja de códigos de prueba | http://127.0.0.1:8025 |
+| Bandeja de pruebas, cuando Pro usa Mailpit | http://127.0.0.1:8025 |
 | Estado de la API | http://127.0.0.1:3001/api/health |
 
 También puedes iniciar cada interfaz desde su propia carpeta:
@@ -64,7 +73,7 @@ Para iniciar la infraestructura desde la rama `pro`:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\start-local-cloud.ps1
 ```
 
-El script crea secretos locales en `.env.local`, excluido de Git, y arranca PostgreSQL, la API y Mailpit. Los códigos se leen en la bandeja de pruebas de este PC; **no se envían correos reales**. PostgreSQL no publica un puerto al host. API y Mailpit escuchan únicamente en `127.0.0.1`.
+El script de Pro crea secretos locales en `.env.local`, excluido de Git, y arranca PostgreSQL, la API y Mailpit. Con el modo `mailpit`, los mensajes quedan en la bandeja de pruebas de este PC; con el modo `real`, Pro usa SMTP autenticado con TLS. Consulta la documentación de la rama `pro` para su configuración vigente. Basic no necesita ni utiliza estos servicios. PostgreSQL no publica un puerto al host. API y Mailpit escuchan únicamente en `127.0.0.1`.
 
 En Pro puedes crear una cuenta desde la bienvenida o Ajustes, elegir nombre de usuario, iniciar sesión con código, cambiar el correo y eliminar la cuenta. Un código por correo es acceso sin contraseña, **no autenticación de dos factores**.
 
@@ -82,7 +91,7 @@ El volumen Docker conserva la base al reiniciar servicios. No uses `down -v` si 
 
 ## Android instalable
 
-Los APK de prueba v0.4 se generan localmente en:
+Los APK de prueba se generan localmente en:
 
 - `output/WeightExercise-Pro-debug.apk`
 - `output/WeightExercise-Basic-debug.apk`

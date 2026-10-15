@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import type { ReactNode } from 'react';
 import {
   ArrowDownRight, ArrowRight, ArrowUpRight, CalendarDays, ChevronRight,
   Dumbbell, Flag, Flame, Leaf, Pencil, Plus, Scale, Trophy, ListFilter, X,
@@ -14,6 +13,8 @@ import { HistoryCalendar } from './HistoryCalendar';
 import { matchesHistoryDate, type HistoryDateFilter } from '../lib/calendar';
 import { useI18n } from '../lib/i18n';
 import { IS_PRO } from '../lib/edition';
+import { metricSeries } from '../lib/metricSeries';
+import { Metric, MetricGrid } from './MetricCards';
 import ReportExport from './ReportExport';
 import './insights.css';
 
@@ -29,22 +30,12 @@ export interface InsightsProps {
 const formatDate = (date: string, locale: string, options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' }) =>
   new Date(`${date}T12:00:00`).toLocaleDateString(locale, options);
 
-function Metric({ label, value, unit, note, icon, accent = false }: {
-  label: string; value: string; unit?: string; note: string; icon: ReactNode; accent?: boolean;
-}) {
-  const { t } = useI18n();
-  return <article className={`card metric-card ${accent ? 'metric-accent' : ''}`}>
-    <div className="card-head"><span className="muted">{t(label)}</span>{icon}</div>
-    <strong className="metric-value">{value}{unit && <small> {t(unit)}</small>}</strong>
-    <p className="muted">{t(note)}</p>
-  </article>;
-}
-
 export function StatsPage({ data, onProfile, onAchievements }: InsightsProps) {
   const { t, locale } = useI18n();
   const dateLabel = (date: string, options?: Intl.DateTimeFormatOptions) => formatDate(date, locale, options);
   if (!data.profile) return null;
   const stats = getStats(data);
+  const series = metricSeries(stats);
   const unit = data.settings.weightUnit;
   const weight = (value: number) => displayWeight(value, unit, 1, locale);
   const change = stats.change === 0 ? weight(0) : `${stats.change > 0 ? '+' : '−'}${weight(Math.abs(stats.change))}`;
@@ -55,25 +46,25 @@ export function StatsPage({ data, onProfile, onAchievements }: InsightsProps) {
 
     <section className="insight-section" aria-labelledby="weight-stats-title">
       <div className="card-head"><h2 id="weight-stats-title">{t("Tu evolución")}</h2><span className="pill">{t("Desde el")} {dateLabel(stats.startDate)}</span></div>
-      <div className="metrics-grid">
-        <Metric label={t("Peso actual")} value={weight(stats.currentWeight)} unit={unit} note={stats.latestRecord ? `${t('Último registro')} · ${dateLabel(stats.latestRecord.date)}` : t('Tu punto de partida')} icon={<Scale size={18} />} accent />
-        <Metric label={t("Cambio total")} value={change} unit={unit} note={t('Desde {weight} {unit} de inicio', { weight: weight(stats.initialWeight), unit })} icon={stats.change <= 0 ? <ArrowDownRight size={18} /> : <ArrowUpRight size={18} />} />
-        <Metric label={t("Peso mínimo")} value={weight(stats.minWeight)} unit={unit} note={t("Desde tu registro inicial elegido")} icon={<ArrowDownRight size={18} />} />
-        <Metric label={t("Peso máximo")} value={weight(stats.maxWeight)} unit={unit} note={t("Desde tu registro inicial elegido")} icon={<ArrowUpRight size={18} />} />
-      </div>
+      <MetricGrid>
+        <Metric id="current" series={series.current} weightUnit={unit} label={t("Peso actual")} value={weight(stats.currentWeight)} unit={unit} note={stats.latestRecord ? `${t('Último registro')} · ${dateLabel(stats.latestRecord.date)}` : t('Tu punto de partida')} icon={<Scale size={18} />} accent />
+        <Metric id="change" series={series.change} weightUnit={unit} label={t("Cambio total")} value={change} unit={unit} note={t('Desde {weight} {unit} de inicio', { weight: weight(stats.initialWeight), unit })} icon={stats.change <= 0 ? <ArrowDownRight size={18} /> : <ArrowUpRight size={18} />} />
+        <Metric id="min" series={series.min} weightUnit={unit} label={t("Peso mínimo")} value={weight(stats.minWeight)} unit={unit} note={t("Desde tu registro inicial elegido")} icon={<ArrowDownRight size={18} />} />
+        <Metric id="max" series={series.max} weightUnit={unit} label={t("Peso máximo")} value={weight(stats.maxWeight)} unit={unit} note={t("Desde tu registro inicial elegido")} icon={<ArrowUpRight size={18} />} />
+      </MetricGrid>
     </section>
 
     {IS_PRO && <section className="insight-section" aria-labelledby="weekly-stats-title">
       <div className="card-head"><h2 id="weekly-stats-title">{t("Una semana a la vez")}</h2><span className="muted">{t("Últimos 7 días")}</span></div>
-      <div className="metrics-grid">
-        <Metric label={t("Peso promedio semanal")} value={stats.weeklyAverageWeight === null ? '—' : weight(stats.weeklyAverageWeight)} unit={stats.weeklyAverageWeight === null ? undefined : unit}
+      <MetricGrid>
+        <Metric id="weeklyWeight" series={series.weeklyWeight} weightUnit={unit} label={t("Peso promedio semanal")} value={stats.weeklyAverageWeight === null ? '—' : weight(stats.weeklyAverageWeight)} unit={stats.weeklyAverageWeight === null ? undefined : unit}
           note={t('{count} registros en los últimos 7 días', { count: stats.weekRecords.length })} icon={<Scale size={18} />} />
-        <Metric label={weeklyLoss !== null && weeklyLoss < 0 ? 'Aumento semanal' : 'Descenso semanal'} value={weeklyLoss === null ? '—' : weight(Math.abs(weeklyLoss))} unit={weeklyLoss === null ? undefined : unit}
+        <Metric id="weeklyLoss" series={series.weeklyLoss} weightUnit={unit} label={weeklyLoss !== null && weeklyLoss < 0 ? 'Aumento semanal' : 'Descenso semanal'} value={weeklyLoss === null ? '—' : weight(Math.abs(weeklyLoss))} unit={weeklyLoss === null ? undefined : unit}
           note={weeklyLoss === null ? 'Necesitas registros en ambas semanas' : 'Cambio entre promedios de los últimos 7 días y los 7 anteriores'} icon={weeklyLoss !== null && weeklyLoss < 0 ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />} />
-        <Metric label={t("Ejercicio por semana")} value={stats.weeklyExerciseAverage.toLocaleString(locale, { maximumFractionDigits: 1 })} unit="días"
+        <Metric id="exercise" series={series.exercise} weightUnit={unit} label={t("Ejercicio por semana")} value={stats.weeklyExerciseAverage.toLocaleString(locale, { maximumFractionDigits: 1 })} unit="días"
           note={t('Promedio en {count} semanas con registros', { count: stats.weeks.length })} icon={<Dumbbell size={18} />} />
-        <Metric label={t("Racha de registros")} value={String(stats.streak)} unit={stats.streak === 1 ? 'día' : 'días'} note={t("Días consecutivos registrando hasta hoy o ayer")} icon={<Flame size={18} />} />
-      </div>
+        <Metric id="streak" series={series.streak} weightUnit={unit} label={t("Racha de registros")} value={String(stats.streak)} unit={stats.streak === 1 ? 'día' : 'días'} note={t("Días consecutivos registrando hasta hoy o ayer")} icon={<Flame size={18} />} />
+      </MetricGrid>
     </section>}
 
     <div className="detail-grid">
