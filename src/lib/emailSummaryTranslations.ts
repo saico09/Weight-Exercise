@@ -1,4 +1,6 @@
 export const emailSummaryEnglish: Record<string, string> = {
+  'Los correos usan el respaldo de tu cuenta, no los datos de ejemplo. Solo se activan cuando tú lo confirmas.': 'Emails use your account backup, not the sample data. They are only enabled when you confirm.',
+  'Sal de la demo e inicia sesión en Ajustes → Cuenta y respaldo para configurar los envíos con tus registros reales.': 'Leave the demo and sign in under Settings → Account and backup to configure delivery using your own records.',
   'Configurar resumen por correo': 'Configure email summaries', 'Correo': 'Email',
   'Tu progreso llega a ti.': 'Your progress, delivered.',
   'Un resumen periódico y tu historial en Excel.': 'A regular summary and your history in Excel.',

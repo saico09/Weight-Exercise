@@ -213,3 +213,7 @@ El crédito GreenBean se muestra en el pie común de todas las secciones. Usa la
 ## Historial compacto 0.8.7
 
 Desde el cuarto mes calendario, incluido, las filas del historial reducen su altura manteniéndose todas visibles y editables. El mes actual y los dos anteriores conservan su tamaño. El criterio depende de la fecha del registro y no cambia al filtrar; se mantienen hábitos, notas, punto de partida y, en Pro, selección para comparar y exportación.
+
+## Exportaciones y correo Pro 0.8.8
+
+Excel funciona también al explorar la demo: permite exportar el mes, los registros filtrados o todo el historial de ejemplo. La configuración de correos se puede abrir desde la demo y explica que utiliza exclusivamente el respaldo real de la cuenta. Abrirla no sube datos ni activa envíos; estos requieren una cuenta, un respaldo y consentimiento explícito. Se conservan la verificación de licencia del servidor y el requisito de configurar una API HTTPS para el APK.

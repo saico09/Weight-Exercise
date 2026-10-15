@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { CalendarClock, Check, Mail, RefreshCw } from 'lucide-react';
-import { cloud, CloudError, cloudErrorMessage, type EmailSummarySettings } from '../lib/cloud';
-import type { AppData } from '../lib/model';
+import { cloud, CLOUD_NATIVE_UNAVAILABLE, CloudError, cloudErrorMessage, type EmailSummarySettings } from '../lib/cloud';
 import { useI18n } from '../lib/i18n';
 import { useCloudAccount } from './CloudAccount';
 import { Modal } from './UI';
 import './email-summary.css';
 
-export function EmailSummaryControl({ data: _data, disabled = false }: { data: AppData; disabled?: boolean }) {
+export function EmailSummaryControl({ demo = false }: { demo?: boolean }) {
   const { t, locale } = useI18n();
   const account = useCloudAccount();
   const [open, setOpen] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState('');
@@ -17,7 +16,7 @@ export function EmailSummaryControl({ data: _data, disabled = false }: { data: A
   const requestRevision = useRef(0);
   const load = async () => {
     const userId = currentUser.current;
-    if (!userId || disabled) return;
+    if (!userId) return;
     const revision = ++requestRevision.current;
     setBusy(true); setError('');
     try { const result = await cloud.emailSummary(userId); if (userId === currentUser.current && revision === requestRevision.current) { setConfig(result); setConsent(result.enabled); } }
@@ -27,12 +26,12 @@ export function EmailSummaryControl({ data: _data, disabled = false }: { data: A
   useEffect(() => {
     currentUser.current = account.user?.id;
     setConfig(null); setConsent(false); setError(''); setSaved(false); setOpen(false); setBusy(false);
-    if (!disabled && account.user) void load();
+    if (account.user) void load();
     return () => { currentUser.current = undefined; requestRevision.current++; };
-  }, [account.user?.id, disabled]);
+  }, [account.user?.id]);
   const save = async (enabled: boolean) => {
     const userId = currentUser.current;
-    if (!userId || !config || disabled || (enabled && (!consent || !config.recordCount))) return;
+    if (!userId || !config || busy || (enabled && (!consent || !config.recordCount))) return;
     const revision = ++requestRevision.current;
     setBusy(true); setError(''); setSaved(false);
     try {
@@ -44,9 +43,10 @@ export function EmailSummaryControl({ data: _data, disabled = false }: { data: A
     } finally { if (userId === currentUser.current && revision === requestRevision.current) setBusy(false); }
   };
   const dateLabel = (date: string) => new Date(date).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' });
-  return <><button type="button" className="email-summary-toggle" disabled={disabled} aria-label={t('Configurar resumen por correo')} aria-haspopup="dialog" onClick={() => { setOpen(true); setSaved(false); if (account.user) void load(); }}><span className={`email-summary-switch ${config?.enabled ? 'enabled' : ''}`} aria-hidden="true"><i /></span><span>{t('Correo')}</span></button>
+  return <><button type="button" className="email-summary-toggle" aria-label={t('Configurar resumen por correo')} aria-haspopup="dialog" onClick={() => { setOpen(true); setSaved(false); if (account.user) void load(); }}><span className={`email-summary-switch ${config?.enabled ? 'enabled' : ''}`} aria-hidden="true"><i /></span><span>{t('Correo')}</span></button>
     {open && <Modal title={t('Tu progreso llega a ti.')} subtitle={t('Un resumen periódico y tu historial en Excel.')} onClose={() => { if (!busy) setOpen(false); }}>
-      {!account.user ? <div className="email-summary-empty"><span className="soft-icon"><Mail size={24} /></span><p>{t('Inicia sesión en Ajustes → Cuenta y respaldo para configurar los envíos.')}</p></div> : <>
+      {demo && <p className="notice">{t('Los correos usan el respaldo de tu cuenta, no los datos de ejemplo. Solo se activan cuando tú lo confirmas.')}</p>}
+      {CLOUD_NATIVE_UNAVAILABLE ? <p className="notice">{t(cloudErrorMessage(new CloudError('native_unconfigured')))}</p> : account.loading && !account.user ? <p className="muted" role="status">{t('Conectando…')}</p> : !account.user ? <div className="email-summary-empty"><span className="soft-icon"><Mail size={24} /></span><p>{t(account.unavailable ? cloudErrorMessage(new CloudError('unavailable')) : demo ? 'Sal de la demo e inicia sesión en Ajustes → Cuenta y respaldo para configurar los envíos con tus registros reales.' : 'Inicia sesión en Ajustes → Cuenta y respaldo para configurar los envíos.')}</p>{account.unavailable && <button type="button" className="secondary-button full-width" onClick={() => void account.refresh()}><RefreshCw size={16} />{t('Volver a intentar')}</button>}</div> : <>
         <div className="email-summary-destination"><Mail size={19} /><div><span>{t('Lo enviaremos a')}</span><strong>{account.user.email}</strong></div></div>
         {config && <><div className="email-summary-source"><span>{t('Respaldo disponible')}</span><strong>{config.recordCount} {t('registros')}</strong><small>{config.backupUpdatedAt ? dateLabel(config.backupUpdatedAt) : t('Todavía no tienes un respaldo.')}</small></div>
           <div className="segmented email-summary-cadence" role="group" aria-label={t('Frecuencia del correo')}>{(['weekly', 'monthly'] as const).map(cadence => <button key={cadence} type="button" disabled={busy} className={config.cadence === cadence ? 'active' : ''} aria-pressed={config.cadence === cadence} onClick={() => { setConfig(previous => previous && ({ ...previous, cadence })); setSaved(false); }}>{t(cadence === 'weekly' ? 'Semanal' : 'Mensual')}</button>)}</div>

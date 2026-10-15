@@ -45,7 +45,7 @@ export function StatsPage({ data, onProfile, onAchievements, demo = false }: Ins
   const weeklyLoss = stats.weeklyLoss;
   return <div className="stats-layout">
     <div className="compact-section-heading"><h1 className="eyebrow">{t("Tu evolución")}</h1>{!IS_PRO && <span className="basic-stats-label">BASIC</span>}<button className="icon-button" onClick={onProfile} aria-label={t("Mi perfil y meta")}><Pencil size={19} /></button></div>
-    {IS_PRO && <ReportExport data={data} disabled={demo} />}
+    {IS_PRO && <ReportExport data={data} demo={demo} />}
 
     <section className="insight-section" aria-labelledby="weight-stats-title">
       <div className="card-head"><h2 id="weight-stats-title">{t("Tu evolución")}</h2><span className="pill">{t("Desde el")} {dateLabel(stats.startDate)}</span></div>
@@ -185,7 +185,7 @@ export function HistoryPage({ data, onRecord, onNewRecord, demo = false }: Insig
     {comparisonOpen && <RecordComparison data={data} selectedIds={selectedIds} onClose={() => setComparisonOpen(false)} />}
     {records.length === 0 ? <div className="card empty-state"><CalendarDays size={32} /><h2>{t(data.records.length ? 'No hay registros con estos filtros.' : 'La primera página está por escribirse.')}</h2><p className="muted">{t(data.records.length ? 'Prueba otras fechas o muestra todos tus hábitos.' : 'Un peso, un hábito, un pequeño momento para ti.')}</p>{data.records.length ? <button className="secondary-button" onClick={() => { setDateFilter(null); setFilter('all'); }}>{t('Ver todos los registros')} <ArrowRight size={16} /></button> : <button className="primary-button" onClick={onNewRecord}>{t('Crear mi primer registro')} <Plus size={16} /></button>}</div> :
       <div className="history-list">{Array.from(groups, ([key, entries]) => <section className={`history-month ${key <= compactThroughMonth ? 'history-month-compact' : ''}`} key={key} aria-labelledby={`month-${key}`}>
-        <div className="card-head"><div className="history-month-heading"><h2 id={`month-${key}`}>{dateLabel(`${key}-01`, { month: 'long', year: 'numeric' })}</h2>{IS_PRO && <WorkbookExport disabled={demo} data={data} records={entries} filteredRecords={records} label={`${dateLabel(`${key}-01`, { month: 'long', year: 'numeric' })}${filter !== 'all' || dateFilter ? ` · ${t('con filtros')}` : ''}`} />}</div><span className="muted">{entries.length} {t(entries.length === 1 ? 'día' : 'días')}</span></div>
+        <div className="card-head"><div className="history-month-heading"><h2 id={`month-${key}`}>{dateLabel(`${key}-01`, { month: 'long', year: 'numeric' })}</h2>{IS_PRO && <WorkbookExport data={data} records={entries} filteredRecords={records} label={`${dateLabel(`${key}-01`, { month: 'long', year: 'numeric' })}${filter !== 'all' || dateFilter ? ` · ${t('con filtros')}` : ''}`} />}</div><span className="muted">{entries.length} {t(entries.length === 1 ? 'día' : 'días')}</span></div>
         <div className="card">{entries.map(record => {
           const initial = stats.initialRecord?.id === record.id || (!stats.initialRecord && record.date === stats.startDate);
           const beforeInitial = record.date < stats.startDate;

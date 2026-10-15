@@ -5,6 +5,37 @@ import { defaultData } from './model';
 afterEach(() => vi.unstubAllGlobals());
 
 describe('cloud requests', () => {
+  it('loads email preferences through a read-only account-bound request without local records', async () => {
+    const settings = { enabled: false, recordCount: 2, mailMode: 'real' };
+    const fetchMock = vi.fn().mockResolvedValue(Response.json(settings));
+    vi.stubGlobal('fetch', fetchMock);
+    await expect(cloud.emailSummary('user-a')).resolves.toEqual(settings);
+    expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/email-summary', expect.objectContaining({
+      method: 'GET', credentials: 'include', headers: expect.objectContaining({ 'X-WE-Account': 'user-a' }),
+    }));
+    expect(fetchMock.mock.calls[0][1]).not.toHaveProperty('body');
+  });
+
+  it('saves only explicit email scheduling preferences, never the demo or local history', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(Response.json({ enabled: true }));
+    vi.stubGlobal('fetch', fetchMock);
+    const settings = { enabled: true, consent: true, cadence: 'weekly', timezone: 'America/Santiago', time: '09:00', weekday: 1, monthDay: 1 } as const;
+    await cloud.saveEmailSummary(settings, 'user-a');
+    expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/email-summary', expect.objectContaining({
+      method: 'PUT', body: JSON.stringify(settings), headers: expect.objectContaining({ 'X-WE-Account': 'user-a' }),
+    }));
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).not.toHaveProperty('records');
+  });
+
+  it('keeps server licensing failures actionable when saving email preferences', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(Response.json({ error: { code: 'pro_required' } }, { status: 403 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const error = await cloud.saveEmailSummary({ enabled: true, consent: true, cadence: 'weekly', timezone: 'UTC', time: '09:00', weekday: 1, monthDay: 1 }, 'user-a').catch(reason => reason);
+    expect(error).toMatchObject({ code: 'pro_required', status: 403 });
+    expect(cloudErrorMessage(error)).toBe('Verifica tu licencia de Pro para usar este servicio.');
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
   it('binds license activation to the signed-in account and forwards native proof fields', async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ticket: 'signed-ticket' })));
     vi.stubGlobal('fetch', fetchMock);

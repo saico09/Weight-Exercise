@@ -8,10 +8,10 @@ import { Modal } from './UI';
 import { EmailSummaryControl } from './EmailSummaryControl';
 import './report-export.css';
 
-export default function ReportExport({ data, disabled = false }: { data: AppData; disabled?: boolean }) {
+export default function ReportExport({ data, demo = false }: { data: AppData; demo?: boolean }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
-  return <><section className="card report-launcher"><button type="button" className="report-launcher-button" onClick={() => setOpen(true)}><span className="report-launcher-icon"><FileText size={24} /></span><span><small>{t('TU PROGRESO, PARA LLEVAR')}</small><strong>{t('Crear informe PDF')}</strong><span>{t('Toda tu historia. Comparaciones claras. Tu estilo.')}</span></span></button><div className="report-launcher-actions"><span className="report-pro-badge"><Sparkles size={11} />PRO</span><EmailSummaryControl data={data} disabled={disabled} /></div></section>{open && <ReportDialog data={data} onClose={() => setOpen(false)} />}</>;
+  return <><section className="card report-launcher"><button type="button" className="report-launcher-button" onClick={() => setOpen(true)}><span className="report-launcher-icon"><FileText size={24} /></span><span><small>{t('TU PROGRESO, PARA LLEVAR')}</small><strong>{t('Crear informe PDF')}</strong><span>{t('Toda tu historia. Comparaciones claras. Tu estilo.')}</span></span></button><div className="report-launcher-actions"><span className="report-pro-badge"><Sparkles size={11} />PRO</span><EmailSummaryControl demo={demo} /></div></section>{open && <ReportDialog data={data} onClose={() => setOpen(false)} />}</>;
 }
 
 function ReportDialog({ data, onClose }: { data: AppData; onClose: () => void }) {
