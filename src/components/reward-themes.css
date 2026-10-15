@@ -1,23 +1,49 @@
-/* Earned palettes are available in both editions; all assets and typefaces are local. */
-ion-app[data-theme=gold] { --bg:#19160f; --surface:#242017; --surface-raised:#302a1e; --surface-soft:#201c14; --text:#fff5df; --muted:#b7a78b; --faint:#93866d; --border:#49402e; --track:#443a28; --body-font:'DM Sans',sans-serif; --heading-font:'Barlow Condensed',sans-serif; --radius:14px; --shadow:0 12px 36px #08060020; }
-[data-theme=gold] .app-root { background:radial-gradient(ellipse at 90% 0%,#b98b3220,transparent 48%),var(--bg); }
+/* Earned palettes use a polished metal finish while reading surfaces stay calm. */
+ion-app[data-theme=gold] {
+  --bg:#151109; --surface:#272013; --surface-raised:#302719; --surface-soft:#211b10;
+  --text:#fff6df; --muted:#c6b799; --faint:#a99a7b; --border:#766035; --track:#4b3d20;
+  --body-font:'DM Sans',sans-serif; --heading-font:'Barlow Condensed',sans-serif; --radius:16px;
+  --shadow:inset 0 1px 0 #fff3c33b,inset 0 -1px 0 #08060066,0 12px 36px #08060035;
+  --metal-surface:linear-gradient(117deg,#f0c65a16 0%,transparent 24%,#fff5c51a 36%,#f2ce6a0b 40%,transparent 44%,transparent 72%,#f2ce6a18 100%),linear-gradient(150deg,#302719,#211b10 57%,#302719);
+  --metal-bright:linear-gradient(112deg,#b88828 0%,#f5d57b 21%,#fff4c7 31%,#c39a3b 47%,#f6d77e 65%,#fff4c7 76%,#c29536 100%);
+}
+[data-theme=gold] .app-root { background:radial-gradient(ellipse at 85% -10%,#bc8b3d32,transparent 54%),linear-gradient(123deg,#151109 28%,#2b2214 49%,#151109 76%); }
 [data-theme=gold] .section-heading h1 { font-size:clamp(34px,4vw,47px); font-weight:600; letter-spacing:.25px; text-transform:none; }
 [data-theme=gold] .card h2 { font-size:23px; font-weight:600; letter-spacing:.3px; }
-[data-theme=gold] .card { border-top-color:#79613980; }
-[data-theme=gold] .bottom-nav { border-radius:16px; background:#272117ef; box-shadow:0 8px 30px #08060035; }
+[data-theme=gold] .card,[data-theme=gold] .metric-card { background:var(--metal-surface); border-color:#766035; border-top-color:#b49250; box-shadow:var(--shadow); }
+[data-theme=gold] .bottom-nav { border-radius:17px; border-color:#a08247; background:linear-gradient(115deg,#392d16f5,#211b10f5 29%,#4a3b20f5 48%,#251d10f5 68%,#3c301bf5); box-shadow:inset 0 1px 0 #fff1b86b,inset 0 -1px 0 #090700,0 8px 30px #08060070; }
+[data-theme=gold] .bottom-nav > button.active { box-shadow:inset 0 1px 0 #fce19b35; }
 [data-theme=gold] .big-weight { font-size:52px; letter-spacing:-1.5px; }
 [data-theme=gold] .eyebrow { letter-spacing:2.5px; }
-[data-theme=gold] .brand-mark { color:var(--accent-ink); }
-ion-app[data-theme=platinum] { --bg:#edf0f4; --surface:#fafbfdeb; --surface-raised:#ffffff; --surface-soft:#e3e9f1; --text:#293443; --muted:#657489; --faint:#7b899c; --border:#cbd4df; --track:#d5deea; --body-font:'Manrope',sans-serif; --heading-font:'Manrope',sans-serif; --radius:24px; --shadow:0 12px 36px #23334809; }
-[data-theme=platinum] .app-root { background:radial-gradient(ellipse at 88% 0%,#ffffffcc,transparent 48%),linear-gradient(135deg,#e9edf3,#f3f5f8 75%); }
+[data-theme=gold] .brand-mark { color:var(--accent-ink); filter:drop-shadow(0 1px 5px #f4ce6b32); }
+[data-theme=gold] .primary-button:not(.recorded-button) { background:var(--metal-bright); color:#211704; border:1px solid #f8dc91; box-shadow:inset 0 1px 0 #fff7d9,0 3px 12px #a97c211b; }
+[data-theme=gold] .modal { box-shadow:inset 0 1px 0 #e5c77f42,0 22px 100px #0009; }
+ion-app[data-theme=platinum] {
+  --bg:#dce1e7; --surface:#f0f3f6; --surface-raised:#f8fafc; --surface-soft:#e0e6ee;
+  --text:#253447; --muted:#536275; --faint:#647286; --border:#a4afbc; --track:#bcc8d5;
+  --body-font:'Manrope',sans-serif; --heading-font:'Manrope',sans-serif; --radius:24px;
+  --shadow:inset 0 1px 0 #fff,inset 0 -1px 0 #8495a333,0 12px 36px #23334812;
+  --metal-surface:linear-gradient(117deg,#c6d0dc52 0%,#ffffffa0 26%,#ffffffdd 34%,#b5c2d037 41%,transparent 49%,#ffffff90 76%,#c4d0de40 100%),linear-gradient(145deg,#f0f3f6,#e3e9ef 53%,#f3f6f9);
+  --metal-bright:linear-gradient(112deg,#8494a8 0%,#d8e1eb 18%,#ffffff 29%,#b0bdcd 43%,#e1e8f0 62%,#ffffff 74%,#a5b4c6 100%);
+}
+[data-theme=platinum] .app-root { background:radial-gradient(ellipse at 85% -10%,#ffffffbf,transparent 54%),linear-gradient(123deg,#d1d8e1 7%,#edf1f5 32%,#bdc7d460 48%,#eef2f6 65%,#d3dce6 96%); }
 [data-theme=platinum] .section-heading h1 { font-size:clamp(28px,4vw,38px); font-weight:500; letter-spacing:-1.5px; text-transform:none; }
 [data-theme=platinum] .card h2 { font-size:19px; font-weight:500; letter-spacing:-.55px; }
-[data-theme=platinum] .card { border-top-color:#ffffff; }
-[data-theme=platinum] .bottom-nav { border-radius:24px; background:#f8fafdf2; box-shadow:0 8px 30px #23334812; }
+[data-theme=platinum] .card,[data-theme=platinum] .metric-card { background:var(--metal-surface); border-color:#aeb9c6; border-top-color:#ffffff; box-shadow:var(--shadow); }
+[data-theme=platinum] .bottom-nav { border-radius:24px; border-color:#9eacbd; background:linear-gradient(115deg,#bfcbdaf5,#f9fbfdf5 26%,#cbd6e4f5 46%,#ffffffef 66%,#c1cddbf5); box-shadow:inset 0 1px 0 #fff,inset 0 -1px 0 #8394a64d,0 8px 30px #23334825; }
+[data-theme=platinum] .bottom-nav > button.active { box-shadow:inset 0 1px 0 #ffffff80; }
 [data-theme=platinum] .big-weight { font-size:51px; letter-spacing:-2px; }
-[data-theme=platinum] .brand-mark { color:var(--accent-ink); }
-[data-theme=platinum] .soft-icon.cyan { color:#4c6d88; background:#739bb51a; }
-[data-theme=platinum] .streak { color:#8a6930; }
+[data-theme=platinum] .brand-mark { color:var(--accent-ink); filter:drop-shadow(0 1px 0 #fff); }
+[data-theme=platinum] .soft-icon.cyan { color:#455d77; background:#738ca51a; }
+[data-theme=platinum] .streak { color:#52647b; }
+[data-theme=platinum] .primary-button:not(.recorded-button) { background:var(--metal-bright); color:#172536; border:1px solid #98a9bd; box-shadow:inset 0 1px 0 #fff,0 3px 12px #5f748c15; }
+[data-theme=platinum] .modal { box-shadow:inset 0 1px 0 #fff,0 22px 100px #18293e55; }
+/* Broad, sharply changing highlights read as metal instead of flat beige/gray.
+   They are reserved for large type; small labels keep solid, readable colors. */
+@supports (background-clip:text) {
+  [data-theme=gold] .section-heading h1,[data-theme=gold] .big-weight-number { background:linear-gradient(110deg,#f5d37b 4%,#fff7d7 24%,#d5ad4f 39%,#fff0b4 55%,#e8bf5d 78%,#fff2c2); background-clip:text; -webkit-background-clip:text; color:transparent; }
+  [data-theme=platinum] .section-heading h1,[data-theme=platinum] .big-weight-number { background:linear-gradient(110deg,#253447 7%,#65758a 28%,#26374d 40%,#64758a 61%,#26384e 80%); background-clip:text; -webkit-background-clip:text; color:transparent; text-shadow:0 1px 0 #ffffff18; }
+}
 .reward-themes { margin-top:23px; padding-top:20px; border-top:1px solid var(--border); }
 .reward-themes-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; }
 .reward-themes-heading h3 { font:600 12px/1.4 var(--body-font); color:var(--text); }
@@ -28,13 +54,14 @@ ion-app[data-theme=platinum] { --bg:#edf0f4; --surface:#fafbfdeb; --surface-rais
 .reward-theme[aria-disabled=true] { cursor:default; }
 .reward-theme.selected { border-color:var(--accent-ink); background:var(--accent-soft); }
 .reward-theme:not([aria-disabled=true]):hover { border-color:var(--accent-ink); }
-.reward-theme-preview { min-height:106px; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:9px; position:relative; isolation:isolate; }
-.reward-theme-gold .reward-theme-preview { color:#efd080; background:linear-gradient(120deg,#19160f,#3a2f1a 50%,#211c13); border:1px solid #695734; }
-.reward-theme-platinum .reward-theme-preview { color:#536a83; background:linear-gradient(120deg,#d3dce8,#ffffff 48%,#cbd6e4); border:1px solid #bac7d8; }
-.reward-metal-medal { width:46px; height:46px; border:1px solid currentColor; border-radius:50%; display:grid; place-items:center; box-shadow:inset 0 0 0 4px #ffffff07; }
-.reward-theme-platinum .reward-metal-medal { background:#ffffff65; }
-.reward-theme-edition { font:600 6.5px/1.3 'DM Sans',sans-serif; letter-spacing:1.8px; }
-.reward-theme-preview-line { position:absolute; width:130%; height:1px; top:24%; left:-15%; transform:rotate(-35deg); background:linear-gradient(90deg,transparent,currentColor,transparent); opacity:.18; z-index:-1; }
+.reward-theme-preview { min-height:112px; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:8px; position:relative; isolation:isolate; box-shadow:inset 0 1px 0 #ffffffa6,inset 0 -1px 0 #00000035; }
+.reward-theme-gold .reward-theme-preview { color:#241804; background:linear-gradient(118deg,#b58124 0%,#f2cd6c 23%,#fff0b3 34%,#c49435 48%,#f0cd75 63%,#fff0b4 74%,#bc8e31 100%); border:1px solid #d2b26b; }
+.reward-theme-platinum .reward-theme-preview { color:#172536; background:linear-gradient(118deg,#8b9aaf 0%,#e3eaf1 21%,#ffffff 33%,#b4c1d1 48%,#e4ebf3 64%,#ffffff 77%,#97a9bf 100%); border:1px solid #aebdce; }
+.reward-metal-medal { width:52px; height:52px; border:1px solid #fbe4a56e; border-radius:50%; display:grid; place-items:center; background:radial-gradient(circle at 35% 20%,#665028,#241c0e); box-shadow:inset 0 1px 0 #fff0b74d,0 3px 9px #30210835; position:relative; z-index:1; }
+.reward-metal-medal .achievement-trophy { width:47px; height:47px; }
+.reward-theme-platinum .reward-metal-medal { border-color:#ffffffe6; background:radial-gradient(circle at 35% 20%,#637386,#26394e); box-shadow:inset 0 1px 0 #ffffff59,0 3px 9px #23374e35; }
+.reward-theme-edition { font:700 6.5px/1.3 'DM Sans',sans-serif; letter-spacing:1.8px; position:relative; z-index:1; }
+.reward-theme-preview-line { position:absolute; width:180%; height:35%; top:-65%; left:-40%; transform:rotate(-35deg); background:linear-gradient(0deg,transparent,#ffffffa6 48%,#ffffffcf 50%,transparent); opacity:.6; pointer-events:none; }
 .reward-theme-title { display:flex; align-items:center; justify-content:space-between; gap:6px; margin-top:2px; color:var(--text); }
 .reward-theme-title strong { font-size:12px; font-weight:600; }
 .reward-theme-title svg { color:var(--muted); }
@@ -44,5 +71,12 @@ ion-app[data-theme=platinum] { --bg:#edf0f4; --surface:#fafbfdeb; --surface-rais
 .reward-theme-progress { display:block; overflow:hidden; height:3px; background:var(--track); border-radius:2px; margin-top:auto; }
 .reward-theme-progress > span { height:100%; width:100%; display:block; background:var(--accent-ink); border-radius:2px; transform-origin:left center; }
 .reward-theme-count { font-size:8px; color:var(--muted); line-height:1.4; }
-@media(max-width:370px) { .reward-themes-grid { gap:8px; } .reward-theme { padding:7px; } .reward-theme-preview { min-height:94px; } .reward-theme-edition { font-size:6px; letter-spacing:1.1px; } [data-theme=gold] .section-heading h1,[data-theme=platinum] .section-heading h1 { overflow-wrap:break-word; } }
-@media(prefers-reduced-motion:reduce) { .reward-theme { transition:none; } }
+@media(prefers-reduced-motion:no-preference) {
+  /* One sparse light pass over these two small previews, not every reading card. */
+  .reward-theme-preview-line { animation:reward-metal-reflection 8s ease-in-out infinite; }
+  .reward-theme-platinum .reward-theme-preview-line { animation-delay:1.2s; }
+}
+@keyframes reward-metal-reflection { 0%,35% { transform:translateY(0) rotate(-35deg); opacity:0; } 42% { opacity:.6; } 60%,100% { transform:translateY(245px) rotate(-35deg); opacity:0; } }
+@media(max-width:370px) { .reward-themes-grid { gap:8px; } .reward-theme { padding:7px; } .reward-theme-preview { min-height:100px; } .reward-theme-edition { font-size:6px; letter-spacing:1.1px; } [data-theme=gold] .section-heading h1,[data-theme=platinum] .section-heading h1 { overflow-wrap:break-word; } }
+@media(prefers-reduced-motion:reduce) { .reward-theme { transition:none; } .reward-theme-preview-line { animation:none; transform:translateY(110px) rotate(-35deg); opacity:.3; } }
+@media(forced-colors:active) { [data-theme=gold] .section-heading h1,[data-theme=gold] .big-weight-number,[data-theme=platinum] .section-heading h1,[data-theme=platinum] .big-weight-number { color:CanvasText; background:none; } }
