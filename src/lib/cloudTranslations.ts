@@ -1,4 +1,6 @@
 export const cloudEnglish: Record<string, string> = {
+  'El código llegará a tu correo real. Revisa también la carpeta de spam.': 'The code will arrive in your real inbox. Check your spam folder too.',
+  'Guarda primero un respaldo con registros desde Ajustes para activar los resúmenes.': 'Save a backup with records in Settings before enabling email summaries.',
   'Prueba local: los códigos llegan a la bandeja de pruebas, no a tu correo real.': 'Local preview: codes arrive in the test inbox, not your real email.',
   'Abrir bandeja local en este PC': 'Open local inbox on this PC',
   'Revisa tu correo': 'Check your email',

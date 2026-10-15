@@ -14,6 +14,8 @@ import { ProfileEditor, RecordEditor } from './components/Editors';
 import { Brand, Modal, UnitSwitch } from './components/UI';
 import { I18nProvider, translate } from './lib/i18n';
 import { accentStyle } from './lib/accent';
+import { isLightTheme, themeInfo } from './lib/themes';
+import { mergeSteps, nativeSteps, readSteps, stepDates } from './lib/steps';
 import { getAchievements, getNewlyEarnedAchievements, type Achievement } from './lib/achievements';
 import AchievementsPage from './components/AchievementsPage';
 import { AchievementCelebration } from './components/AchievementCelebration';
@@ -60,8 +62,8 @@ function AppContent() {
   useEffect(() => { const closed = () => setDialogRevision(value => value + 1); document.addEventListener('close', closed, true); return () => document.removeEventListener('close', closed, true); }, []);
   const commit = useCallback((next: AppData) => { dataRef.current = next; setData(next); if (!demo) void saveData(next).then(() => setSaveError('')).catch(e => setSaveError(e instanceof Error ? e.message : 'No pudimos guardar tus cambios.')); }, [demo]);
   useEffect(() => { if (!data?.profile || demo || recordEditor || profileEditor || resetConfirm || unlocked.length || document.querySelector('dialog[open]') || data.lastPromptDate === today || data.records.some(r => r.date === today)) return; setRecordEditor({ daily: true }); commit({ ...data, lastPromptDate: today }); }, [data, demo, today, commit, recordEditor, profileEditor, resetConfirm, unlocked, dialogRevision]);
-  useEffect(() => { document.querySelector('meta[name="theme-color"]')?.setAttribute('content', data?.settings.theme === 'light' ? '#edf5f5' : '#101311'); document.documentElement.style.colorScheme = data?.settings.theme === 'light' ? 'light' : 'dark'; }, [data?.settings.theme]);
-  useEffect(() => { if (Capacitor.isNativePlatform()) void SystemBars.setStyle({ style: data?.settings.theme === 'light' ? SystemBarsStyle.Light : SystemBarsStyle.Dark }).catch(() => { /* Older Android versions retain the native default. */ }); }, [data?.settings.theme]);
+  useEffect(() => { const theme = data?.settings.theme || 'dark'; document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeInfo[theme].background); document.documentElement.style.colorScheme = isLightTheme(theme) ? 'light' : 'dark'; }, [data?.settings.theme]);
+  useEffect(() => { if (Capacitor.isNativePlatform()) void SystemBars.setStyle({ style: isLightTheme(data?.settings.theme || 'dark') ? SystemBarsStyle.Light : SystemBarsStyle.Dark }).catch(() => { /* Older Android versions retain the native default. */ }); }, [data?.settings.theme]);
   async function reset() { settingsEpochRef.current += 1; setResetBusy(true); try { if (demo) setData(acknowledgeExisting(demoData())); else { await cancelNotifications(); await clearData(); setData(defaultData()); } setWelcomePassed(false); setUnlocked([]); setLoadError(''); setSaveError(''); setResetConfirm(false); setPage('home'); setRecordEditor(null); setProfileEditor(false); notify(demo ? 'La demo volvió a su inicio.' : 'Listo. Puedes comenzar un nuevo camino.'); } catch (e) { notify(e instanceof Error ? e.message : 'No pudimos restablecer la app.'); } finally { setResetBusy(false); } }
   useEffect(() => { if (data && !demo) void configureRecap(data).catch(() => { /* Keep data usable when notification services are unavailable. */ }); }, [data?.records, data?.settings.recap, data?.settings.language, data?.settings.weightUnit, demo]);
   useEffect(() => {
@@ -70,11 +72,40 @@ function AppContent() {
     return () => { window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', refresh); };
   }, [demo]);
   const setSettings = (settings: Partial<Settings>) => { if (settingsEpoch !== settingsEpochRef.current) return; const latest = dataRef.current; if (latest) commit({ ...latest, settings: { ...latest.settings, ...settings } }); };
+  const stepSyncBusy = useRef(false);
+  useEffect(() => {
+    if (!IS_PRO || demo || !data?.settings.steps.enabled || !nativeSteps()) return;
+    let live = true, lastRead = 0;
+    const epoch = settingsEpochRef.current;
+    const sync = async () => {
+      const current = dataRef.current;
+      if (!live || stepSyncBusy.current || !current?.settings.steps.enabled || document.visibilityState !== 'visible' || Date.now() - lastRead < 60000) return;
+      const dates = stepDates(current);
+      if (!dates.length) return;
+      stepSyncBusy.current = true; lastRead = Date.now();
+      try {
+        const days = await readSteps(dates);
+        const latest = dataRef.current;
+        if (!live || epoch !== settingsEpochRef.current || !latest?.settings.steps.enabled) return;
+        const next = mergeSteps(latest, days);
+        if (next !== latest) commit(next);
+      } catch { /* Permission revocation or unavailable data must not invent zeros or discard records. */ }
+      finally { stepSyncBusy.current = false; }
+    };
+    void sync();
+    const refresh = () => { void sync(); };
+    const timer = window.setInterval(refresh, 60000);
+    window.addEventListener('focus', refresh); document.addEventListener('visibilitychange', refresh);
+    return () => { live = false; clearInterval(timer); window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', refresh); };
+  }, [demo, data?.settings.steps.enabled, data?.records.map(record => `${record.id}:${record.date}`).join('|'), commit]);
   const startDemo = () => { settingsEpochRef.current += 1; beforeDemo.current = data; const next = acknowledgeExisting(demoData()); next.settings.theme = data?.settings.theme || 'dark'; next.settings.language = language; next.settings.accentColor = data?.settings.accentColor || null; setData(next); setDemo(true); setUnlocked([]); setPage('home'); };
   const endDemo = () => { settingsEpochRef.current += 1; setData(beforeDemo.current || defaultData()); setDemo(false); setUnlocked([]); setPage('home'); setRecordEditor(null); };
   const saveRecord = (record: DailyRecord, initial: boolean) => {
     const current = dataRef.current;
     if (!current) return;
+    // A Health Connect refresh may finish while this editor is open.
+    const freshRecord = current.records.find(entry => entry.id === record.id && entry.date === record.date);
+    if (freshRecord?.steps !== undefined) record = { ...record, steps: freshRecord.steps, stepsSource: freshRecord.stepsSource, stepsSyncedAt: freshRecord.stepsSyncedAt };
     const isFirst = !current.records.length && !current.initialRecordId;
     const initialRecordId = initial || isFirst ? record.id : current.initialRecordId;
     const profile = initialRecordId === record.id && current.profile ? { ...current.profile, initialWeightKg: record.weightKg, initialDate: record.date } : current.profile;
@@ -89,7 +120,7 @@ function AppContent() {
   const restoreBackup = async (restored: AppData) => {
     if (demo) return;
     settingsEpochRef.current += 1;
-    const safe = acknowledgeExisting({ ...restored, settings: { ...restored.settings, notifications: { ...restored.settings.notifications, enabled: false }, recap: { ...restored.settings.recap, enabled: false } } });
+    const safe = acknowledgeExisting({ ...restored, settings: { ...restored.settings, steps: { enabled: false }, notifications: { ...restored.settings.notifications, enabled: false }, recap: { ...restored.settings.recap, enabled: false } } });
     await cancelNotifications();
     await saveData(safe);
     dataRef.current = safe; setData(safe); setRecordEditor(null); setProfileEditor(false); setUnlocked([]); setWelcomePassed(true); setPage('home');
@@ -100,7 +131,7 @@ function AppContent() {
       {demo && <div className="demo-banner"><span><CircleHelp size={14} /> {t("Estás en la demo · datos de ejemplo")}</span><button onClick={endDemo}>{t("Comenzar mi camino")} <ArrowRight size={14} /></button></div>}
       <div ref={scrollRef} className="app-scroll"><header className="app-header"><button className="brand-button" aria-label={t("Ir al inicio")} onClick={() => setPage('home')}><Brand /><span className="edition-badge">{EDITION}</span></button><div className="header-right"><span className="header-date">{new Date(`${today}T12:00:00`).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'long' })}</span><UnitSwitch value={data.settings.weightUnit} onChange={weightUnit => setSettings({ weightUnit })} /><button className="avatar-button" aria-label={t("Editar altura, edad y meta")} onClick={() => setProfileEditor(true)}><span>{t("TÚ")}</span><i /></button><button className={`header-settings icon-button ${page === 'settings' ? 'active' : ''}`} aria-label={t('Configuración')} aria-current={page === 'settings' ? 'page' : undefined} onClick={() => setPage('settings')}><Settings2 size={20} /></button></div></header>
       {saveError && <div className="save-error" role="alert"><span>{t(saveError)} {t("Tus cambios siguen en pantalla.")}</span><button onClick={() => commit(data)}>{t("Reintentar guardado")}</button></div>}
-      <main className="main-content" key={page}>{page === 'home' ? <Dashboard data={data} onMotivationChange={motivation => setSettings({ motivation })} onDaily={openDaily} onEditDay={date => setRecordEditor({ record: data.records.find(r => r.date === date), initialDate: date, daily: false })} onProfile={() => setProfileEditor(true)} onHistory={() => setPage('history')} /> : page === 'achievements' ? <AchievementsPage data={data} onRecord={openDaily} /> : page === 'settings' ? <>{IS_PRO && <CloudAccountPanel data={data} onRestore={restoreBackup} notify={notify} demo={demo} />}<SettingsPage data={data} demo={demo} onSettings={setSettings} onReset={() => setResetConfirm(true)} notify={notify} /></> : (() => { const props = { data, onProfile: () => setProfileEditor(true), onAchievements: () => setPage('achievements'), onRecord: (record: DailyRecord) => setRecordEditor({ record, daily: false }), onNewRecord: () => setRecordEditor({ daily: false }), onHeightUnit: (heightUnit: Settings['heightUnit']) => setSettings({ heightUnit }) }; return page === 'stats' ? <StatsPage {...props} /> : page === 'bmi' ? <BmiPage {...props} /> : <HistoryPage {...props} />; })()}</main>
+      <main className="main-content" key={page}>{page === 'home' ? <Dashboard data={data} onChartStyle={chartStyle => setSettings({ chartStyle })} onSettings={() => setPage('settings')} onMotivationChange={motivation => setSettings({ motivation })} onDaily={openDaily} onEditDay={date => setRecordEditor({ record: data.records.find(r => r.date === date), initialDate: date, daily: false })} onProfile={() => setProfileEditor(true)} onHistory={() => setPage('history')} /> : page === 'achievements' ? <AchievementsPage data={data} onRecord={openDaily} /> : page === 'settings' ? <>{IS_PRO && <CloudAccountPanel data={data} onRestore={restoreBackup} notify={notify} demo={demo} />}<SettingsPage data={data} demo={demo} onSettings={setSettings} onReset={() => setResetConfirm(true)} notify={notify} /></> : (() => { const props = { data, demo, onProfile: () => setProfileEditor(true), onAchievements: () => setPage('achievements'), onRecord: (record: DailyRecord) => setRecordEditor({ record, daily: false }), onNewRecord: () => setRecordEditor({ daily: false }), onHeightUnit: (heightUnit: Settings['heightUnit']) => setSettings({ heightUnit }) }; return page === 'stats' ? <StatsPage {...props} /> : page === 'bmi' ? <BmiPage {...props} /> : <HistoryPage {...props} />; })()}</main>
       <footer className="app-footer"><span><ShieldCheck size={13} /> {t(IS_PRO ? "GUARDADO LOCAL · RESPALDO OPCIONAL" : "SOLO EN TU DISPOSITIVO")}</span><span>{t("UN DÍA A LA VEZ.")}</span></footer></div>
       <nav className="bottom-nav" aria-label={t("Navegación principal")}>{nav.map(({ key, label, icon: Icon }) => <button key={key} aria-label={t(label)} aria-current={page === key ? 'page' : undefined} className={page === key ? 'active' : ''} onClick={() => setPage(key)}><Icon size={21} strokeWidth={1.65} /><span className="nav-tooltip">{t(label)}</span><i /></button>)}</nav>
     </>}

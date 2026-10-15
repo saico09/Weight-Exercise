@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { chartDay, chartPeriod, clampChartWindow, sampleChartPoints, zoomChartWindow } from './chartUtils';
+import { chartDay, chartPeriod, clampChartWindow, nextChartStyle, sampleChartPoints, weightChartDomain, zoomChartWindow } from './chartUtils';
 import { demoData, shiftDate } from '../lib/model';
 
 describe('calendar chart periods', () => {
@@ -60,5 +60,20 @@ describe('dense chart downsampling', () => {
     const records = [{ x: 5, value: 81 }];
     expect(sampleChartPoints(records, 180)).toBe(records);
     expect(sampleChartPoints([], 180)).toEqual([]);
+  });
+});
+
+describe('truthful chart styles', () => {
+  it('starts both flat and perspective columns at zero, regardless of a narrow weight range', () => {
+    for (const style of ['bars', 'depth'] as const) {
+      const domain = weightChartDomain([79.8, 80, 80.2], 79, style);
+      expect(domain.min).toBe(0);
+      expect(domain.max).toBeGreaterThan(80.2);
+    }
+  });
+  it('retains a readable bounded line view and cycles through all styles', () => {
+    expect(weightChartDomain([79.8, 80.2], 60, 'line').min).toBeGreaterThan(70);
+    expect(weightChartDomain([79.8, 80.2], 60, 'line').showGoal).toBe(false);
+    expect(['area', 'line', 'bars', 'depth'].map(style => nextChartStyle(style as 'area'))).toEqual(['line', 'bars', 'depth', 'area']);
   });
 });

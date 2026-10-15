@@ -1,0 +1,13 @@
+# Copy values to the ignored .env.local file; never commit a real app password.
+# Gmail example. Create an app password in the sender's Google account.
+# Activate only after local Mailpit tests have finished and test opt-ins are removed.
+SMTP_MODE=real
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_SECURE=true
+SMTP_REQUIRE_TLS=true
+SMTP_USER=sender@example.com
+SMTP_PASS=replace-privately-with-app-password
+SMTP_FROM=sender@example.com
+# Until HTTPS deployment, email links work only in the PC running this app.
+PUBLIC_APP_URL=http://127.0.0.1:5173

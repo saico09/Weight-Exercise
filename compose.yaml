@@ -40,6 +40,7 @@ services:
       - database:/var/lib/postgresql/data
       - ./server/db/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh:ro
       - ./server/db/02-schema.sql:/docker-entrypoint-initdb.d/02-schema.sql:ro
+      - ./server/db/05-email-summaries.sql:/docker-entrypoint-initdb.d/05-email-summaries.sql:ro
     networks: [private]
     healthcheck:
       test: [CMD-SHELL, 'pg_isready -U postgres -d weight_exercise']
@@ -57,13 +58,15 @@ services:
     environment:
       MP_MAX_MESSAGES: 50
       MP_MAX_AGE: 24h
-      MP_SMTP_MAX_MESSAGE_SIZE: 1
+      MP_SMTP_MAX_MESSAGE_SIZE: 15
       MP_SMTP_MAX_RECIPIENTS: 2
     ports: ['127.0.0.1:8025:8025']
     networks: [private, local-access]
     logging: *bounded-logs
   api:
-    build: ./server
+    build:
+      context: .
+      dockerfile: server/Dockerfile
     restart: unless-stopped
     init: true
     mem_limit: 192m
@@ -81,8 +84,15 @@ services:
       PGPASSWORD: ${APP_DB_PASSWORD:?Missing app database password}
       AUTH_SECRET: ${AUTH_SECRET:?Missing authentication secret}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://127.0.0.1:5173,http://localhost:5173,http://127.0.0.1:5174,http://localhost:5174}
-      SMTP_HOST: mailpit
-      SMTP_PORT: 1025
+      SMTP_MODE: ${SMTP_MODE:-mailpit}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_REQUIRE_TLS: ${SMTP_REQUIRE_TLS:-true}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-access@weight-exercise.local}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://127.0.0.1:5173}
     ports: ['127.0.0.1:3001:3001']
     networks: [private, local-access]
     depends_on:

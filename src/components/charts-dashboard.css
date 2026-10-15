@@ -73,3 +73,9 @@
 .healthy-activity { border-top: 1px solid var(--border); padding-top: 22px; margin-top: 23px; }
 .healthy-activity .activity-numbers { margin-top: 20px; }
 .healthy-activity .activity-bottom > svg { color: var(--accent-ink); }
+.chart-range-line { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 9px; }
+.chart-range-line .chart-date-range { margin: 0; }
+.chart-style-cycle { display: inline-flex; align-items: center; justify-content: center; gap: 5px; color: var(--accent-ink); border: 1px solid var(--border); background: var(--surface-soft); border-radius: 20px; min-height: 29px; padding: 5px 9px; font-size: 9px; flex-shrink: 0; }
+.interactive-weight-chart .chart-style-cycle svg { width: 13px; height: 13px; min-height: 0; }
+.chart-weight-column { transition: opacity .2s; }
+@media (prefers-reduced-motion: reduce) { .chart-weight-column { transition: none; } }

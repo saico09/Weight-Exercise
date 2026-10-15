@@ -4,11 +4,17 @@ import { calendarTranslations } from './calendar-translations';
 import { editionEnglish } from './editionTranslations';
 import { cloudEnglish } from './cloudTranslations';
 import { motivationReportEnglish } from './motivationReportTranslations';
+import { proExperienceEnglish } from './proExperienceTranslations';
+import { historyProEnglish } from './historyProTranslations';
+import { emailSummaryEnglish } from './emailSummaryTranslations';
 /** English copy keyed by the Spanish source. Dates and numbers use Intl separately. */
 export const english: Record<string, string> = {
   ...editionEnglish,
   ...cloudEnglish,
   ...motivationReportEnglish,
+  ...proExperienceEnglish,
+  ...historyProEnglish,
+  ...emailSummaryEnglish,
   ...accentTranslations,
   ...achievementTranslations,
   ...calendarTranslations,

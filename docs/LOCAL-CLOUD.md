@@ -1,6 +1,6 @@
 # Nube local Pro · Weight&Exercise
 
-Esta implementación se ejecuta solamente en el PC. No conecta con AWS, no abre PostgreSQL a Internet y no envía correos reales. Basic funciona sin cuenta y sin estos servicios.
+Esta implementación se ejecuta solamente en el PC. No conecta con AWS ni abre PostgreSQL a Internet. Basic funciona sin cuenta y sin estos servicios. El correo tiene dos modos: `mailpit` para pruebas sin envíos externos y `real` para SMTP autenticado con TLS, configurado privadamente por el dueño.
 
 ## Encender y revisar
 
@@ -13,7 +13,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-local-cloud.ps
 El script genera tres secretos aleatorios en `.env.local` la primera vez. Git ignora ese archivo. No cambies sus contraseñas después de crear el volumen sin migrar primero las credenciales de PostgreSQL. Ninguno lleva el prefijo `VITE_`; no se incorpora al JavaScript de la app.
 
 - Pro usa `/api` a través del proxy Vite. El servicio está en [127.0.0.1:3001](http://127.0.0.1:3001/api/health).
-- [Mailpit](http://127.0.0.1:8025) muestra los códigos de acceso enviados durante esta prueba. Puedes utilizar un correo con formato válido: todo queda aquí, sin envío externo.
+- En modo `mailpit`, [Mailpit](http://127.0.0.1:8025) muestra códigos y resúmenes sin enviarlos a Internet. En modo `real`, llegan al correo indicado por el usuario y la app oculta el enlace al buzón de pruebas.
 - PostgreSQL no publica ningún puerto. Solo la API accede a la red interna de la base.
 - Los servicios se reinician con Docker y conservan los datos en el volumen `weight-exercise-local_database`.
 
@@ -68,14 +68,52 @@ El acceso por código de correo es **autenticación sin contraseña de un factor
 
 Tablas: `users`, `user_preferences`, `weight_records`, `sessions`, `auth_challenges`, `rate_limits`. El rol `we_app` no es superusuario y no puede crear bases, roles ni tablas. Las migraciones usan el rol administrativo local por separado.
 
+## Resúmenes por correo y SMTP real (v0.5)
+
+En Estadísticas → Informes Pro, el control **Correo** permite optar por un resumen semanal o mensual con horario y zona horaria propios. La programación siempre empieza desactivada. Requiere una cuenta verificada, un respaldo con registros y consentimiento explícito: el Excel incluye **todos** los registros respaldados, con notas y pasos disponibles. No sube automáticamente información del teléfono; para incluir datos recientes hay que actualizar el respaldo desde Ajustes.
+
+El mensaje resume el período anterior y adjunta un `.xlsx` válido con las hojas Resumen y Registros, colores del tema y unidades. Las notas se exportan como texto, nunca como fórmulas. Cada entrada del ZIP se comprime directamente con `node:zlib`, sin crear otra copia completa del Excel ni añadir dependencias. En Linux, dentro del contenedor limitado a 192 MiB, una prueba de **21.600 registros completos** (respaldo de 1,90 MB) produjo un XLSX de **743 KB**, con **130 MiB de RSS máximo y 26 MiB de heap al terminar**. La API permaneció activa en el mismo contenedor durante la prueba, con aproximadamente 24 MiB adicionales, sin terminar por falta de memoria. Esta medición deja margen para ese caso, pero no garantiza capacidad bajo cualquier carga simultánea. La API procesa un solo informe a la vez y no recorta el historial para construir el adjunto.
+
+La programación durable usa únicamente PostgreSQL (`email_preferences` y `email_deliveries`), sin Redis ni otro contenedor. El worker consulta cada minuto, reclama tareas con `FOR UPDATE SKIP LOCKED`, guarda una concesión temporal y reintenta errores con espera progresiva hasta cinco intentos. Al reiniciar recupera tareas pendientes. Después de una interrupción larga envía como máximo un resumen de recuperación por programación, no todos los períodos omitidos. El envío necesita que el PC y Docker sigan encendidos hasta que exista un servidor desplegado.
+
+Los envíos SMTP no ofrecen una transacción común con PostgreSQL: si el proceso se detiene justo después de que el proveedor acepte un mensaje y antes de registrar el éxito, un reintento podría duplicarlo. Se conserva el mismo `Message-ID` para ese trabajo. La baja cancela pendientes; un correo que el proveedor ya aceptó puede terminar de llegar.
+
+Cada correo incluye un enlace de baja firmado. Abrirlo muestra una confirmación y no cambia la configuración; confirmar por POST desactiva los resúmenes. También admite la baja de un clic de proveedores de correo. Reactivar genera un nuevo identificador e invalida enlaces antiguos. Se pueden desactivar siempre desde la app. Con `PUBLIC_APP_URL` local, el enlace abre únicamente en el PC donde corre la app; para enlaces utilizables desde cualquier teléfono hace falta el despliegue HTTPS.
+
+Variables privadas de SMTP en `.env.local` (plantilla sin secretos en `server/smtp.private.example`):
+
+| Variable | Uso |
+|---|---|
+| `SMTP_MODE` | `mailpit` (predeterminado) o `real` |
+| `SMTP_HOST`, `SMTP_PORT` | Proveedor SMTP; por ejemplo Gmail con puerto 465 |
+| `SMTP_SECURE` | `true` para TLS implícito, especialmente puerto 465 |
+| `SMTP_REQUIRE_TLS` | STARTTLS obligatorio si `SMTP_SECURE=false`; no se permite correo externo sin TLS |
+| `SMTP_USER`, `SMTP_PASS` | Usuario y contraseña de aplicación guardados solamente en el archivo privado |
+| `SMTP_FROM` | Dirección del remitente, opcionalmente `Nombre <dirección>`; una sola dirección |
+| `PUBLIC_APP_URL` | Origen de la app para enlaces; HTTPS o loopback local |
+
+En modo `mailpit` se ignoran las credenciales reales que estén preparadas. En modo `real` se validan certificados y autenticación, sin debug SMTP ni logs de contenido. Una configuración incompleta o insegura falla sin recurrir silenciosamente a Mailpit. La API verifica la conexión al iniciar. Para comprobarla de nuevo **sin enviar mensajes**:
+
+```powershell
+docker compose --env-file .env.local exec -T api node src/verify-smtp.mjs
+```
+
+Después de cambiar el modo o las credenciales, recrea solo la API:
+
+```powershell
+docker compose --env-file .env.local up -d --no-deps --wait api
+```
+
+Antes de activar SMTP real, finaliza las pruebas y confirma que no queden suscripciones de cuentas de prueba. Nunca ejecutes pruebas con correos inventados contra SMTP real. Los scripts de integración y carga rechazan ese modo deliberadamente.
+
 ## Contrato de la API
 
 Todas las solicitudes con cuerpo usan JSON. Los errores tienen `{ "error": { "code": "...", "message": "..." } }`. Códigos: `invalid_input`, `invalid_code`, `unauthorized`, `forbidden`, `conflict`, `account_changed`, `rate_limited`, `unavailable`.
 
 | Método/ruta | Cuerpo o respuesta |
 |---|---|
-| GET `/api/health` | `{ok, localDevelopment, edition}` |
-| GET `/api/account` | `{user: null \| {id,email,username}, localDevelopment:true}` |
+| GET `/api/health` | `{ok, localDevelopment, edition, mailMode}` |
+| GET `/api/account` | `{user: null \| {id,email,username}, localDevelopment:true, mailMode}` |
 | POST `/api/auth/request-code` | `{email}`; respuesta genérica, sin revelar si existe cuenta |
 | POST `/api/auth/verify-code` | `{email,code,username?}`; crea usuario si no existe; devuelve `{user}` y cookie |
 | POST `/api/auth/logout` | `{}`; invalida la sesión |
@@ -85,6 +123,9 @@ Todas las solicitudes con cuerpo usan JSON. Los errores tienen `{ "error": { "co
 | DELETE `/api/account` | `{confirmation:"DELETE"}` |
 | GET `/api/backup` | `{revision,updatedAt,data:null\|AppData}` |
 | PUT `/api/backup` | `{revision,data:AppData}`; devuelve nueva `{revision,updatedAt}` |
+| GET `/api/email-summary` | Configuración, próximo envío, último envío, fecha/cantidad del respaldo y `mailMode` |
+| PUT `/api/email-summary` | `{enabled:false}` o `{enabled:true,consent:true,cadence,timezone,time,weekday,monthDay}` |
+| GET/POST `/api/email-summary/unsubscribe?token=...` | Confirmación/baja mediante token firmado; no permite acceder a registros |
 
 `AppData` conserva kilogramos/centímetros y fechas de calendario. Los registros se guardan en columnas normales; preferencias, perfil y metadatos pequeños usan JSONB. La personalización de la motivación forma parte de las preferencias.
 
@@ -93,18 +134,28 @@ Todas las solicitudes con cuerpo usan JSON. Los errores tienen `{ "error": { "co
 ```powershell
 npm --prefix server test
 $env:RUN_CLOUD_INTEGRATION='1'
-node --test server/test/integration.test.mjs
+node --test server/test/integration.test.mjs server/test/email-integration.test.mjs
 Remove-Item Env:RUN_CLOUD_INTEGRATION
 node server/scripts/measure-local.mjs
 ```
 
-Las pruebas de integración crean cuentas aisladas `qa_*@example.test`, verifican sesión, aislamiento de usuarios, código de un uso, caducidad, bloqueo por intentos, conflictos simultáneos, cambio de correo, guardia de cuenta entre pestañas y eliminación en cascada. Solo eliminan las cuentas que crean. La prueba de carga también crea y elimina sus propias cuentas. Usa el buzón de desarrollo, nunca correos externos. Ejecutarlas repetidamente puede activar los límites de la API; espera a que venza la ventana antes de repetirlas.
+Las pruebas de integración crean cuentas aisladas `qa_*@example.test` y `emailqa_*@example.test`, verifican sesión, aislamiento de usuarios, código de un uso, caducidad, bloqueo por intentos, conflictos simultáneos, cambio de correo, guardia de cuenta entre pestañas y eliminación en cascada. También verifican consentimiento, programación con cambio de hora, recuperación del worker, idempotencia del trabajo, XLSX completo/comprimido, baja y revocación de enlaces antiguos. Solo eliminan las cuentas que crean. La prueba de carga también crea y elimina sus propias cuentas. Usa el buzón de desarrollo, nunca correos externos. Ejecutarlas repetidamente puede activar los límites de la API; espera a que venza la ventana antes de repetirlas.
+
+La regresión de concurrencia de la baja usa PostgreSQL real y una cuenta temporal, sin ejecutar el worker ni enviar correos; puede comprobarse también con SMTP real configurado:
+
+```powershell
+$env:RUN_CLOUD_DB_TESTS='1'
+node --test server/test/email-database-concurrency.test.mjs
+Remove-Item Env:RUN_CLOUD_DB_TESTS
+```
+
+Las transacciones que cambian la programación o crean/finalizan entregas bloquean primero el usuario y después sus preferencias. La baja comprueba la versión del enlace dentro de esa transacción para impedir que un enlace antiguo desactive una suscripción recién reactivada.
 
 ## Antes de llevarlo a AWS
 
 No se ha desplegado ni modificado el servidor de AWS. Esta API se niega a arrancar sin `LOCAL_DEVELOPMENT=true` y solo admite orígenes loopback. Es una protección deliberada contra publicar por accidente el prototipo.
 
-Para un despliegue real hay que preparar una configuración separada: HTTPS y cookies `Secure`, dominio/orígenes reales, SMTP transaccional con SPF/DKIM/DMARC, verificación de la compra Pro en Google Play, recuperación de cuentas, adaptación y prueba de sesiones en el WebView Android, protección de datos/copias de seguridad, monitorización y una revisión de seguridad. Mailpit no se instala en producción. La guardia de cuenta del cliente debe exigirse también en el servidor al formalizar el contrato de producción. El proxy inverso debe definir qué IP de origen es confiable para los límites; no se deben aceptar cabeceras de IP arbitrarias.
+Para un despliegue real hay que preparar una configuración separada: HTTPS y cookies `Secure`, dominio/orígenes reales, proveedor de correo adecuado al volumen con SPF/DKIM/DMARC, verificación de la compra Pro en Google Play, recuperación de cuentas, adaptación y prueba de sesiones en el WebView Android, protección de datos/copias de seguridad, monitorización y una revisión de seguridad. SMTP real puede usarse desde este PC, pero eso no publica la API ni convierte Gmail personal en una plataforma de envío masivo. Mailpit no se instala en producción. La guardia de cuenta del cliente debe exigirse también en el servidor al formalizar el contrato de producción (los endpoints nuevos de programación ya la exigen). El proxy inverso debe definir qué IP de origen es confiable para los límites; no se deben aceptar cabeceras de IP arbitrarias.
 
 Mantén una base/rol independientes de otras apps, sin puerto público 5432. Se puede compartir **un solo motor PostgreSQL** con otras bases si el consumo medido lo permite; no es necesario instalar un servidor PostgreSQL por aplicación. Deben revisarse primero los servicios que ya corren en Lightsail y dejar margen al sistema operativo.
 

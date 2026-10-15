@@ -1,9 +1,10 @@
 import { normalizeMotivation } from './motivation';
 /** All stored measurements use kg and cm; units only affect presentation. */
-export type Theme = 'dark' | 'light';
+export type Theme = 'dark' | 'light' | 'aurora' | 'sand';
 export type Language = 'es' | 'en';
 export type WeightUnit = 'kg' | 'lb';
 export type HeightUnit = 'cm' | 'ft';
+export type ChartStyle = 'area' | 'line' | 'bars' | 'depth';
 
 export interface Profile {
   heightCm: number;
@@ -21,6 +22,10 @@ export interface DailyRecord {
   exercise: boolean;
   healthy: boolean;
   note: string;
+  /** Absent means not synced, never a fabricated zero. */
+  steps?: number;
+  stepsSource?: 'health-connect';
+  stepsSyncedAt?: string;
 }
 
 export interface Settings {
@@ -32,6 +37,8 @@ export interface Settings {
   notifications: { enabled: boolean; time: string; days: number[] };
   recap: { enabled: boolean; period: 'weekly' | 'monthly'; time: string };
   motivation: { message: string; image: string | null };
+  steps: { enabled: boolean };
+  chartStyle: ChartStyle;
 }
 
 export interface AppData {
@@ -58,6 +65,8 @@ export function defaultData(): AppData {
       notifications: { enabled: false, time: '20:00', days: [0, 1, 2, 3, 4, 5, 6] },
       recap: { enabled: false, period: 'weekly', time: '19:00' },
       motivation: { message: 'Hazlo por él', image: null },
+      steps: { enabled: false },
+      chartStyle: 'area',
     },
     initialRecordId: null,
     lastPromptDate: null,
@@ -348,19 +357,26 @@ export function validateData(raw: unknown): AppData | null {
       id: record.id, date: record.date, weightKg: record.weightKg,
       exercise: record.exercise, healthy: record.healthy,
       note: typeof record.note === 'string' ? record.note.slice(0, 2000) : '',
+      ...(finiteIn(record.steps, 0, 200000) && Number.isInteger(record.steps) ? {
+        steps: record.steps,
+        ...(record.stepsSource === 'health-connect' ? { stepsSource: 'health-connect' as const } : {}),
+        ...(typeof record.stepsSyncedAt === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(record.stepsSyncedAt) && Number.isFinite(Date.parse(record.stepsSyncedAt)) ? { stepsSyncedAt: record.stepsSyncedAt } : {}),
+      } : {}),
     });
   }
   result.records.sort((a, b) => a.date.localeCompare(b.date));
   const settings = object(input.settings);
   if (settings) {
     result.settings.motivation = normalizeMotivation(settings.motivation);
+    result.settings.steps.enabled = object(settings.steps)?.enabled === true;
+    if (['area', 'line', 'bars', 'depth'].includes(String(settings.chartStyle))) result.settings.chartStyle = settings.chartStyle as ChartStyle;
     const recap = object(settings.recap);
     if (recap) {
       result.settings.recap.enabled = recap.enabled === true;
       if (recap.period === 'weekly' || recap.period === 'monthly') result.settings.recap.period = recap.period;
       if (typeof recap.time === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(recap.time)) result.settings.recap.time = recap.time;
     }
-    if (settings.theme === 'dark' || settings.theme === 'light') result.settings.theme = settings.theme;
+    if (settings.theme === 'dark' || settings.theme === 'light' || settings.theme === 'aurora' || settings.theme === 'sand') result.settings.theme = settings.theme;
     if (typeof settings.accentColor === 'string' && /^#[0-9a-f]{6}$/i.test(settings.accentColor)) result.settings.accentColor = settings.accentColor.toUpperCase();
     if (settings.language === 'es' || settings.language === 'en') result.settings.language = settings.language;
     if (settings.weightUnit === 'kg' || settings.weightUnit === 'lb') result.settings.weightUnit = settings.weightUnit;

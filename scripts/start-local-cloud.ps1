@@ -31,8 +31,12 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Docker no pudo iniciar los servicios. Revisa docker compose --env-file .env.local logs.' }
     Get-Content -LiteralPath (Join-Path $cloudProjectRoot 'server\db\04-record-limits.sql') -Raw | & $dockerCommand.Source compose --env-file $cloudEnvironmentPath exec -T db psql -v ON_ERROR_STOP=1 -U postgres -d weight_exercise
     if ($LASTEXITCODE -ne 0) { throw 'No se pudo actualizar el esquema local. Los registros no se han borrado.' }
+    Get-Content -LiteralPath (Join-Path $cloudProjectRoot 'server\db\05-email-summaries.sql') -Raw | & $dockerCommand.Source compose --env-file $cloudEnvironmentPath exec -T db psql -v ON_ERROR_STOP=1 -U postgres -d weight_exercise
+    if ($LASTEXITCODE -ne 0) { throw 'No se pudo actualizar el esquema de resumenes. Los registros no se han borrado.' }
     Write-Host 'Nube local lista. API: http://127.0.0.1:3001/api/health' -ForegroundColor Green
-    Write-Host 'Bandeja de codigos local: http://127.0.0.1:8025 (no envia correos reales).'
+    $cloudHealth = Invoke-RestMethod 'http://127.0.0.1:3001/api/health' -TimeoutSec 5
+    if ($cloudHealth.mailMode -eq 'real') { Write-Host 'SMTP real activo: los codigos se envian al correo del usuario.' }
+    else { Write-Host 'Bandeja de codigos local: http://127.0.0.1:8025 (no envia correos reales).' }
     Write-Host 'PostgreSQL no expone puertos. Los datos se conservan en el volumen de Docker.'
-    if (-not $NoBrowser) { Start-Process 'http://127.0.0.1:8025' }
+    if (-not $NoBrowser -and $cloudHealth.mailMode -ne 'real') { Start-Process 'http://127.0.0.1:8025' }
 } finally { Pop-Location }

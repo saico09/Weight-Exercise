@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { ArrowRight, Check, Cloud, CloudDownload, CloudUpload, Crown, ExternalLink, KeyRound, LoaderCircle, LogOut, Mail, Pencil, RefreshCw, ShieldCheck, Trash2, UserRound } from 'lucide-react';
-import { cloud, CLOUD_NATIVE_UNAVAILABLE, CloudError, cloudErrorMessage, type CloudBackup, type CloudUser } from '../lib/cloud';
+import { cloud, CLOUD_NATIVE_UNAVAILABLE, CloudError, cloudErrorMessage, type CloudBackup, type CloudUser, type CloudMailMode } from '../lib/cloud';
 import { useI18n } from '../lib/i18n';
 import type { AppData, Language } from '../lib/model';
 import { Brand, LanguageSwitch, Modal } from './UI';
@@ -9,7 +9,7 @@ import './cloud.css';
 const usernamePattern = String.raw`[\p{L}\p{N}_\-]{3,30}`;
 
 type AccountContext = {
-  user: CloudUser | null; loading: boolean; localDevelopment: boolean; unavailable: boolean;
+  user: CloudUser | null; loading: boolean; localDevelopment: boolean; mailMode: CloudMailMode | null; unavailable: boolean;
   refresh: () => Promise<void>; setUser: (user: CloudUser | null) => void;
 };
 const Account = createContext<AccountContext | null>(null);
@@ -19,6 +19,7 @@ export function CloudAccountProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<CloudUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [localDevelopment, setLocalDevelopment] = useState(false);
+  const [mailMode, setMailMode] = useState<CloudMailMode | null>(null);
   const [unavailable, setUnavailable] = useState(false);
   const epoch = useRef(0);
   const updateUser = useCallback((next: CloudUser | null) => { epoch.current++; setUser(next); setUnavailable(false); }, []);
@@ -28,12 +29,12 @@ export function CloudAccountProvider({ children }: { children: ReactNode }) {
     try {
       const result = await cloud.account();
       if (requestEpoch !== epoch.current) return;
-      setUser(result.user); setLocalDevelopment(result.localDevelopment); setUnavailable(false);
+      setUser(result.user); setLocalDevelopment(result.localDevelopment); setMailMode(result.mailMode || null); setUnavailable(false);
     } catch { if (requestEpoch === epoch.current) setUnavailable(true); }
     finally { setLoading(false); }
   }, []);
   useEffect(() => { void refresh(); }, [refresh]);
-  return <Account.Provider value={{ user, loading, localDevelopment, unavailable, refresh, setUser: updateUser }}>{children}</Account.Provider>;
+  return <Account.Provider value={{ user, loading, localDevelopment, mailMode, unavailable, refresh, setUser: updateUser }}>{children}</Account.Provider>;
 }
 
 export function useCloudAccount() {
@@ -43,9 +44,9 @@ export function useCloudAccount() {
 }
 
 function LocalInbox() {
-  const { localDevelopment } = useCloudAccount();
+  const { mailMode } = useCloudAccount();
   const { t } = useI18n();
-  return localDevelopment ? <div className="cloud-local-note"><span>{t('Prueba local: los códigos llegan a la bandeja de pruebas, no a tu correo real.')}</span><a href="http://127.0.0.1:8025" target="_blank" rel="noopener noreferrer">{t('Abrir bandeja local en este PC')}<ExternalLink size={13} /></a></div> : null;
+  return mailMode === 'mailpit' ? <div className="cloud-local-note"><span>{t('Prueba local: los códigos llegan a la bandeja de pruebas, no a tu correo real.')}</span><a href="http://127.0.0.1:8025" target="_blank" rel="noopener noreferrer">{t('Abrir bandeja local en este PC')}<ExternalLink size={13} /></a></div> : mailMode === 'real' ? <p className="cloud-security-note"><Mail size={14} />{t('El código llegará a tu correo real. Revisa también la carpeta de spam.')}</p> : null;
 }
 
 function AccountAccess({ onDone }: { onDone?: () => void }) {

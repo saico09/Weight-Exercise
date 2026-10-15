@@ -40,13 +40,15 @@ export function validateSnapshot(data) {
     input(date(record.date) && Number.isFinite(record.weightKg) && record.weightKg >= 10 && record.weightKg <= 650);
     input(typeof record.exercise === 'boolean' && typeof record.healthy === 'boolean');
     input(typeof record.note === 'string' && record.note.length <= 2000);
+    input(record.steps === undefined || (Number.isInteger(record.steps) && record.steps >= 0 && record.steps <= 200000));
     input(!ids.has(record.id) && !dates.has(record.date), 'Hay registros repetidos en el respaldo.');
     ids.add(record.id); dates.add(record.date);
   }
   input(data.initialRecordId === null || (typeof data.initialRecordId === 'string' && ids.has(data.initialRecordId)));
   input(data.lastPromptDate === null || date(data.lastPromptDate));
-  input(['dark', 'light'].includes(data.settings.theme) && ['es', 'en'].includes(data.settings.language));
+  input(['dark', 'light', 'aurora', 'sand'].includes(data.settings.theme) && ['es', 'en'].includes(data.settings.language));
   input(['kg', 'lb'].includes(data.settings.weightUnit) && ['cm', 'ft'].includes(data.settings.heightUnit));
+  input(data.settings.chartStyle === undefined || ['area','line','bars','depth'].includes(data.settings.chartStyle));
   const { settings, profile, records, ...metadata } = data;
   return { settings, profile, records, metadata };
 }

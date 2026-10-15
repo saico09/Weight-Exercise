@@ -13,6 +13,7 @@ const stats = async label => {
   console.log(label + '\n' + result.stdout.trim());
 };
 try {
+  if ((await api('/health')).value.mailMode !== 'mailpit') throw new Error('Load test refuses real email delivery. Switch to Mailpit first.');
   await stats('Before five-user local test');
   for (let i = 0; i < 5; i++) {
     const email = `${prefix}_${i}@example.test`;

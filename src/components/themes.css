@@ -1,0 +1,38 @@
+/* Each Pro theme changes surfaces, typography, geometry and motion, not just the accent. */
+ion-app[data-theme=aurora] { --bg:#12152a; --surface:#1b203be6; --surface-raised:#252b49; --surface-soft:#171c32; --text:#eef0ff; --muted:#a0a9ca; --faint:#7b87aa; --border:#353f62; --track:#303854; --body-font:'Space Grotesk',sans-serif; --heading-font:'Space Grotesk',sans-serif; --radius:28px; --shadow:0 18px 55px #080b2245; }
+[data-theme=aurora] .app-root { background:radial-gradient(ellipse at 85% 0%,#7361b432,transparent 40%),radial-gradient(ellipse at 5% 65%,#4362bb22,transparent 45%),var(--bg); }
+[data-theme=aurora] .card { backdrop-filter:blur(18px); border-top-color:#66729d75; }
+[data-theme=aurora] .section-heading h1 { font-size:clamp(31px,4vw,44px); font-weight:500; letter-spacing:-1.9px; text-transform:none; }
+[data-theme=aurora] .card h2 { font-size:21px; letter-spacing:-.8px; }
+[data-theme=aurora] .big-weight { font-size:55px; letter-spacing:-3px; }
+[data-theme=aurora] .bottom-nav { border-radius:26px; background:#1b203beb; box-shadow:0 8px 36px #080b2266; }
+[data-theme=aurora] .primary-button { border-radius:24px; }
+[data-theme=aurora] .eyebrow { letter-spacing:2.7px; }
+[data-theme=aurora] .onboarding-intro h1 { font-family:var(--heading-font); font-weight:500; text-transform:none; font-size:clamp(41px,5vw,66px); letter-spacing:-3px; }
+ion-app[data-theme=sand] { --bg:#f5efe5; --surface:#fffaf2; --surface-raised:#ede3d6; --surface-soft:#f2e9dd; --text:#3a3028; --muted:#807063; --faint:#9b8c7b; --border:#dfcdbc; --track:#e5d7c7; --body-font:'DM Sans',sans-serif; --heading-font:'Fraunces',serif; --radius:8px; --shadow:0 5px 18px #61442907; }
+[data-theme=sand] .app-root { background:linear-gradient(135deg,#ffffff30,transparent),var(--bg); }
+[data-theme=sand] .section-heading h1 { font-size:clamp(35px,4vw,47px); font-weight:400; letter-spacing:-1.5px; text-transform:none; }
+[data-theme=sand] .card h2 { font-size:23px; font-weight:400; }
+[data-theme=sand] .big-weight { font-size:59px; font-weight:400; }
+[data-theme=sand] .card { border-top:2px solid var(--border); }
+[data-theme=sand] .eyebrow { letter-spacing:2.2px; font-size:9px; }
+[data-theme=sand] .primary-button,[data-theme=sand] .secondary-button { border-radius:6px; }
+[data-theme=sand] .bottom-nav { border-radius:12px; background:#fffaf2eb; box-shadow:0 5px 30px #61442916; }
+[data-theme=sand] .brand-mark { color:var(--accent-ink); }
+[data-theme=sand] .onboarding-intro h1 { font-family:var(--heading-font); font-size:clamp(43px,5vw,66px); font-weight:400; letter-spacing:-2px; text-transform:none; }
+[data-theme=sand] .progress-ring .ring-bg { stroke:var(--track); }
+.settings-theme.aurora .theme-mini { background:radial-gradient(ellipse at 80% 10%,#5b458b,#171b35 80%); color:#c4b5ff; border-radius:19px; }
+.settings-theme.aurora .theme-mini > span { font-family:'Space Grotesk',sans-serif; color:#eeeaff; font-size:16px; letter-spacing:-.8px; }
+.settings-theme.sand .theme-mini { background:#f5efe5; color:#b86945; border-radius:3px; border:1px solid #ddcbb8; }
+.settings-theme.sand .theme-mini > span { font-family:'Fraunces',serif; color:#5a4032; font-size:17px; font-weight:400; letter-spacing:-.5px; }
+.settings-theme.sand .mini-line { background:#a87d5a; }
+.settings-theme.aurora .mini-line { background:#a99cf9; }
+.settings-theme .theme-description { display:block; line-height:1.6; }
+.extra-theme-choices { grid-column:2; margin-top:16px; gap:10px; }
+.extra-theme-choices .theme-mini { height:82px; }
+.extra-theme-choices .theme-mini > span { font-size:15px; }
+.extra-theme-choices .theme-description { font-size:9px; }
+.settings-page-heading { margin-top:34px; }
+@media(max-width:600px) { .extra-theme-choices { margin-top:0; } .settings-page-heading { margin-top:28px; } [data-theme=aurora] .section-heading h1,[data-theme=sand] .section-heading h1 { max-width:100%; overflow-wrap:break-word; } }
+@media(prefers-reduced-motion:no-preference) { [data-theme=aurora] .main-content { animation:aurora-enter .65s cubic-bezier(.16,1,.3,1) both; } [data-theme=sand] .main-content { animation:page-enter .6s ease both; } }
+@keyframes aurora-enter { from { opacity:0; transform:translateY(10px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }

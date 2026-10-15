@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { Bell, Check, ChevronRight, Moon, ShieldCheck, Sparkles, Sun, Trash2 } from 'lucide-react';
+import { Bell, ChevronRight, ShieldCheck, Sparkles, Trash2 } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import type { AppData, Settings } from '../lib/model';
 import { configureNotifications, configureRecap, testNotification } from '../lib/notifications';
 import { progressRecap } from '../lib/recap';
-import { IS_PRO, EDITION } from '../lib/edition';
+import { IS_PRO, EDITION, APP_VERSION } from '../lib/edition';
 import { useI18n } from '../lib/i18n';
 import { HeightSwitch, LanguageSwitch, SectionHeading, UnitSwitch } from './UI';
 import AccentPicker from './AccentPicker';
+import ThemeChoices from './ThemeChoices';
+import { StepsSettings } from './Steps';
 
 export default function SettingsPage({ data, demo, onSettings, onReset, notify }: { data: AppData; demo: boolean; onSettings: (settings: Partial<Settings>) => void; onReset: () => void; notify: (message: string) => void }) {
   const { t, language, locale } = useI18n();
@@ -27,15 +29,12 @@ export default function SettingsPage({ data, demo, onSettings, onReset, notify }
     } catch (e) { setMessage(e instanceof Error ? t(e.message) : t('No pudimos configurar los recordatorios.')); }
     finally { setBusy(false); }
   };
-  return <><SectionHeading eyebrow={t('A TU MANERA')} title={t('Tu espacio, tus reglas.')} text={t('Unos pocos ajustes para sentirte en casa.')} />
+  return <><div className={IS_PRO ? 'settings-page-heading' : undefined}><SectionHeading eyebrow={t('A TU MANERA')} title={t('Tu espacio, tus reglas.')} text={t('Unos pocos ajustes para sentirte en casa.')} /></div>
     <div className="settings-layout">
       <section className="card appearance-card">
-        <div className="card-head"><div><span className="eyebrow">{t('01 / TU ENERGÍA')}</span><h2>{t('Dos estilos. El mismo tú.')}</h2></div><Sparkles size={20} /></div>
+        <div className="card-head"><div><span className="eyebrow">{t('01 / TU ENERGÍA')}</span><h2>{t(IS_PRO ? 'Cuatro formas de ser tú.' : 'Dos estilos. El mismo tú.')}</h2></div><Sparkles size={20} /></div>
         <p className="muted">{t('Elige cómo quieres vivir tu progreso.')}</p>
-        <div className="settings-themes">{(['dark', 'light'] as const).map(theme => <button key={theme} className={`settings-theme ${theme} ${data.settings.theme === theme ? 'selected' : ''}`} onClick={() => onSettings({ theme })} aria-pressed={data.settings.theme === theme}>
-          <div className="theme-mini"><div className="mini-line" /><span>{theme === 'dark' ? 'Beast mode' : t('Minimalista')}</span><div className="mini-chart"><svg viewBox="0 0 160 44" aria-hidden="true"><path d="M0 3 18 11 35 8 52 20 70 17 87 29 104 26 122 34 140 32 160 42" fill="none" stroke="currentColor" strokeWidth="2.5" /></svg></div></div>
-          <div className="settings-theme-label"><span>{theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}{theme === 'dark' ? 'Dark' : 'Light'}</span><i>{data.settings.theme === theme && <Check size={13} />}</i></div><span className="theme-description">{t(theme === 'dark' ? 'Intenso. Enfocado. Premium.' : 'Ligero. Sereno. Muy tú.')}</span>
-        </button>)}</div>
+        <ThemeChoices value={data.settings.theme} onChange={theme => onSettings({ theme })} />
         {IS_PRO && <div className="settings-accent"><span>{t('Color principal')}</span><AccentPicker theme={data.settings.theme} value={data.settings.accentColor} onChange={accentColor => onSettings({ accentColor })} /></div>}
         <div className="settings-language"><span>{t('Idioma')}</span><LanguageSwitch value={language} onChange={next => { onSettings({ language: next }); setMessage(''); }} /></div>
       </section>
@@ -68,11 +67,12 @@ export default function SettingsPage({ data, demo, onSettings, onReset, notify }
           {data.settings.recap.enabled && <button className="text-link centered" disabled={busy} onClick={async () => { setBusy(true); try { const next = { ...recap, enabled: false }; await configureRecap({ ...data, settings: { ...data.settings, recap: next } }); onSettings({ recap: next }); } catch { setMessage(t('No pudimos configurar los recordatorios.')); } finally { setBusy(false); } }}>{t('Desactivar recuentos')}</button>}
         </div>}
       </section>
+      {IS_PRO && <StepsSettings data={data} demo={demo} onSettings={onSettings} />}
       <section className="card units-card">
         <div className="card-head"><div><span className="eyebrow">{t('03 / TUS MEDIDAS')}</span><h2>{t('Como te acomode.')}</h2></div></div>
         <div className="list-row"><div><strong>{t('Peso')}</strong><span>{t('Kilogramos o libras')}</span></div><UnitSwitch value={data.settings.weightUnit} onChange={weightUnit => onSettings({ weightUnit })} /></div>
         <div className="list-row"><div><strong>{t('Altura')}</strong><span>{t('Centímetros o pies y pulgadas')}</span></div><HeightSwitch value={data.settings.heightUnit} onChange={heightUnit => onSettings({ heightUnit })} /></div>
       </section>
-      <section className="card privacy-card"><div className="soft-icon"><ShieldCheck size={22} /></div><h3>{t('Tu historia se queda contigo.')}</h3><p>{t(IS_PRO ? 'Tus datos se guardan en este dispositivo. El respaldo con tu cuenta es opcional y se actualiza cuando tú lo pides.' : 'Los registros se guardan solo en este dispositivo, sin cuenta ni respaldo en la nube. Si borras los datos de la app o la desinstalas, se perderán.')}</p><button className="reset-button" onClick={onReset}><Trash2 size={17} /><span>{t(demo ? 'Reiniciar la demo' : 'Empezar de cero')}</span><ChevronRight size={17} /></button><span className="app-version">WEIGHT&EXERCISE · {EDITION.toUpperCase()} · V0.4.0</span></section>
+      <section className="card privacy-card"><div className="soft-icon"><ShieldCheck size={22} /></div><h3>{t('Tu historia se queda contigo.')}</h3><p>{t(IS_PRO ? 'Tus datos se guardan en este dispositivo. El respaldo con tu cuenta es opcional y se actualiza cuando tú lo pides.' : 'Los registros se guardan solo en este dispositivo, sin cuenta ni respaldo en la nube. Si borras los datos de la app o la desinstalas, se perderán.')}</p><button className="reset-button" onClick={onReset}><Trash2 size={17} /><span>{t(demo ? 'Reiniciar la demo' : 'Empezar de cero')}</span><ChevronRight size={17} /></button><span className="app-version">WEIGHT&EXERCISE · {EDITION.toUpperCase()} · V{APP_VERSION}</span></section>
     </div></>;
 }

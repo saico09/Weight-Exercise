@@ -1,60 +1,60 @@
-# Pro: prioridades después de v0.4
+# Pro: estado y prioridades después de v0.5
 
-La v0.4 sirve para comparar Basic y Pro y probar la cuenta y el respaldo en Docker local. Estas son propuestas de producto y trabajo pendiente; no son funciones ya disponibles ni promesas de publicación.
+Pro v0.5 amplía la experiencia local y el prototipo de servidor. Basic conserva las funciones de v0.4 en su rama independiente. Todavía no hay compras ni publicación en Google Play; las dos ramas y los APK con identidades distintas permiten comparar las ediciones, sin obligar a publicar dos fichas.
 
-## Lo que ya se puede revisar
+## Disponible para revisar
 
-- Basic conserva historial completo y editable, Dark/Light, gráficos, IMC, logros, motivación personalizable y recordatorio diario.
-- Pro añade colores, estadísticas semanales, informes PDF y recuentos de progreso.
-- En la vista Pro del PC: bienvenida con cuenta, códigos por correo en Mailpit, cambio de correo y respaldo/restauración manuales.
-- Las ramas `basic` y `pro` permiten comparar ambas ediciones; los APK de prueba tienen identidades distintas para instalarlos juntos.
+- Basic: historial completo y editable, Dark/Light, gráficos, IMC, logros, motivación personalizable y recordatorio diario.
+- Pro: cuatro temas (Dark, Light, Aurora y Sand), colores personalizados y gráfico alternable entre área, línea, barras y perspectiva 3D, con desplazamiento y zoom.
+- Comparación de registros seleccionados; uno se compara con el punto de partida y varios con el primero cronológico. Excel por mes, filtros o historial completo.
+- PDF con visión global y comparación del período elegido con el anterior de igual duración; hábitos, cobertura de datos y pasos disponibles. Fuentes y colores del tema incluidos localmente.
+- Cuenta por código de correo, cambio de correo y respaldo/restauración manuales en el PC. El código por correo es acceso sin contraseña de un factor, no 2FA.
+- Resumen semanal o mensual por correo, desactivado inicialmente y con consentimiento explícito. Adjunta todos los registros del último respaldo manual, incluidas notas y pasos. La programación persiste en PostgreSQL; necesita el servidor encendido.
+- Pasos de Health Connect en Android 14+: lectura de los últimos 30 días con pesajes existentes, al abrir y usar la app. No crea registros de peso ni instala un servicio permanente de seguimiento. Validación en teléfono físico pendiente.
 
-## 1. Cerrar la primera versión para Google Play
+SMTP admite Mailpit de pruebas y correo real con TLS. La conexión y autenticación de Gmail se verificaron **sin enviar un mensaje real**. La entrega, los enlaces de baja fuera del PC y el comportamiento del proveedor aún requieren pruebas. No se ha desplegado nada en AWS; cuenta, respaldo y correo siguen deshabilitados en Android hasta configurar y validar HTTPS.
 
-| Trabajo | Resultado verificable |
+## 1. Cerrar la versión Android para Google Play
+
+| Trabajo pendiente | Resultado verificable |
 | --- | --- |
-| Probar Android real | Registrar, reiniciar, actualizar APK sin perder datos; probar permisos, recordatorios y compartir PDF. |
-| Definir un producto comercial | Decidir entre una app gratuita con desbloqueo Pro o dos fichas. Las dos ramas actuales no obligan a publicar dos apps. |
-| Integrar Google Play Billing si se elige desbloqueo | Comprar y restaurar en el entorno de pruebas, verificar compras y distinguir acceso real de la edición de desarrollo. No simular compras exitosas. |
-| Preparar publicación | Firma de distribución, compilación para tienda, materiales y declaraciones que reflejen los datos realmente tratados. |
+| Probar un teléfono real | Registrar, reiniciar y actualizar sin pérdida de datos; comprobar permisos, recordatorios, compartir PDF/XLSX y accesibilidad. |
+| Validar Health Connect | Conceder/revocar permisos, volver desde ajustes, contrastar fuentes y totales, probar medianoche y cambio de fecha; no crear pesajes ni confundir ausencia con cero. |
+| Definir el producto comercial | Elegir desbloqueo Pro dentro de una app o fichas separadas; validar precio y costes del servicio. |
+| Integrar Google Play Billing si corresponde | Comprar y restaurar en pruebas, verificar compras y distinguir la edición de desarrollo del acceso comprado. |
+| Preparar publicación | Firma de distribución, paquete de tienda, ficha y declaraciones de datos/permisos que reflejen las funciones implementadas. |
 
-La opción propuesta sigue siendo Basic útil y gratuita más un desbloqueo Pro, sin publicidad. El precio, la modalidad y las condiciones se deben validar antes de vender. Si más adelante se ofrece un servicio recurrente de nube, conviene separar sus costes del valor de las funciones que trabajan completamente en el teléfono.
+La propuesta sigue siendo una Basic útil y gratuita y un desbloqueo Pro, sin publicidad. Las funciones locales y el servicio de nube tienen costes diferentes; no conviene prometer mantenimiento indefinido del servidor antes de definir el modelo.
 
-## 2. Respaldo de producción con recursos modestos
+## 2. Servidor de producción con recursos modestos
 
-El servidor dispone de **1,15 GB de RAM disponible y 54 GB de disco libre**, y ya sostiene otras aplicaciones. La prioridad es medir y preservar ese margen, no añadir infraestructura por anticipado.
+El margen informado es **1,15 GB de RAM disponible y 54 GB de disco libre**, con otras aplicaciones en el servidor. El prototipo usa PostgreSQL y una API pequeña, sin ORM, Redis ni una plataforma de administración adicional. La compresión del Excel del correo se realiza al generarlo y se procesa un informe a la vez. [Configuración y mediciones locales](LOCAL-CLOUD.md).
 
-1. Medir PostgreSQL y la API con cuentas y registros representativos, incluyendo carga de respaldos, restauración y generación simultánea de códigos. Registrar RAM máxima, latencia y crecimiento en disco.
-2. Revisar el servidor y sus servicios antes de desplegar. Mantener base y usuario propios, límites conservadores y acceso a PostgreSQL únicamente desde el backend.
-3. Configurar dominio y HTTPS, correo real con un proveedor transaccional y secretos fuera del repositorio. Mailpit se mantiene exclusivamente en desarrollo.
-4. Verificar aislamiento de cuentas, límites de intentos, expiración de códigos, cambio de correo y revocación de sesiones. El código por correo es un factor; si hace falta un segundo factor, evaluar una llave de acceso o autenticador.
-5. Programar copias cifradas fuera del servidor, con retención acotada y una prueba real de restauración. La copia de usuario dentro de PostgreSQL y el respaldo operativo de PostgreSQL resuelven problemas diferentes.
-6. Habilitar la cuenta en Android solo después de probar el transporte seguro, las sesiones y el ciclo de actualización de la app.
+1. Medir picos de RAM, latencia y disco con respaldos e informes de tamaños representativos y varias cuentas. Los límites de contenedor no garantizan capacidad bajo carga.
+2. Revisar los servicios existentes antes de desplegar; mantener base y usuario propios y PostgreSQL sin exposición pública.
+3. Configurar dominio, HTTPS y correo de producción, con secretos fuera del repositorio. Validar entrega y baja con consentimiento, y separar Mailpit del servicio real.
+4. Revisar sesiones, aislamiento de cuentas, límites de intentos y cambio de correo. Evaluar passkeys o autenticador si se añade un segundo factor real.
+5. Preparar copias cifradas fuera del servidor y probar una restauración. El respaldo de usuario en PostgreSQL y la copia operativa de la base son distintos.
+6. Habilitar Android solo después de validar HTTPS, sesiones y actualización de la app en un teléfono.
 
-Por ahora, el respaldo requiere una acción explícita. No hay sincronización automática, mezcla entre historiales ni respaldo a AWS.
+El respaldo continúa siendo manual: iniciar sesión no sube ni mezcla registros. Los correos utilizan esa copia, no datos recientes que solo existan en el teléfono.
 
-## 3. Funciones Pro que aportan valor sin un servidor pesado
+## 3. Siguientes funciones posibles
 
-| Prioridad | Propuesta | Criterio de calidad |
-| --- | --- | --- |
-| Alta | Comparar dos períodos elegidos | Mostrar peso promedio, días registrados y proporción de hábitos; distinguir falta de datos de un cambio real. |
-| Alta | Tendencia suavizada del peso | Permitir alternar mediciones y tendencia; conservar los valores originales y explicar el período usado. |
-| Alta | Exportación CSV e importación guiada | Recuperar y llevarse datos; validar unidades, fechas y duplicados antes de modificar el historial. |
-| Media | Informes con períodos comparados | Incluir tablas y gráficos compartibles, manteniendo generación local y selección clara del contenido. |
-| Media | Widgets y accesos rápidos Android | Registrar hábitos o abrir el peso diario sin navegar por toda la app. |
-| Media | Recapitulaciones con más contexto | Comparar semanas completas y cobertura de datos; ofrecer frecuencia y horario controlados por el usuario. |
-| Posterior | Integración con Health Connect | Empezar por peso con permiso específico; detectar duplicados y explicar qué datos se leen o escriben. |
+| Propuesta | Criterio de calidad |
+| --- | --- |
+| Comparar dos períodos elegidos libremente | Peso promedio, cobertura y proporciones de hábitos; distinguir falta de datos de un cambio real. |
+| Tendencia suavizada del peso | Mostrar también mediciones originales y explicar el intervalo del cálculo. |
+| Importación guiada de datos | Revisar fechas, unidades y duplicados antes de modificar el historial; conservar una vía para deshacer. |
+| Widgets y accesos rápidos Android | Abrir el registro diario o hábitos sin recorrer toda la app. |
+| Ampliar Health Connect | Decidir datos y dirección de intercambio antes de pedir permisos adicionales; comprobar duplicados y origen. |
 
-Las primeras mejoras pueden calcularse en el teléfono. No requieren guardar imágenes grandes, series precalculadas ni informes PDF en PostgreSQL. Las fotografías de motivación ya se comprimen localmente; los PDF se generan al solicitarlos.
+Son propuestas pendientes. La mayoría puede resolverse en el dispositivo sin guardar series precalculadas ni informes en PostgreSQL.
 
 ## 4. Sincronización automática, después del respaldo manual
 
-Solo avanzar cuando el respaldo manual funcione de manera estable en producción. Se necesitarían identificadores y revisiones por registro, cola de cambios sin conexión, tratamiento de borrados, resolución visible de conflictos y pruebas con dos teléfonos. Cerrar sesión o cambiar de cuenta no debe enviar la información local a otra persona por accidente.
-
-La sincronización debe ser opcional y comprensible. Una restauración manual que reemplaza el historial no debe presentarse como sincronización entre dispositivos.
+Solo avanzar tras validar el respaldo en producción. Harían falta revisiones por registro, cola sin conexión, tratamiento de borrados, resolución visible de conflictos y pruebas con dos teléfonos. Cerrar sesión o cambiar de cuenta no debe enviar datos locales a otra cuenta. Restaurar una copia que reemplaza el historial no equivale a sincronizar dispositivos.
 
 ## Límites del producto
 
-Weight&Exercise ayuda a observar hábitos y registros. Las estadísticas y logros deben premiar constancia y cuidado personal, sin prometer diagnósticos, prescripciones ni una velocidad de pérdida de peso. Un cambio de peso no implica por sí solo una mejora o un empeoramiento; los resúmenes deben conservar el signo del cambio y sus fechas.
-
-Mantener gratuitos el acceso a los registros propios, su edición y la motivación básica. Pro puede aportar análisis, personalización y comodidad sin convertir el historial del usuario en una barrera de pago.
+Weight&Exercise ayuda a observar hábitos y registros. Estadísticas y logros deben premiar constancia y cuidado, sin prometer diagnósticos ni una velocidad de pérdida de peso. Los resúmenes deben conservar el signo del cambio y sus fechas. Basic mantiene el acceso y la edición del historial propio; Pro añade análisis, personalización y comodidad.

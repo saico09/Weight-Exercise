@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Check, Palette, RotateCcw, SlidersHorizontal } from 'lucide-react';
 import type { Theme } from '../lib/model';
+import { themeInfo } from '../lib/themes';
 import { accentPresets, accentStyle } from '../lib/accent';
 import { useI18n } from '../lib/i18n';
 import { Modal } from './UI';
@@ -23,7 +24,7 @@ function AccentEditor({ theme, value, onClose, onApply }: { theme: Theme; value:
   const [draft, setDraft] = useState(value);
   const selectedPreset = accentPresets.find(preset => preset.color === draft?.toUpperCase());
   const custom = Boolean(draft && !selectedPreset);
-  return <Modal title={t('Hazlo tuyo.')} subtitle={t('Tu color, en ambos estilos.')} onClose={onClose}>
+  return <Modal title={t('Hazlo tuyo.')} subtitle={t('Tu color, en todos tus estilos.')} onClose={onClose}>
     <div className="accent-editor" style={accentStyle(theme, draft)}>
       <div className="accent-previews" aria-label={t('Vista previa de color')}>
         {(['dark', 'light'] as const).map(mode => <div key={mode} className={`accent-preview ${mode}`} style={accentStyle(mode, draft)}>
@@ -41,7 +42,7 @@ function AccentEditor({ theme, value, onClose, onApply }: { theme: Theme; value:
         </button>)}
         <label className={`accent-option accent-spectrum-option ${custom ? 'selected' : ''}`}>
           <span className="accent-swatch spectrum-swatch"><Palette size={16} aria-hidden="true" /></span><span>{t('A tu gusto')}</span>
-          <input type="color" aria-label={t('Todo el espectro')} value={draft || (theme === 'dark' ? '#42ff85' : '#91f8ff')} onChange={event => setDraft(event.target.value.toUpperCase())} />
+          <input type="color" aria-label={t('Todo el espectro')} value={draft || themeInfo[theme].accent} onChange={event => setDraft(event.target.value.toUpperCase())} />
         </label>
       </div>
       <div className="accent-current-color"><span>{draft ? selectedPreset ? t(selectedPreset.name) : t('Color personalizado') : t('Colores originales')}</span>{draft && <code>{draft.toUpperCase()}</code>}</div>

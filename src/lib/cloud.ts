@@ -7,8 +7,15 @@ const validConfiguredApi = configuredApi.startsWith('https://') ? configuredApi 
 export const CLOUD_NATIVE_UNAVAILABLE = Capacitor.isNativePlatform() && !validConfiguredApi;
 
 export interface CloudUser { id: string; email: string; username: string }
-export interface CloudAccountState { user: CloudUser | null; localDevelopment: boolean }
+export type CloudMailMode = 'mailpit' | 'real';
+export interface CloudAccountState { user: CloudUser | null; localDevelopment: boolean; mailMode?: CloudMailMode }
 export interface CloudBackup { revision: number; updatedAt: string | null; data: AppData | null }
+export interface EmailSummarySettings {
+  enabled: boolean; cadence: 'weekly' | 'monthly'; timezone: string; time: string;
+  weekday: number; monthDay: number; nextSendAt: string | null; lastSentAt: string | null;
+  backupUpdatedAt: string | null; recordCount: number; mailMode: CloudMailMode;
+}
+export type EmailSummaryUpdate = { enabled: false } | { enabled: true; consent: true; cadence: 'weekly' | 'monthly'; timezone: string; time: string; weekday: number; monthDay: number };
 
 export class CloudError extends Error {
   readonly code: string;
@@ -49,6 +56,8 @@ export const cloud = {
   verifyEmailChange: (email: string, currentCode: string, newCode: string, accountId: string) => request<{ user: CloudUser }>('/account/email/verify', 'POST', { email: email.trim(), currentCode, newCode }, accountId),
   logout: (accountId: string) => request('/auth/logout', 'POST', {}, accountId),
   deleteAccount: (accountId: string) => request('/account', 'DELETE', { confirmation: 'DELETE' }, accountId),
+  emailSummary: (accountId: string) => request<EmailSummarySettings>('/email-summary', 'GET', undefined, accountId),
+  saveEmailSummary: (settings: EmailSummaryUpdate, accountId: string) => request<EmailSummarySettings>('/email-summary', 'PUT', settings, accountId),
   async backup(accountId: string): Promise<CloudBackup> {
     const result = await request<CloudBackup>('/backup', 'GET', undefined, accountId);
     if (!Number.isInteger(result.revision) || result.revision < 0) throw new CloudError('invalid_backup');
@@ -73,6 +82,7 @@ export function cloudErrorMessage(error: unknown): string {
     conflict: 'La información cambió. Actualiza y revisa antes de continuar.',
     account_changed: 'La sesión cambió en otra ventana. Revisa la cuenta antes de continuar; no se modificó ningún respaldo.',
     invalid_backup: 'El respaldo no es compatible o está incompleto. Tus datos locales siguen intactos.',
+    backup_required: 'Guarda primero un respaldo con registros desde Ajustes para activar los resúmenes.',
     unavailable: 'El servidor local no está disponible. Puedes seguir usando la app sin conexión.',
     native_unconfigured: 'La cuenta y el respaldo están disponibles en la vista previa del PC. La conexión segura del teléfono se habilitará cuando configuremos el servidor.',
   } as Record<string, string>)[code] || 'No pudimos completar la solicitud. Inténtalo nuevamente.';

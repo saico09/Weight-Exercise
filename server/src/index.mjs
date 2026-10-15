@@ -1,7 +1,8 @@
 import http from 'node:http';
 import { randomBytes, randomUUID } from 'node:crypto';
 import pg from 'pg';
-import nodemailer from 'nodemailer';
+import { createMailer } from './mailer.mjs';
+import { createSummaryService } from './email-summary.mjs';
 import { ApiError, input, object, email, username, validateSnapshot, tokenHash, makeToken, makeCode, keyedHash, safeEqual, sessionToken, sessionCookie, expiredCookie } from './security.mjs';
 
 // This first deployment is intentionally local. Internet deployment requires HTTPS,
@@ -13,7 +14,8 @@ const origins = new Set((process.env.ALLOWED_ORIGINS || '').split(',').filter(Bo
 if (!origins.size || [...origins].some(origin => !/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(origin))) throw new Error('Local origins only.');
 const pool = new pg.Pool({ max: 3, idleTimeoutMillis: 10000, connectionTimeoutMillis: 3000 });
 pool.on('error', () => console.error('Database connection unavailable.'));
-const mail = nodemailer.createTransport({ host: process.env.SMTP_HOST || 'mailpit', port: Number(process.env.SMTP_PORT || 1025), secure: false, connectionTimeout: 5000, socketTimeout: 5000, disableFileAccess: true, disableUrlAccess: true });
+const mail = createMailer();
+const summaries = createSummaryService({ pool, transaction, mailer: mail, secret, appUrl: process.env.PUBLIC_APP_URL || 'http://127.0.0.1:5173' });
 const userView = row => ({ id: row.id, email: row.email, username: row.username });
 const hash = (...values) => keyedHash(secret, ...values);
 const invalidCode = () => new ApiError(400, 'invalid_code', 'El código no es válido o expiró. Solicita uno nuevo si agotaste los intentos.');
@@ -50,7 +52,7 @@ async function checkChallenge(client, target, code) {
   return true;
 }
 async function sendCode(to, code, purpose) {
-  await mail.sendMail({ from: 'Weight&Exercise <access@weight-exercise.local>', to, subject: `Weight&Exercise · ${purpose}`, text: `Tu código es: ${code}\n\n${purpose}. Expira en 10 minutos y solo puede usarse una vez.\nSi no pediste este código, ignora este mensaje.\n\nVista local: este correo permanece en Mailpit y no se envía por Internet.` });
+  await mail.send({ to: { address: to }, subject: `Weight&Exercise · ${purpose}`, text: `Tu código es: ${code}\n\n${purpose}. Expira en 10 minutos y solo puede usarse una vez.\nSi no pediste este código, ignora este mensaje.${mail.mode === 'mailpit' ? '\n\nVista local: este correo permanece en Mailpit y no se envía por Internet.' : ''}` });
 }
 async function getUser(req) {
   const token = sessionToken(req);
@@ -96,10 +98,24 @@ const server = http.createServer(async (req, res) => {
   }
   activeRequests++;
   try {
-    const path = new URL(req.url, 'http://localhost').pathname;
+    const requestUrl = new URL(req.url, 'http://localhost');
+    const path = requestUrl.pathname;
     if (!path.startsWith('/api/')) throw new ApiError(404, 'not_found', 'Ruta no disponible.');
     if (req.method === 'GET' && path === '/api/health') {
-      await pool.query('SELECT 1'); return json(res, 200, { ok: true, localDevelopment: true, edition: 'pro-preview' });
+      await pool.query('SELECT 1'); return json(res, 200, { ok: true, localDevelopment: true, edition: 'pro-preview', mailMode: mail.mode });
+    }
+    // A signed, narrowly scoped unsubscribe token is the only cookie-free write.
+    // GET confirms intent; email link scanners cannot unsubscribe just by opening it.
+    if (path === '/api/email-summary/unsubscribe' && ['GET','POST'].includes(req.method)) {
+      let token = requestUrl.searchParams.get('token');
+      if (req.method === 'POST') {
+        let content = ''; for await (const chunk of req) { content += chunk; if (content.length > 4096) throw new ApiError(413, 'invalid_input', 'Solicitud demasiado grande.'); }
+        token ||= new URLSearchParams(content).get('token');
+      }
+      const valid = await summaries.unsubscribe(token, req.method === 'POST');
+      const done = valid && req.method === 'POST';
+      res.writeHead(valid ? 200 : 404, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'" });
+      return res.end(`<!doctype html><html lang="es"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Weight&Exercise · Correo</title><body style="font-family:system-ui;background:#101613;color:#f4fff8;padding:40px;max-width:520px;margin:auto"><h1>Weight&amp;Exercise</h1><h2>${done ? 'Resúmenes desactivados' : valid ? '¿Dejar de recibir resúmenes?' : 'Este enlace ya no es válido'}</h2><p>${done ? 'No recibirás nuevos resúmenes programados. Puedes volver a activarlos en Estadísticas.' : valid ? 'Se desactivarán los correos de progreso. Tu cuenta y tus registros se conservan.' : 'Puedes desactivar los resúmenes desde Estadísticas → Informes Pro.'}</p>${valid && !done ? `<form method="post"><input type="hidden" name="token" value="${token}"><button style="padding:14px 20px;border:0;border-radius:20px;background:#42ff85;font-weight:700">Desactivar resúmenes</button></form>` : ''}</body></html>`);
     }
     if (!['GET', 'POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method)) throw new ApiError(405, 'method_not_allowed', 'Método no disponible.');
     if (req.method !== 'GET' && (!origins.has(req.headers.origin) || req.headers['sec-fetch-site'] === 'cross-site')) throw new ApiError(403, 'forbidden', 'Origen no permitido.');
@@ -131,7 +147,7 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, { user: userView(result.user) }, sessionCookie(result.token));
     }
     if (req.method === 'GET' && (path === '/api/account' || path === '/api/session')) {
-      const user = await getUser(req); return json(res, 200, { user: user ? userView(user) : null, localDevelopment: true });
+      const user = await getUser(req); return json(res, 200, { user: user ? userView(user) : null, localDevelopment: true, mailMode: mail.mode });
     }
     if (req.method === 'POST' && path === '/api/auth/logout') {
       checkAccount(req, await getUser(req));
@@ -142,6 +158,14 @@ const server = http.createServer(async (req, res) => {
     const user = await getUser(req);
     if (!user) throw new ApiError(401, 'unauthorized', 'Inicia sesión para continuar.');
     checkAccount(req, user);
+    if (path === '/api/email-summary') {
+      if (req.headers['x-we-account'] !== user.id) throw new ApiError(409, 'account_changed', 'Actualiza la cuenta antes de configurar los correos.');
+      if (req.method === 'GET') return json(res, 200, await summaries.read(user.id));
+      if (req.method === 'PUT') {
+        await limit(`email-settings:${user.id}`, 30, 3600);
+        return json(res, 200, await summaries.update(user.id, await body(req)));
+      }
+    }
     if (req.method === 'PATCH' && path === '/api/account') {
       const data = await body(req); const name = username(typeof data.username === 'string' ? data.username.trim() : data.username);
       const { rows } = await pool.query('UPDATE users SET username=$1 WHERE id=$2 RETURNING *', [name, user.id]);
@@ -189,7 +213,7 @@ const server = http.createServer(async (req, res) => {
         await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
         const saved = (await client.query('SELECT * FROM user_preferences WHERE user_id=$1', [user.id])).rows[0];
         if (!saved) return { revision: 0, updatedAt: null, data: null };
-        const records = (await client.query('SELECT id,to_char(date,\'YYYY-MM-DD\') AS date,weight_kg AS "weightKg",exercise,healthy,note FROM weight_records WHERE user_id=$1 ORDER BY date', [user.id])).rows;
+        const records = (await client.query('SELECT id,to_char(date,\'YYYY-MM-DD\') AS date,weight_kg AS "weightKg",exercise,healthy,note,steps FROM weight_records WHERE user_id=$1 ORDER BY date', [user.id])).rows.map(record => { if (record.steps === null) delete record.steps; return record; });
         return { revision: saved.revision, updatedAt: saved.updated_at, data: { ...saved.metadata, settings: saved.preferences, profile: saved.profile, records } };
       });
       return json(res, 200, result);
@@ -207,8 +231,8 @@ const server = http.createServer(async (req, res) => {
         const saved = (await client.query(`INSERT INTO user_preferences(user_id,preferences,profile,metadata,revision) VALUES($1,$2,$3,$4,1)
           ON CONFLICT(user_id) DO UPDATE SET preferences=EXCLUDED.preferences,profile=EXCLUDED.profile,metadata=EXCLUDED.metadata,revision=user_preferences.revision+1,updated_at=now() RETURNING revision,updated_at`, [user.id, data.settings, data.profile, data.metadata])).rows[0];
         await client.query('DELETE FROM weight_records WHERE user_id=$1', [user.id]);
-        if (data.records.length) await client.query(`INSERT INTO weight_records(user_id,id,date,weight_kg,exercise,healthy,note)
-          SELECT $1,record.id,record.date::date,record."weightKg",record.exercise,record.healthy,record.note FROM jsonb_to_recordset($2::jsonb) AS record(id text,date text,"weightKg" double precision,exercise boolean,healthy boolean,note text)`, [user.id, JSON.stringify(data.records)]);
+        if (data.records.length) await client.query(`INSERT INTO weight_records(user_id,id,date,weight_kg,exercise,healthy,note,steps)
+          SELECT $1,record.id,record.date::date,record."weightKg",record.exercise,record.healthy,record.note,record.steps FROM jsonb_to_recordset($2::jsonb) AS record(id text,date text,"weightKg" double precision,exercise boolean,healthy boolean,note text,steps integer)`, [user.id, JSON.stringify(data.records)]);
         return { revision: saved.revision, updatedAt: saved.updated_at };
       });
       return json(res, 200, result);
@@ -235,6 +259,9 @@ const cleanup = setInterval(async () => {
   } catch { console.error('Deferred auth cleanup unavailable.'); }
 }, 60000);
 cleanup.unref();
+const summaryTimer = setInterval(() => { void summaries.runOnce().catch(() => console.error('Progress summary scheduler deferred.')); }, 60000);
+summaryTimer.unref();
 await pool.query('SELECT 1');
-server.listen(Number(process.env.PORT || 3001), '0.0.0.0', () => console.log('Weight&Exercise local API ready. No real email delivery.'));
-for (const signal of ['SIGTERM', 'SIGINT']) process.on(signal, () => { clearInterval(cleanup); server.close(() => pool.end().then(() => process.exit(0))); });
+if (mail.mode === 'real') await mail.verify();
+server.listen(Number(process.env.PORT || 3001), '0.0.0.0', () => console.log(`Weight&Exercise local API ready. Email mode: ${mail.mode}.`));
+for (const signal of ['SIGTERM', 'SIGINT']) process.on(signal, () => { clearInterval(cleanup); clearInterval(summaryTimer); mail.close(); server.close(() => pool.end().then(() => process.exit(0))); });

@@ -264,6 +264,8 @@ describe('persisted schema validation', () => {
       notifications: { enabled: true, time: '20:00', days: [0, 1] },
       recap: { enabled: false, period: 'weekly', time: '19:00' },
       motivation: { message: 'Hazlo por él', image: null },
+      steps: { enabled: false },
+      chartStyle: 'area',
     });
     expect(result?.initialRecordId).toBeNull();
     expect(result?.lastPromptDate).toBeNull();

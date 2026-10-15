@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CalendarDays, Check, Dumbbell, Flag, Leaf, Save, Trash2 } from 'lucide-react';
+import { CalendarDays, Check, Dumbbell, Flag, Footprints, Leaf, Save, Trash2 } from 'lucide-react';
 import type { AppData, DailyRecord, Profile, WeightUnit } from '../lib/model';
 import { ageFromBirthDate, dateKey, displayHeight, fromKg, getStats, profileAge, toKg } from '../lib/model';
 import { useI18n } from '../lib/i18n';
@@ -27,9 +27,10 @@ export function RecordEditor({ data, record, daily, initialDate, onClose, onSave
     if (!date || date < '1900-01-01' || date > dateKey()) return setError('Elige una fecha válida hasta hoy.');
     if (data.records.some(r => r.date === date && r.id !== record?.id)) return setError('Ya tienes un registro para ese día. Puedes editarlo desde el historial.');
     if (exercise === null || healthy === null) return setError('Elige una respuesta para cada hábito.');
-    onSave({ id: record?.id || crypto.randomUUID(), date, weightKg, exercise, healthy, note: note.trim() }, initial);
+    onSave({ id: record?.id || crypto.randomUUID(), date, weightKg, exercise, healthy, note: note.trim(), ...(record?.date === date && record.steps !== undefined ? { steps: record.steps, stepsSource: record.stepsSource, stepsSyncedAt: record.stepsSyncedAt } : {}) }, initial);
   }}>
     <div className="form-row"><label className="field">{t('Fecha')}<input type="date" value={date} max={dateKey()} min="1900-01-01" required disabled={daily} onChange={e => setDate(e.target.value)} /></label><UnitSwitch value={unit} onChange={changeUnit} /></div>
+    {record?.date === date && record.steps !== undefined && <p className="record-steps-summary"><Footprints size={15} /><span>{record.steps.toLocaleString(data.settings.language === 'en' ? 'en-US' : 'es-CL')} {t('pasos')} · Health Connect</span></p>}
     <label className="record-weight"><span>{t(date === dateKey() ? 'Tu peso de hoy' : 'Tu peso de ese día')}</span><div><input aria-label={t('Peso del registro')} inputMode="decimal" type="text" value={weight} onChange={e => { const v = e.target.value.replace(',', '.'); if (/^\d*\.?\d*$/.test(v)) { setWeight(v); setCanonicalWeight(toKg(Number(v), unit)); } }} required /><span>{unit}</span></div></label>
     <Motivation value={data.settings.motivation} onChange={onMotivationChange} compact />
     <HabitChoice question="¿Te moviste hoy?" hint="Cada movimiento cuenta. Descansar también es parte del camino." icon={<Dumbbell size={18} />} value={exercise} onChange={setExercise} />

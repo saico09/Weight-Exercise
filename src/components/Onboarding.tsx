@@ -7,6 +7,8 @@ import { Brand, HeightSwitch, LanguageSwitch, UnitSwitch } from './UI';
 import RulerPicker from './RulerPicker';
 import BirthDatePicker, { defaultBirthDate } from './BirthDatePicker';
 import AccentPicker from './AccentPicker';
+import ThemeChoices from './ThemeChoices';
+import { isLightTheme, themeInfo } from '../lib/themes';
 import { IS_PRO } from '../lib/edition';
 import './onboarding-controls.css';
 
@@ -100,9 +102,10 @@ export default function Onboarding({ settings, onTheme, onLanguage, onAccentColo
           <span className="theme-panel-content"><span className="theme-title">Light<span className="theme-select-circle">{chosen === 'light' ? <Check /> : <ArrowUpRightIcon />}</span></span><span>{t('Respira. Muévete. Fluye.')}</span><span className="theme-palette"><i /><i /><i /></span></span>
         </button>
       </div>
+      {IS_PRO && <ThemeChoices extrasOnly value={chosen} onChange={choose} />}
       <div className="theme-start-footer"><p>{t('Puedes cambiar de estilo cuando quieras.')}</p><button className="primary-button" disabled={!chosen} onClick={next}>{t('Este es mi estilo')}</button></div>
     </main> : <main className="onboarding-measure">
-      <div className="step-sidebar"><img src={`/images/${theme}-fitness.jpg`} alt="" /><div><Brand compact /><h2>{theme === 'dark' ? <>BEAST<br />MODE.</> : t('Minimalista.')}</h2><p>{t('No se trata de hacerlo perfecto.')}<br />{t('Se trata de empezar.')}</p></div></div>
+      <div className={`step-sidebar step-sidebar-${theme}`}><img src={`/images/${isLightTheme(theme) ? 'light' : 'dark'}-fitness.jpg`} alt="" /><div><Brand compact /><h2>{t(themeInfo[theme].tagline)}</h2><p>{t('No se trata de hacerlo perfecto.')}<br />{t('Se trata de empezar.')}</p></div></div>
       <form className={`measure-content ${step === 4 ? 'birthdate-step' : ''}`} onSubmit={event => { event.preventDefault(); next(); }}>
         <div className="step-top"><button type="button" className="icon-button" onClick={() => { setStep(step - 1); setError(''); }} aria-label={t('Paso anterior')}><ArrowLeft size={20} /></button><span>{t('PASO')} {String(step).padStart(2, '0')} <span>/ 04</span></span></div>
         <div className="step-dots">{[1, 2, 3, 4].map(number => <i key={number} className={number <= step ? 'filled' : ''} />)}</div>

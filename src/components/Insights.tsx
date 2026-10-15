@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import {
   ArrowDownRight, ArrowRight, ArrowUpRight, CalendarDays, ChevronRight,
-  Dumbbell, Flag, Flame, Leaf, Pencil, Plus, Scale, Trophy, ListFilter, X,
+  Dumbbell, Flag, Flame, Leaf, Pencil, Plus, Scale, Trophy, ListFilter, X, GitCompareArrows,
 } from 'lucide-react';
 import type { AppData, DailyRecord, HeightUnit } from '../lib/model';
 import {
@@ -15,6 +15,8 @@ import { matchesHistoryDate, type HistoryDateFilter } from '../lib/calendar';
 import { useI18n } from '../lib/i18n';
 import { IS_PRO } from '../lib/edition';
 import ReportExport from './ReportExport';
+import RecordComparison from './RecordComparison';
+import WorkbookExport from './WorkbookExport';
 import './insights.css';
 
 export interface InsightsProps {
@@ -24,6 +26,7 @@ export interface InsightsProps {
   onNewRecord: () => void;
   onHeightUnit: (unit: HeightUnit) => void;
   onAchievements?: () => void;
+  demo?: boolean;
 }
 
 const formatDate = (date: string, locale: string, options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' }) =>
@@ -40,7 +43,7 @@ function Metric({ label, value, unit, note, icon, accent = false }: {
   </article>;
 }
 
-export function StatsPage({ data, onProfile, onAchievements }: InsightsProps) {
+export function StatsPage({ data, onProfile, onAchievements, demo = false }: InsightsProps) {
   const { t, locale } = useI18n();
   const dateLabel = (date: string, options?: Intl.DateTimeFormatOptions) => formatDate(date, locale, options);
   if (!data.profile) return null;
@@ -51,7 +54,7 @@ export function StatsPage({ data, onProfile, onAchievements }: InsightsProps) {
   const weeklyLoss = stats.weeklyLoss;
   return <div className="stats-layout">
     <div className="compact-section-heading"><h1 className="eyebrow">{t("Tu evolución")}</h1>{!IS_PRO && <span className="basic-stats-label">BASIC</span>}<button className="icon-button" onClick={onProfile} aria-label={t("Mi perfil y meta")}><Pencil size={19} /></button></div>
-    {IS_PRO && <ReportExport data={data} />}
+    {IS_PRO && <ReportExport data={data} disabled={demo} />}
 
     <section className="insight-section" aria-labelledby="weight-stats-title">
       <div className="card-head"><h2 id="weight-stats-title">{t("Tu evolución")}</h2><span className="pill">{t("Desde el")} {dateLabel(stats.startDate)}</span></div>
@@ -155,17 +158,23 @@ export function BmiPage({ data, onProfile, onHeightUnit }: InsightsProps) {
   </div>;
 }
 
-export function HistoryPage({ data, onRecord, onNewRecord }: InsightsProps) {
+export function HistoryPage({ data, onRecord, onNewRecord, demo = false }: InsightsProps) {
   const { t, locale } = useI18n();
   const dateLabel = (date: string, options?: Intl.DateTimeFormatOptions) => formatDate(date, locale, options);
   const [filter, setFilter] = useState<'all' | 'exercise' | 'healthy'>('all');
   const [dateFilter, setDateFilter] = useState<HistoryDateFilter | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [comparisonOpen, setComparisonOpen] = useState(false);
+  useEffect(() => { setSelectedIds(current => current.filter(id => data.records.some(record => record.id === id))); }, [data.records]);
+  const toggleSelection = (id: string) => setSelectedIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id]);
   const filterDateLabel = !dateFilter ? '' : dateFilter.mode === 'month' ? dateLabel(dateFilter.start, { month: 'long', year: 'numeric' }) : dateFilter.start === dateFilter.end ? dateLabel(dateFilter.start, { day: 'numeric', month: 'short', year: 'numeric' }) : `${dateLabel(dateFilter.start, { day: 'numeric', month: 'short', year: 'numeric' })} — ${dateLabel(dateFilter.end, { day: 'numeric', month: 'short', year: 'numeric' })}`;
   const stats = getStats(data);
   const records = stats.allRecords.filter(record =>
     matchesHistoryDate(record.date, dateFilter) && (filter === 'all' || (filter === 'exercise' ? record.exercise : record.healthy)),
   ).reverse();
+  const visibleIds = new Set(records.map(record => record.id));
+  const hiddenSelections = selectedIds.filter(id => !visibleIds.has(id)).length;
   const groups = new Map<string, DailyRecord[]>();
   for (const record of records) {
     const key = record.date.slice(0, 7);
@@ -173,6 +182,7 @@ export function HistoryPage({ data, onRecord, onNewRecord }: InsightsProps) {
   }
   const filterOptions = [{ value: 'all', label: 'Todos los registros', icon: ListFilter }, { value: 'exercise', label: 'Con ejercicio', icon: Dumbbell }, { value: 'healthy', label: 'Comer sano', icon: Leaf }] as const;
   return <div className="history-layout compact-history">
+    {IS_PRO && selectedIds.length > 0 && <div className="history-selection-bar">{hiddenSelections > 0 && <small>{t('{count} fuera de los filtros', { count: hiddenSelections })}</small>}<button className="history-compare-button" onClick={() => setComparisonOpen(true)}><GitCompareArrows size={16} />{t('Comparar')}<span>{selectedIds.length}</span></button><button className="icon-button" aria-label={t('Limpiar selección')} onClick={() => setSelectedIds([])}><X size={15} /></button></div>}
     <div className="history-topline"><h1 className="eyebrow">{t('TU HISTORIAL')}</h1><div className="history-tools">
       <div className="history-segments" role="group" aria-label={t('Filtrar registros por hábito')}>{filterOptions.map(({ value, label, icon: Icon }) => <button type="button" key={value} className={filter === value ? 'active' : ''} aria-label={t(label)} aria-pressed={filter === value} onClick={() => setFilter(value)}><Icon size={18} /></button>)}</div>
       <button className={`round-action calendar-action ${dateFilter ? 'selected' : ''}`} aria-label={t('Filtrar por fecha')} onClick={() => setCalendarOpen(true)}><CalendarDays size={19} />{dateFilter && <i />}</button>
@@ -180,17 +190,18 @@ export function HistoryPage({ data, onRecord, onNewRecord }: InsightsProps) {
     </div></div>
     {dateFilter && <button className="history-month-chip" onClick={() => setDateFilter(null)} aria-label={`${filterDateLabel} · ${t('Quitar filtro de fecha')}`}><CalendarDays size={13} /><span>{filterDateLabel}</span><X size={13} /></button>}
     {calendarOpen && <HistoryCalendar value={dateFilter} recordDates={data.records.map(record => record.date)} onClose={() => setCalendarOpen(false)} onApply={value => { setDateFilter(value); setCalendarOpen(false); }} />}
+    {comparisonOpen && <RecordComparison data={data} selectedIds={selectedIds} onClose={() => setComparisonOpen(false)} />}
     {records.length === 0 ? <div className="card empty-state"><CalendarDays size={32} /><h2>{t(data.records.length ? 'No hay registros con estos filtros.' : 'La primera página está por escribirse.')}</h2><p className="muted">{t(data.records.length ? 'Prueba otras fechas o muestra todos tus hábitos.' : 'Un peso, un hábito, un pequeño momento para ti.')}</p>{data.records.length ? <button className="secondary-button" onClick={() => { setDateFilter(null); setFilter('all'); }}>{t('Ver todos los registros')} <ArrowRight size={16} /></button> : <button className="primary-button" onClick={onNewRecord}>{t('Crear mi primer registro')} <Plus size={16} /></button>}</div> :
       <div className="history-list">{Array.from(groups, ([key, entries]) => <section className="history-month" key={key} aria-labelledby={`month-${key}`}>
-        <div className="card-head"><h2 id={`month-${key}`}>{dateLabel(`${key}-01`, { month: 'long', year: 'numeric' })}</h2><span className="muted">{entries.length} {t(entries.length === 1 ? 'día' : 'días')}</span></div>
+        <div className="card-head"><div className="history-month-heading"><h2 id={`month-${key}`}>{dateLabel(`${key}-01`, { month: 'long', year: 'numeric' })}</h2>{IS_PRO && <WorkbookExport disabled={demo} data={data} records={entries} filteredRecords={records} label={`${dateLabel(`${key}-01`, { month: 'long', year: 'numeric' })}${filter !== 'all' || dateFilter ? ` · ${t('con filtros')}` : ''}`} />}</div><span className="muted">{entries.length} {t(entries.length === 1 ? 'día' : 'días')}</span></div>
         <div className="card">{entries.map(record => {
           const initial = stats.initialRecord?.id === record.id || (!stats.initialRecord && record.date === stats.startDate);
           const beforeInitial = record.date < stats.startDate;
-          return <button key={record.id} className="list-row history-record" onClick={() => onRecord(record)} aria-label={`${t('Ver y editar registro')} · ${dateLabel(record.date, { day: 'numeric', month: 'long', year: 'numeric' })} · ${displayWeight(record.weightKg, data.settings.weightUnit, 1, locale)} ${data.settings.weightUnit} · ${t(record.exercise ? 'Con ejercicio' : 'Sin ejercicio')} · ${t(record.healthy ? 'Comer sano: sí' : 'Comer sano: no')}${initial ? ` · ${t('Punto de partida')}` : ''}`}>
+          return <div key={record.id} className={`history-selectable-row ${IS_PRO ? 'has-selection' : ''} ${selectedIds.includes(record.id) ? 'selected' : ''}`}>{IS_PRO && <label className="history-record-check"><input type="checkbox" checked={selectedIds.includes(record.id)} onChange={() => toggleSelection(record.id)} aria-label={`${t('Seleccionar registro')} · ${dateLabel(record.date, { day: 'numeric', month: 'long', year: 'numeric' })}`} /></label>}<button className="list-row history-record" onClick={() => onRecord(record)} aria-label={`${t('Ver y editar registro')} · ${dateLabel(record.date, { day: 'numeric', month: 'long', year: 'numeric' })} · ${displayWeight(record.weightKg, data.settings.weightUnit, 1, locale)} ${data.settings.weightUnit} · ${t(record.exercise ? 'Con ejercicio' : 'Sin ejercicio')} · ${t(record.healthy ? 'Comer sano: sí' : 'Comer sano: no')}${initial ? ` · ${t('Punto de partida')}` : ''}`}>
             <span className="history-record-main"><span className="history-day">{record.date.slice(-2)}</span><span className="history-day-detail"><strong>{dateLabel(record.date, { weekday: 'long' })}</strong><span className="history-record-meta">{initial ? <span className="history-baseline"><Flag size={10} /> {t('Punto de partida')}</span> : beforeInitial ? <span className="muted">{t('Anterior a tu inicio actual')}</span> : <span className="muted">{dateLabel(record.date)}</span>}{record.note && <span className="record-note">{record.note}</span>}</span></span></span>
             <span className="history-habits"><span className={record.exercise ? 'habit-indicator positive' : 'habit-indicator'} aria-label={t(record.exercise ? 'Con ejercicio' : 'Sin ejercicio')}><Dumbbell size={15} /></span><span className={record.healthy ? 'habit-indicator positive' : 'habit-indicator'} aria-label={t(record.healthy ? 'Comer sano: sí' : 'Comer sano: no')}><Leaf size={15} /></span></span>
             <strong className="history-weight">{displayWeight(record.weightKg, data.settings.weightUnit, 1, locale)} <small>{data.settings.weightUnit}</small></strong><ChevronRight className="record-chevron" size={16} />
-          </button>;
+          </button></div>;
         })}</div>
       </section>)}</div>}
     {stats.allRecords.some(record => record.date < stats.startDate) && <p className="muted history-baseline-note">{t('Tus registros anteriores al inicio elegido siguen aquí.')} {t('Progreso desde')} {dateLabel(stats.startDate, { day: 'numeric', month: 'long', year: 'numeric' })}.</p>}

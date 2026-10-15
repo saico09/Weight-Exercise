@@ -1,16 +1,17 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { Maximize2, Minus, Plus, MoveHorizontal } from 'lucide-react';
+import { Maximize2, Minus, Plus, MoveHorizontal, Layers3 } from 'lucide-react';
 import type { DailyRecord, WeightUnit } from '../lib/model';
 import { displayWeight, fromKg } from '../lib/model';
 import { useI18n } from '../lib/i18n';
-import { chartDay, clampChartWindow, sampleChartPoints, zoomChartWindow } from './chartUtils';
-import type { ChartWindow } from './chartUtils';
+import { chartDay, clampChartWindow, nextChartStyle, sampleChartPoints, weightChartDomain, zoomChartWindow } from './chartUtils';
+import type { ChartWindow, WeightChartStyle } from './chartUtils';
+import { IS_PRO } from '../lib/edition';
 import './charts-dashboard.css';
 
 type Gesture = { window: ChartWindow; x: number; midpoint: number; distance: number; moved: boolean };
 
-export function WeightChart({ records, unit, goal, periodBounds, hasHistory = false }: { records: DailyRecord[]; unit: WeightUnit; goal: number; periodBounds: ChartWindow; hasHistory?: boolean }) {
+export function WeightChart({ records, unit, goal, periodBounds, hasHistory = false, style: preferredStyle, onStyleChange }: { records: DailyRecord[]; unit: WeightUnit; goal: number; periodBounds: ChartWindow; hasHistory?: boolean; style?: WeightChartStyle; onStyleChange?: (style: WeightChartStyle) => void }) {
   const { t, locale } = useI18n();
   const id = useId().replace(/:/g, '');
   const [active, setActive] = useState<string | null>(null);
@@ -20,6 +21,10 @@ export function WeightChart({ records, unit, goal, periodBounds, hasHistory = fa
   const gesture = useRef<Gesture | null>(null);
   const [chartWidth, setChartWidth] = useState(720);
   const [view, setView] = useState<ChartWindow | null>(null);
+  const [localStyle, setLocalStyle] = useState<WeightChartStyle>('area');
+  const chartStyle = IS_PRO ? preferredStyle || localStyle : 'area';
+  const columns = chartStyle === 'bars' || chartStyle === 'depth';
+  const styleNames = { area: 'Área', line: 'Línea', bars: 'Columnas', depth: '3D' };
   const sorted = useMemo(() => [...records].sort((a, b) => a.date.localeCompare(b.date)), [records]);
   const points = useMemo(() => sorted.map(record => ({ record, x: chartDay(record.date), value: fromKg(record.weightKg, unit) })), [sorted, unit]);
   const first = points[0]?.x ?? 0, last = points[points.length - 1]?.x ?? 1;
@@ -77,15 +82,15 @@ export function WeightChart({ records, unit, goal, periodBounds, hasHistory = fa
   const before = [...points].reverse().find(point => point.x < window.start);
   const after = points.find(point => point.x > window.end);
   const linePoints = [...(before ? [before] : []), ...visible, ...(after ? [after] : [])];
-  const valueRange = (linePoints.length ? linePoints : points).reduce((range, point) => ({ min: Math.min(range.min, point.value), max: Math.max(range.max, point.value) }), { min: Infinity, max: -Infinity });
-  const spread = valueRange.max - valueRange.min;
   const goalValue = fromKg(goal, unit);
-  const showGoal = Math.abs(goalValue - (visible[visible.length - 1]?.value ?? points[points.length - 1]?.value ?? 0)) < Math.max(spread * 1.7, 3);
-  const min = Math.min(valueRange.min, showGoal ? goalValue : Infinity) - Math.max(.5, spread * .2);
-  const max = Math.max(valueRange.max, showGoal ? goalValue : -Infinity) + Math.max(.5, spread * .2);
+  const domainPoints = columns ? (visible.length ? visible : points) : (linePoints.length ? linePoints : points);
+  const { min, max, showGoal } = weightChartDomain(domainPoints.map(point => point.value), goalValue, chartStyle);
   const x = (day: number) => left + (day - window.start) / span * plotWidth;
   const y = (value: number) => top + (max - value) / (max - min || 1) * (H - top - bottom);
   const rendered = [...(before ? [before] : []), ...sampleChartPoints(visible, Math.floor(plotWidth / 2)), ...(after ? [after] : [])];
+  const renderedBars = sampleChartPoints(visible, Math.max(1, Math.floor(plotWidth / 5)));
+  const barWidth = Math.max(.65, Math.min(28, plotWidth / Math.max(1, visible.length) * .6, plotWidth / span * .65));
+  const depth = chartStyle === 'depth' ? Math.min(6, barWidth * .32) : 0;
   const line = rendered.map((point, index) => `${index ? 'L' : 'M'}${x(point.x)},${y(point.value)}`).join(' ');
   const selected = visible.find(point => point.record.id === active) ?? visible[visible.length - 1];
   const markers = visible.reduce<typeof points>((result, point, index) => {
@@ -158,7 +163,7 @@ export function WeightChart({ records, unit, goal, periodBounds, hasHistory = fa
   };
 
   return <div className="weight-chart interactive-weight-chart" ref={container}>
-    <div className="chart-date-range" aria-live="polite">{rangeText}</div>
+    <div className="chart-range-line"><div className="chart-date-range" aria-live="polite">{rangeText}</div>{IS_PRO && <button type="button" className="chart-style-cycle" aria-label={t('Estilo: {style}. Cambiar a {next}.', { style: t(styleNames[chartStyle]), next: t(styleNames[nextChartStyle(chartStyle)]) })} onClick={() => { const next = nextChartStyle(chartStyle); setLocalStyle(next); onStyleChange?.(next); }}><Layers3 size={13} /><span>{t(styleNames[chartStyle])}</span></button>}</div>
     {!points.length ? <div className="chart-empty"><span>{t(hasHistory ? 'Sin registros en este período' : 'Tu historia empieza con un punto.')}</span><p>{t(hasHistory ? 'Prueba un período más amplio o añade un registro.' : 'Guarda tu primer peso para ver tu evolución aquí.')}</p></div> : <>
       <div className="chart-readout"><div className="chart-tooltip"><span className="dot" />{selected ? <>{dateLabel(selected.x, total > 365)} <strong>{displayWeight(selected.record.weightKg, unit, 1, locale)} {unit}</strong></> : t('Sin registros en este intervalo')}</div><span className="chart-visible-count">{visible.length} {t(visible.length === 1 ? 'registro' : 'registros')}</span></div>
       <svg ref={surface} viewBox={`0 0 ${W} ${H}`} className={`chart-gesture-surface ${isZoomed ? 'is-zoomed' : ''}`} role="group" tabIndex={0} aria-label={t('Gráfico interactivo de peso')} aria-describedby={`${id}-instructions`} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerEnd} onPointerCancel={pointerEnd} onLostPointerCapture={pointerCaptureLost} onKeyDown={event => {
@@ -176,9 +181,11 @@ export function WeightChart({ records, unit, goal, periodBounds, hasHistory = fa
         {[0, 1, 2, 3].map(tick => { const value = min + (max - min) * tick / 3; return <g key={tick} aria-hidden="true"><line className="chart-grid" x1={left} x2={W - right} y1={y(value)} y2={y(value)} /><text x={0} y={y(value) + 4} className="chart-label">{value.toLocaleString(locale, { maximumFractionDigits: 1 })}</text></g>; })}
         {showGoal && <g aria-hidden="true"><line x1={left} x2={W - right} y1={y(goalValue)} y2={y(goalValue)} stroke="var(--chart-accent, var(--accent))" strokeOpacity=".35" strokeDasharray="4 6" /><text x={W - right} y={y(goalValue) - 8} textAnchor="end" className="chart-label">{t('META')}</text></g>}
         <g clipPath={`url(#${id}-clip)`} aria-hidden="true">
-          {rendered.length > 1 && <path d={`${line} L${x(rendered[rendered.length - 1].x)},${H - bottom} L${x(rendered[0].x)},${H - bottom} Z`} fill={`url(#${id})`} />}
-          <path d={line} fill="none" stroke="var(--chart-accent, var(--accent))" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" className="chart-line" />
-          {markers.map(point => <circle key={point.record.id} cx={x(point.x)} cy={y(point.value)} r="2.5" fill="var(--surface)" stroke="var(--chart-accent, var(--accent))" strokeWidth="1.5" />)}
+          {columns ? renderedBars.map(point => { const bx = x(point.x) - barWidth / 2, by = y(point.value), floor = y(0), fill = 'var(--chart-accent, var(--accent))'; return <g key={point.record.id} className="chart-weight-column"><rect x={bx} y={by} width={barWidth} height={Math.max(0, floor - by)} rx={depth ? 0 : Math.min(3, barWidth / 3)} fill={fill} opacity={point.record.id === selected?.record.id ? .95 : .58} />{depth > 0 && <><path d={`M${bx},${by} l${depth},${-depth} h${barWidth} l${-depth},${depth} Z`} fill={fill} opacity=".95" /><path d={`M${bx + barWidth},${by} l${depth},${-depth} V${floor - depth} l${-depth},${depth} Z`} fill={fill} opacity=".32" /></>}</g>; }) : <>
+            {chartStyle === 'area' && rendered.length > 1 && <path d={`${line} L${x(rendered[rendered.length - 1].x)},${H - bottom} L${x(rendered[0].x)},${H - bottom} Z`} fill={`url(#${id})`} />}
+            <path d={line} fill="none" stroke="var(--chart-accent, var(--accent))" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" className="chart-line" />
+            {markers.map(point => <circle key={point.record.id} cx={x(point.x)} cy={y(point.value)} r="2.5" fill="var(--surface)" stroke="var(--chart-accent, var(--accent))" strokeWidth="1.5" />)}
+          </>}
           {selected && <><line x1={x(selected.x)} x2={x(selected.x)} y1={top} y2={H - bottom} stroke="var(--chart-accent, var(--accent))" strokeOpacity=".25" strokeDasharray="3 5" /><circle cx={x(selected.x)} cy={y(selected.value)} r="5" fill="var(--chart-accent, var(--accent))" stroke="var(--surface)" strokeWidth="2.5" /></>}
         </g>
         {[window.start, ...(span < 3 ? [] : W >= 400 ? [window.start + span / 3, window.start + span * 2 / 3] : [window.start + span / 2]), window.end].map((day, index, ticks) => <text key={index} aria-hidden="true" x={x(day)} y={H - 5} textAnchor={index === 0 ? 'start' : index === ticks.length - 1 ? 'end' : 'middle'} className="chart-label">{dateLabel(day, total > 365)}</text>)}

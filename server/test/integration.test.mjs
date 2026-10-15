@@ -42,6 +42,7 @@ function sql(query) {
 }
 
 test('local API security, account lifecycle and isolated versioned backup', { skip: !enabled }, async t => {
+  assert.equal((await api('/health')).data.mailMode, 'mailpit', 'Integration tests refuse real email delivery. Switch to Mailpit first.');
   const accounts = [];
   t.after(async () => { for (const account of accounts) if (account.cookie) await api('/account', 'DELETE', { confirmation: 'DELETE' }, account.cookie); });
   await t.test('requires authentication and rejects cross-site/missing Origin writes', async () => {
