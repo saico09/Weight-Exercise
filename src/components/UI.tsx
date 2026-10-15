@@ -5,7 +5,7 @@ import { useI18n } from '../lib/i18n';
 import './identity-settings.css';
 
 export function Brand({ compact = false }: { compact?: boolean }) {
-  return <div className={`brand weight-exercise-brand ${compact ? 'compact' : ''}`} aria-label="Weight&Exercise"><span className="brand-mark"><svg viewBox="0 0 46 34" aria-hidden="true"><path d="M2 7h5l1 13 6-13h5l1 13 6-13h5L22 28h-7l-1-11-5 11H3Z M33 7h12l-2 5h-7l-1 3h7l-2 5h-7l-1 3h8l-2 5H26Z" fill="currentColor" /></svg></span>{!compact && <span className="brand-wordmark">Weight<span className="brand-ampersand">&</span>Exercise</span>}</div>;
+  return <div className={`brand weight-exercise-brand ${compact ? 'compact' : ''}`} aria-label="Weight&Exercise"><span className="brand-mark"><svg viewBox="0 0 46 34" aria-hidden="true"><path d="M2 7h5l1 13 6-13h5l1 13 6-13h5L22 28h-7l-1-11-5 11H3Z M33 7h12l-2 5h-7l-1 3h7l-2 5h-7l-1 3h8l-2 5H26Z" fill="currentColor" /></svg></span>{!compact && <span className="brand-wordmark"><span>Weight<span className="brand-ampersand">&</span></span><span>Exercise</span></span>}</div>;
 }
 export function LanguageSwitch({ value, onChange }: { value: Language; onChange: (value: Language) => void }) {
   const { t } = useI18n();

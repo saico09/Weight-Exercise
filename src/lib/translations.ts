@@ -1,5 +1,18 @@
+import { accentTranslations } from './accent-translations';
+import { achievementTranslations } from './achievement-translations';
+import { calendarTranslations } from './calendar-translations';
 /** English copy keyed by the Spanish source. Dates and numbers use Intl separately. */
 export const english: Record<string, string> = {
+  ...accentTranslations,
+  ...achievementTranslations,
+  ...calendarTranslations,
+  'Logros': 'Achievements',
+  'Sin registros en este período': 'No records in this period',
+  'Prueba un período más amplio o añade un registro.': 'Try a longer period or add a record.',
+  'Alimentación consciente': 'Mindful eating',
+  'Comí sano': 'Ate healthy',
+  'No comí sano': 'Did not eat healthy',
+  'días de comer sano': 'healthy eating days',
   'Idioma': 'Language',
   'Unidad de peso': 'Weight unit',
   'Unidad de altura': 'Height unit',

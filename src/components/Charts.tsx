@@ -10,7 +10,7 @@ import './charts-dashboard.css';
 
 type Gesture = { window: ChartWindow; x: number; midpoint: number; distance: number; moved: boolean };
 
-export function WeightChart({ records, unit, goal }: { records: DailyRecord[]; unit: WeightUnit; goal: number }) {
+export function WeightChart({ records, unit, goal, periodBounds, hasHistory = false }: { records: DailyRecord[]; unit: WeightUnit; goal: number; periodBounds: ChartWindow; hasHistory?: boolean }) {
   const { t, locale } = useI18n();
   const id = useId().replace(/:/g, '');
   const [active, setActive] = useState<string | null>(null);
@@ -23,7 +23,7 @@ export function WeightChart({ records, unit, goal }: { records: DailyRecord[]; u
   const sorted = useMemo(() => [...records].sort((a, b) => a.date.localeCompare(b.date)), [records]);
   const points = useMemo(() => sorted.map(record => ({ record, x: chartDay(record.date), value: fromKg(record.weightKg, unit) })), [sorted, unit]);
   const first = points[0]?.x ?? 0, last = points[points.length - 1]?.x ?? 1;
-  const bounds = useMemo(() => ({ start: first === last ? first - 1 : first, end: first === last ? last + 1 : last }), [first, last]);
+  const bounds = useMemo(() => ({ start: periodBounds.start, end: periodBounds.end }), [periodBounds.start, periodBounds.end]);
   const window = view ? clampChartWindow(view, bounds) : bounds;
   const viewRef = useRef(window);
   viewRef.current = window;
@@ -40,7 +40,7 @@ export function WeightChart({ records, unit, goal }: { records: DailyRecord[]; u
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
-  useEffect(() => { setView(null); setActive(null); pointers.current.clear(); gesture.current = null; }, [first, last, records.length]);
+  useEffect(() => { setView(null); setActive(null); pointers.current.clear(); gesture.current = null; }, [first, last, records.length, bounds]);
 
   const changeView = (next: ChartWindow) => {
     const bounded = clampChartWindow(next, bounds);
@@ -158,7 +158,8 @@ export function WeightChart({ records, unit, goal }: { records: DailyRecord[]; u
   };
 
   return <div className="weight-chart interactive-weight-chart" ref={container}>
-    {!points.length ? <div className="chart-empty"><span>{t('Tu historia empieza con un punto.')}</span><p>{t('Guarda tu primer peso para ver tu evolución aquí.')}</p></div> : <>
+    <div className="chart-date-range" aria-live="polite">{rangeText}</div>
+    {!points.length ? <div className="chart-empty"><span>{t(hasHistory ? 'Sin registros en este período' : 'Tu historia empieza con un punto.')}</span><p>{t(hasHistory ? 'Prueba un período más amplio o añade un registro.' : 'Guarda tu primer peso para ver tu evolución aquí.')}</p></div> : <>
       <div className="chart-readout"><div className="chart-tooltip"><span className="dot" />{selected ? <>{dateLabel(selected.x, total > 365)} <strong>{displayWeight(selected.record.weightKg, unit, 1, locale)} {unit}</strong></> : t('Sin registros en este intervalo')}</div><span className="chart-visible-count">{visible.length} {t(visible.length === 1 ? 'registro' : 'registros')}</span></div>
       <svg ref={surface} viewBox={`0 0 ${W} ${H}`} className={`chart-gesture-surface ${isZoomed ? 'is-zoomed' : ''}`} role="group" tabIndex={0} aria-label={t('Gráfico interactivo de peso')} aria-describedby={`${id}-instructions`} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerEnd} onPointerCancel={pointerEnd} onLostPointerCapture={pointerCaptureLost} onKeyDown={event => {
         const index = selected ? points.findIndex(point => point.record.id === selected.record.id) : 0;
@@ -173,14 +174,14 @@ export function WeightChart({ records, unit, goal }: { records: DailyRecord[]; u
         <title>{t('Peso registrado')}: {rangeText}</title>
         <defs><linearGradient id={id} x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="var(--accent)" stopOpacity=".23" /><stop offset="100%" stopColor="var(--accent)" stopOpacity="0" /></linearGradient><clipPath id={`${id}-clip`}><rect x={left - 7} y={top - 9} width={plotWidth + 14} height={H - top - bottom + 18} /></clipPath></defs>
         {[0, 1, 2, 3].map(tick => { const value = min + (max - min) * tick / 3; return <g key={tick} aria-hidden="true"><line className="chart-grid" x1={left} x2={W - right} y1={y(value)} y2={y(value)} /><text x={0} y={y(value) + 4} className="chart-label">{value.toLocaleString(locale, { maximumFractionDigits: 1 })}</text></g>; })}
-        {showGoal && <g aria-hidden="true"><line x1={left} x2={W - right} y1={y(goalValue)} y2={y(goalValue)} stroke="var(--accent)" strokeOpacity=".35" strokeDasharray="4 6" /><text x={W - right} y={y(goalValue) - 8} textAnchor="end" className="chart-label">{t('META')}</text></g>}
+        {showGoal && <g aria-hidden="true"><line x1={left} x2={W - right} y1={y(goalValue)} y2={y(goalValue)} stroke="var(--chart-accent, var(--accent))" strokeOpacity=".35" strokeDasharray="4 6" /><text x={W - right} y={y(goalValue) - 8} textAnchor="end" className="chart-label">{t('META')}</text></g>}
         <g clipPath={`url(#${id}-clip)`} aria-hidden="true">
           {rendered.length > 1 && <path d={`${line} L${x(rendered[rendered.length - 1].x)},${H - bottom} L${x(rendered[0].x)},${H - bottom} Z`} fill={`url(#${id})`} />}
           <path d={line} fill="none" stroke="var(--chart-accent, var(--accent))" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" className="chart-line" />
           {markers.map(point => <circle key={point.record.id} cx={x(point.x)} cy={y(point.value)} r="2.5" fill="var(--surface)" stroke="var(--chart-accent, var(--accent))" strokeWidth="1.5" />)}
-          {selected && <><line x1={x(selected.x)} x2={x(selected.x)} y1={top} y2={H - bottom} stroke="var(--accent)" strokeOpacity=".25" strokeDasharray="3 5" /><circle cx={x(selected.x)} cy={y(selected.value)} r="5" fill="var(--accent)" stroke="var(--surface)" strokeWidth="2.5" /></>}
+          {selected && <><line x1={x(selected.x)} x2={x(selected.x)} y1={top} y2={H - bottom} stroke="var(--chart-accent, var(--accent))" strokeOpacity=".25" strokeDasharray="3 5" /><circle cx={x(selected.x)} cy={y(selected.value)} r="5" fill="var(--chart-accent, var(--accent))" stroke="var(--surface)" strokeWidth="2.5" /></>}
         </g>
-        {(points.length === 1 ? [first] : [window.start, ...(span < 3 ? [] : W >= 400 ? [window.start + span / 3, window.start + span * 2 / 3] : [window.start + span / 2]), window.end]).map((day, index, ticks) => <text key={index} aria-hidden="true" x={x(day)} y={H - 5} textAnchor={ticks.length === 1 ? 'middle' : index === 0 ? 'start' : index === ticks.length - 1 ? 'end' : 'middle'} className="chart-label">{dateLabel(day, total > 365)}</text>)}
+        {[window.start, ...(span < 3 ? [] : W >= 400 ? [window.start + span / 3, window.start + span * 2 / 3] : [window.start + span / 2]), window.end].map((day, index, ticks) => <text key={index} aria-hidden="true" x={x(day)} y={H - 5} textAnchor={index === 0 ? 'start' : index === ticks.length - 1 ? 'end' : 'middle'} className="chart-label">{dateLabel(day, total > 365)}</text>)}
       </svg>
       <div className="chart-navigation"><span className="chart-gesture-hint"><MoveHorizontal size={14} />{t(isZoomed ? 'Desliza para explorar' : total > 3 ? 'Amplía para explorar' : 'Vista completa')}</span><div className="chart-zoom-controls" role="group" aria-label={t('Zoom del gráfico')}><button type="button" disabled={!isZoomed} onClick={() => zoom(1 / .6)} aria-label={t('Alejar gráfico')} title={t('Alejar gráfico')}><Minus size={16} /></button><button type="button" disabled={span <= Math.min(3, total) + .001} onClick={() => zoom(.6)} aria-label={t('Acercar gráfico')} title={t('Acercar gráfico')}><Plus size={16} /></button><button type="button" disabled={!isZoomed} onClick={() => { setView(null); viewRef.current = bounds; }} aria-label={t('Ver todo el período')} title={t('Ver todo el período')}><Maximize2 size={14} /></button></div></div>
       {isZoomed && <div className="chart-window-track" aria-hidden="true"><span style={{ left: `${(window.start - bounds.start) / total * 100}%`, width: `${span / total * 100}%` }} /></div>}

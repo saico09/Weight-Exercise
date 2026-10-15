@@ -1,5 +1,29 @@
 import { describe, expect, it } from 'vitest';
-import { chartDay, clampChartWindow, sampleChartPoints, zoomChartWindow } from './chartUtils';
+import { chartDay, chartPeriod, clampChartWindow, sampleChartPoints, zoomChartWindow } from './chartUtils';
+import { demoData, shiftDate } from '../lib/model';
+
+describe('calendar chart periods', () => {
+  const today = '2026-10-14';
+  const base = demoData(new Date(`${today}T12:00:00`));
+  const records = [91, 89, 30, 29, 6, 0, -1].map(days => ({ ...base.records[0], id: String(days), date: shiftDate(today, -days) }));
+  it('uses inclusive 7/30/90-day windows and never includes future records', () => {
+    expect(chartPeriod(records, 7, today).records.map(r => r.id)).toEqual(['6', '0']);
+    expect(chartPeriod(records, 30, today).records.map(r => r.id)).toEqual(['29', '6', '0']);
+    expect(chartPeriod(records, 90, today).records.map(r => r.id)).toEqual(['89', '30', '29', '6', '0']);
+    expect(chartPeriod(records, 0, today).records.map(r => r.id)).toEqual(['91', '89', '30', '29', '6', '0']);
+  });
+  it('keeps explicit ranges when the same sparse records appear in every period', () => {
+    const one = records.filter(r => r.date === today);
+    expect(chartPeriod(one, 30, today).bounds).toEqual({ start: chartDay('2026-09-15'), end: chartDay(today) });
+    expect(chartPeriod(one, 90, today).bounds.start).toBe(chartDay('2026-07-17'));
+    expect(chartPeriod([], 30, today).records).toEqual([]);
+    expect(chartPeriod(one, 0, today).bounds.end - chartPeriod(one, 0, today).bounds.start).toBeGreaterThan(0);
+  });
+  it('lets all show the full history independently of a newer chosen initial record', () => {
+    base.initialRecordId = base.records.at(-1)!.id;
+    expect(chartPeriod(base.records, 0, today).records).toHaveLength(30);
+  });
+});
 
 describe('interactive chart window', () => {
   const bounds = { start: 0, end: 365 };

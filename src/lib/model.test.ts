@@ -260,7 +260,7 @@ describe('persisted schema validation', () => {
       } },
     });
     expect(result?.settings).toEqual({
-      theme: 'dark', language: 'es', weightUnit: 'kg', heightUnit: 'ft',
+      theme: 'dark', accentColor: null, language: 'es', weightUnit: 'kg', heightUnit: 'ft',
       notifications: { enabled: true, time: '20:00', days: [0, 1] },
     });
     expect(result?.initialRecordId).toBeNull();
@@ -272,6 +272,18 @@ describe('persisted schema validation', () => {
     const data = defaultData();
     data.settings.notifications = { enabled: true, time: '08:00', days: [] };
     expect(validateData(data)?.settings.notifications.enabled).toBe(false);
+  });
+
+  it('migrates optional appearance and celebration fields without altering records', () => {
+    const original = sample([record('2026-10-14', 81)]);
+    const legacy = { ...original, celebratedAchievementIds: undefined, settings: { ...original.settings, accentColor: undefined } };
+    expect(validateData(legacy)?.settings.accentColor).toBeNull();
+    expect(validateData(legacy)?.celebratedAchievementIds).toEqual([]);
+    const result = validateData({ ...original, settings: { ...original.settings, accentColor: '#bb9bff' }, celebratedAchievementIds: ['records-iron', 'records-iron', 2, '<bad>'] });
+    expect(result?.settings.accentColor).toBe('#BB9BFF');
+    expect(result?.celebratedAchievementIds).toEqual(['records-iron']);
+    expect(result?.records).toEqual(original.records);
+    expect(validateData({ ...original, settings: { ...original.settings, accentColor: 'red' } })?.settings.accentColor).toBeNull();
   });
 
   it('returns independent defaults and explicit 30-day preview data', () => {

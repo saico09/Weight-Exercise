@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import {
-  ArrowDownRight, ArrowRight, ArrowUpRight, CalendarDays, Check, ChevronRight,
-  Dumbbell, Flag, Flame, Leaf, LockKeyhole, Pencil, Plus, Scale, Sparkles, Trophy, ListFilter, X,
+  ArrowDownRight, ArrowRight, ArrowUpRight, CalendarDays, ChevronRight,
+  Dumbbell, Flag, Flame, Leaf, Pencil, Plus, Scale, Trophy, ListFilter, X,
 } from 'lucide-react';
 import type { AppData, DailyRecord, HeightUnit } from '../lib/model';
 import {
-  BMI_RANGES, bmiCategory, displayHeight, displayWeight, getStats, shiftDate, profileAge,
+  BMI_RANGES, bmiCategory, displayHeight, displayWeight, getStats, profileAge,
 } from '../lib/model';
 import { BmiGauge } from './Charts';
-import { HeightSwitch, SectionHeading, Modal } from './UI';
+import { HeightSwitch, SectionHeading } from './UI';
+import { HistoryCalendar } from './HistoryCalendar';
+import { matchesHistoryDate, type HistoryDateFilter } from '../lib/calendar';
 import { useI18n } from '../lib/i18n';
 import './insights.css';
 
@@ -19,6 +21,7 @@ export interface InsightsProps {
   onRecord: (record: DailyRecord) => void;
   onNewRecord: () => void;
   onHeightUnit: (unit: HeightUnit) => void;
+  onAchievements?: () => void;
 }
 
 const formatDate = (date: string, locale: string, options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' }) =>
@@ -35,19 +38,7 @@ function Metric({ label, value, unit, note, icon, accent = false }: {
   </article>;
 }
 
-function longestRecordingStreak(records: DailyRecord[]) {
-  let best = 0;
-  let streak = 0;
-  let previous: string | null = null;
-  for (const record of records) {
-    streak = previous && shiftDate(previous, 1) === record.date ? streak + 1 : 1;
-    best = Math.max(best, streak);
-    previous = record.date;
-  }
-  return best;
-}
-
-export function StatsPage({ data, onProfile }: InsightsProps) {
+export function StatsPage({ data, onProfile, onAchievements }: InsightsProps) {
   const { t, locale } = useI18n();
   const dateLabel = (date: string, options?: Intl.DateTimeFormatOptions) => formatDate(date, locale, options);
   if (!data.profile) return null;
@@ -56,24 +47,6 @@ export function StatsPage({ data, onProfile }: InsightsProps) {
   const weight = (value: number) => displayWeight(value, unit, 1, locale);
   const change = stats.change === 0 ? weight(0) : `${stats.change > 0 ? '+' : '−'}${weight(Math.abs(stats.change))}`;
   const weeklyLoss = stats.weeklyLoss;
-  const bestStreak = longestRecordingStreak(stats.records);
-  const bothDays = stats.records.filter(record => record.exercise && record.healthy).length;
-  const achievements = [
-    { name: 'El primer paso', description: 'Tu primer registro guardado.', count: stats.totalDays, target: 1, icon: <Flag size={20} /> },
-    { name: 'Tomando impulso', description: '3 días de registros.', count: stats.totalDays, target: 3, icon: <Sparkles size={20} /> },
-    { name: 'Una semana contigo', description: '7 días seguidos registrando.', count: bestStreak, target: 7, icon: <Flame size={20} /> },
-    { name: 'Constancia que inspira', description: '14 días seguidos registrando.', count: bestStreak, target: 14, icon: <Flame size={20} /> },
-    { name: 'Un hábito que crece', description: '30 días de registros, a tu ritmo.', count: stats.totalDays, target: 30, icon: <Sparkles size={20} /> },
-    { name: 'Tu propia historia', description: '90 días de registros.', count: stats.totalDays, target: 90, icon: <Trophy size={20} /> },
-    { name: 'A moverse', description: 'Tu primer día de ejercicio.', count: stats.exerciseDays, target: 1, icon: <Dumbbell size={20} /> },
-    { name: 'En movimiento', description: '10 días de ejercicio registrados.', count: stats.exerciseDays, target: 10, icon: <Dumbbell size={20} /> },
-    { name: 'Energía que suma', description: '30 días de ejercicio registrados.', count: stats.exerciseDays, target: 30, icon: <Dumbbell size={20} /> },
-    { name: 'Cien veces por ti', description: '100 días de ejercicio registrados.', count: stats.exerciseDays, target: 100, icon: <Trophy size={20} /> },
-    { name: 'Nutriendo el hábito', description: '7 días de comer sano.', count: stats.healthyDays, target: 7, icon: <Leaf size={20} /> },
-    { name: 'Cuidarte se siente bien', description: '30 días de comer sano.', count: stats.healthyDays, target: 30, icon: <Leaf size={20} /> },
-    { name: 'En sintonía', description: '10 días con ambos hábitos.', count: bothDays, target: 10, icon: <Sparkles size={20} /> },
-    { name: 'Tu ritmo, tu equilibrio', description: '30 días con ambos hábitos.', count: bothDays, target: 30, icon: <Trophy size={20} /> },
-  ].map(item => ({ ...item, earned: item.count >= item.target }));
   return <div className="stats-layout">
     <div className="compact-section-heading"><h1 className="eyebrow">{t("Tu evolución")}</h1><button className="icon-button" onClick={onProfile} aria-label={t("Mi perfil y meta")} title={t("Mi perfil y meta")}><Pencil size={19} /></button></div>
 
@@ -119,15 +92,7 @@ export function StatsPage({ data, onProfile }: InsightsProps) {
       </section>
     </div>
 
-    <section className="insight-section" aria-labelledby="achievements-title">
-      <div className="card-head"><h2 id="achievements-title">{t("Pequeñas grandes victorias")}</h2><Trophy size={20} /></div>
-      <div className="achievement-grid">{achievements.map(achievement => <article className={`card achievement ${achievement.earned ? 'earned' : 'is-locked'}`} key={achievement.name}>
-        <span className="achievement-icon">{achievement.earned ? achievement.icon : <LockKeyhole size={20} />}</span>
-        <h3>{t(achievement.name)}</h3><p className="muted">{t(achievement.description)}</p>
-        <div className="achievement-progress"><progress value={Math.min(achievement.count, achievement.target)} max={achievement.target} aria-label={t(achievement.name)} /><span>{Math.min(achievement.count, achievement.target)} / {achievement.target}</span></div>
-        <span className={`pill ${achievement.earned ? 'accent' : ''}`}>{achievement.earned ? <><Check size={12} /> {t("Conseguido")}</> : t('Por descubrir')}</span>
-      </article>)}</div>
-    </section>
+    {onAchievements && <button className="card achievements-shortcut" onClick={onAchievements}><span className="achievements-shortcut-icon"><Trophy size={24} /></span><span><small>{t('Tu colección de copas')}</small><strong>{t('Ver mis logros')}</strong></span><ArrowRight size={20} /></button>}
   </div>;
 }
 
@@ -191,11 +156,12 @@ export function HistoryPage({ data, onRecord, onNewRecord }: InsightsProps) {
   const { t, locale } = useI18n();
   const dateLabel = (date: string, options?: Intl.DateTimeFormatOptions) => formatDate(date, locale, options);
   const [filter, setFilter] = useState<'all' | 'exercise' | 'healthy'>('all');
-  const [month, setMonth] = useState('');
+  const [dateFilter, setDateFilter] = useState<HistoryDateFilter | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const filterDateLabel = !dateFilter ? '' : dateFilter.mode === 'month' ? dateLabel(dateFilter.start, { month: 'long', year: 'numeric' }) : dateFilter.start === dateFilter.end ? dateLabel(dateFilter.start, { day: 'numeric', month: 'short', year: 'numeric' }) : `${dateLabel(dateFilter.start, { day: 'numeric', month: 'short', year: 'numeric' })} — ${dateLabel(dateFilter.end, { day: 'numeric', month: 'short', year: 'numeric' })}`;
   const stats = getStats(data);
   const records = stats.allRecords.filter(record =>
-    (!month || record.date.startsWith(month)) && (filter === 'all' || (filter === 'exercise' ? record.exercise : record.healthy)),
+    matchesHistoryDate(record.date, dateFilter) && (filter === 'all' || (filter === 'exercise' ? record.exercise : record.healthy)),
   ).reverse();
   const groups = new Map<string, DailyRecord[]>();
   for (const record of records) {
@@ -206,12 +172,12 @@ export function HistoryPage({ data, onRecord, onNewRecord }: InsightsProps) {
   return <div className="history-layout compact-history">
     <div className="history-topline"><h1 className="eyebrow">{t('TU HISTORIAL')}</h1><div className="history-tools">
       <div className="history-segments" role="group" aria-label={t('Filtrar registros por hábito')}>{filterOptions.map(({ value, label, icon: Icon }) => <button type="button" key={value} className={filter === value ? 'active' : ''} aria-label={t(label)} title={t(label)} aria-pressed={filter === value} onClick={() => setFilter(value)}><Icon size={18} /></button>)}</div>
-      <button className={`round-action calendar-action ${month ? 'selected' : ''}`} aria-label={t('Filtrar por fecha')} title={t('Filtrar por fecha')} onClick={() => setCalendarOpen(true)}><CalendarDays size={19} />{month && <i />}</button>
+      <button className={`round-action calendar-action ${dateFilter ? 'selected' : ''}`} aria-label={t('Filtrar por fecha')} title={t('Filtrar por fecha')} onClick={() => setCalendarOpen(true)}><CalendarDays size={19} />{dateFilter && <i />}</button>
       <button className="round-action add-action" aria-label={t('Añadir registro')} title={t('Añadir registro')} onClick={onNewRecord}><Plus size={21} /></button>
     </div></div>
-    {month && <button className="history-month-chip" onClick={() => setMonth('')} aria-label={t('Quitar filtro de fecha')}>{dateLabel(`${month}-01`, { month: 'long', year: 'numeric' })}<X size={13} /></button>}
-    {calendarOpen && <Modal title={t('Filtrar por fecha')} subtitle={t('Elige un mes para encontrar tus registros.')} onClose={() => setCalendarOpen(false)}><label className="field-label">{t('Mes de los registros')}<input className="history-month-input" type="month" value={month} onChange={event => setMonth(event.target.value)} /></label><button className="primary-button full-width" onClick={() => setCalendarOpen(false)}>{t('Ver registros')}</button><button className="secondary-button full-width" onClick={() => { setMonth(''); setCalendarOpen(false); }}>{t('Todos los meses')}</button></Modal>}
-    {records.length === 0 ? <div className="card empty-state"><CalendarDays size={32} /><h2>{t(data.records.length ? 'No hay registros con estos filtros.' : 'La primera página está por escribirse.')}</h2><p className="muted">{t(data.records.length ? 'Prueba otro mes o muestra todos tus hábitos.' : 'Un peso, un hábito, un pequeño momento para ti.')}</p>{data.records.length ? <button className="secondary-button" onClick={() => { setMonth(''); setFilter('all'); }}>{t('Ver todos los registros')} <ArrowRight size={16} /></button> : <button className="primary-button" onClick={onNewRecord}>{t('Crear mi primer registro')} <Plus size={16} /></button>}</div> :
+    {dateFilter && <button className="history-month-chip" onClick={() => setDateFilter(null)} aria-label={`${filterDateLabel} · ${t('Quitar filtro de fecha')}`}><CalendarDays size={13} /><span>{filterDateLabel}</span><X size={13} /></button>}
+    {calendarOpen && <HistoryCalendar value={dateFilter} recordDates={data.records.map(record => record.date)} onClose={() => setCalendarOpen(false)} onApply={value => { setDateFilter(value); setCalendarOpen(false); }} />}
+    {records.length === 0 ? <div className="card empty-state"><CalendarDays size={32} /><h2>{t(data.records.length ? 'No hay registros con estos filtros.' : 'La primera página está por escribirse.')}</h2><p className="muted">{t(data.records.length ? 'Prueba otras fechas o muestra todos tus hábitos.' : 'Un peso, un hábito, un pequeño momento para ti.')}</p>{data.records.length ? <button className="secondary-button" onClick={() => { setDateFilter(null); setFilter('all'); }}>{t('Ver todos los registros')} <ArrowRight size={16} /></button> : <button className="primary-button" onClick={onNewRecord}>{t('Crear mi primer registro')} <Plus size={16} /></button>}</div> :
       <div className="history-list">{Array.from(groups, ([key, entries]) => <section className="history-month" key={key} aria-labelledby={`month-${key}`}>
         <div className="card-head"><h2 id={`month-${key}`}>{dateLabel(`${key}-01`, { month: 'long', year: 'numeric' })}</h2><span className="muted">{entries.length} {t(entries.length === 1 ? 'día' : 'días')}</span></div>
         <div className="card">{entries.map(record => {

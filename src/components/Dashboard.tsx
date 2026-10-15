@@ -4,6 +4,7 @@ import type { AppData } from '../lib/model';
 import { dateKey, displayWeight, getStats, shiftDate } from '../lib/model';
 import { useI18n } from '../lib/i18n';
 import { ProgressRing, WeightChart } from './Charts';
+import { chartPeriod } from './chartUtils';
 import { SectionHeading, SmallLink } from './UI';
 import './charts-dashboard.css';
 
@@ -15,22 +16,23 @@ export default function Dashboard({ data, onDaily, onProfile, onHistory, onEditD
   const weight = (value: number) => displayWeight(value, unit, 1, locale);
   const today = dateKey();
   const todayRecord = data.records.find(record => record.date === today);
-  const chartRecords = stats.records.filter(record => period === 0 || record.date >= shiftDate(today, -(period - 1)));
+  const chart = chartPeriod(data.records, period, today);
   const weekDays = Array.from({ length: 7 }, (_, index) => shiftDate(today, index - 6));
   // Show actual records even when the chosen weight baseline is more recent.
   const weekRecords = data.records.filter(record => weekDays.includes(record.date));
   const weekExercise = weekRecords.filter(record => record.exercise).length;
   const weekHealthy = weekRecords.filter(record => record.healthy).length;
   const ratio = stats.totalDays ? stats.exerciseDays / stats.totalDays * 100 : 0;
+  const healthyRatio = stats.totalDays ? stats.healthyDays / stats.totalDays * 100 : 0;
 
   return <>
     <SectionHeading eyebrow={t('CADA DÍA CUENTA')} title={t(data.settings.theme === 'dark' ? 'TU MEJOR VERSIÓN.' : 'Todo empieza contigo.')} action={<button className={`primary-button ${todayRecord ? 'recorded-button' : ''}`} onClick={onDaily}>{todayRecord ? <Check size={18} /> : <Plus size={18} />}{t(todayRecord ? 'Hoy ya cuenta' : 'Registrar mi día')}<ChevronRight size={17} /></button>} />
     <div className="dashboard-grid">
       <section className="card weight-card">
-        <div className="card-head"><span className="card-title"><TrendingUp size={18} />{t('Tu evolución')}</span><span className="pill subtle"><span className="dot" />{stats.totalDays} {t(stats.totalDays === 1 ? 'registro' : 'registros')}</span></div>
+        <div className="card-head"><span className="card-title"><TrendingUp size={18} />{t('Tu evolución')}</span><span className="pill subtle"><span className="dot" />{chart.records.length} {t(chart.records.length === 1 ? 'registro' : 'registros')}</span></div>
         <div className="weight-overview"><div><span className="muted small">{t('PESO ACTUAL')}</span><div className="big-weight">{weight(stats.currentWeight)}<span>{unit}</span></div></div><div className="weight-change"><span className="change-pill">{stats.change <= 0 ? <ArrowDownRight size={17} /> : <ArrowUpRight size={17} />}{stats.change > 0 ? '+' : ''}{weight(stats.change)} {unit}</span><span>{t('desde tu inicio')}</span></div></div>
         <div className="chart-toolbar"><div className="chart-legend"><span className="dot" />{t('Peso registrado')}</div><div className="segmented small-segmented">{[[7, '7D'], [30, '1M'], [90, '3M'], [0, 'Todo']].map(([value, label]) => <button key={value} className={period === value ? 'active' : ''} onClick={() => setPeriod(Number(value))} aria-pressed={period === value}>{t(String(label))}</button>)}</div></div>
-        <WeightChart records={chartRecords} unit={unit} goal={stats.goalWeight} />
+        <WeightChart key={`${period}:${today}`} records={chart.records} periodBounds={chart.bounds} hasHistory={data.records.length > 0} unit={unit} goal={stats.goalWeight} />
         <div className="chart-footer"><span><span className="dot" />{t('Tu constancia deja huella.')}</span><SmallLink onClick={onHistory}>{t('Ver historial')}</SmallLink></div>
       </section>
       <section className="card goal-card">
@@ -61,7 +63,13 @@ export default function Dashboard({ data, onDaily, onProfile, onHistory, onEditD
         <div className="card-head"><span className="card-title"><Dumbbell size={18} />{t('Movimiento y pausa')}</span><span className="muted small">{t('DESDE TU INICIO')}</span></div>
         <div className="activity-numbers"><div><strong>{stats.exerciseDays}</strong><span><i className="dot" />{t('Con ejercicio')}</span></div><div><strong className="muted">{stats.restDays}</strong><span><i className="dot rest-dot" />{t('Sin ejercicio')}</span></div></div>
         <div className="activity-bar" role="img" aria-label={`${stats.exerciseDays} ${t('días con ejercicio')} · ${stats.restDays} ${t('días sin ejercicio')}`}><span style={{ width: `${ratio}%` }} /></div>
-        <div className="activity-bottom"><span>{Math.round(ratio)}% {t('de tus días registrados')}</span><span className="tiny-icon"><ArrowUpRight size={16} /></span></div><div className="healthy-summary"><Leaf size={17} /><span><strong>{stats.healthyDays} {t('días')}</strong> {t('elegiste comer sano.')}</span></div>
+        <div className="activity-bottom"><span>{Math.round(ratio)}% {t('de tus días registrados')}</span><span className="tiny-icon"><ArrowUpRight size={16} /></span></div>
+        <div className="healthy-activity">
+          <div className="card-head"><span className="card-title"><Leaf size={18} />{t('Alimentación consciente')}</span></div>
+          <div className="activity-numbers"><div><strong>{stats.healthyDays}</strong><span><i className="dot" />{t('Comí sano')}</span></div><div><strong className="muted">{stats.totalDays - stats.healthyDays}</strong><span><i className="dot rest-dot" />{t('No comí sano')}</span></div></div>
+          <div className="activity-bar" role="img" aria-label={`${stats.healthyDays} ${t('días de comer sano')} · ${Math.round(healthyRatio)}%`}><span style={{ width: `${healthyRatio}%` }} /></div>
+          <div className="activity-bottom"><span>{Math.round(healthyRatio)}% {t('de tus días registrados')}</span><Leaf size={15} /></div>
+        </div>
       </section>
     </div><div className="bottom-quote"><span className="quote-line" /><span>{t('EL ÚNICO RITMO QUE IMPORTA ES EL TUYO.')}</span><span className="quote-line" /></div>
   </>;

@@ -27,14 +27,16 @@ La dirección del navegador importa: `localhost`, `127.0.0.1` y distintos puerto
 ## Qué incluye
 
 - Tema **Dark** con negro, verde `#42FF85` y tipografía contundente; tema **Light** con azul `#91F8FF`, transparencias y tipografía suave.
+- Color principal personalizable desde bienvenida y ajustes: cinco tonos, espectro libre, vista previa en ambos estilos y restauración de los colores originales.
 - Español e inglés desde la bienvenida y configuración, con idioma persistente.
 - Inicio por pasos: tema, altura, peso actual, objetivo y fecha de nacimiento. Reglas arrastrables y ruedas independientes para día, mes y año, con entrada directa por calendario.
 - Registro diario de peso, ejercicio y la pregunta «¿Toca comer sano hoy?».
-- Gráfico de peso con desplazamiento, zoom, pellizco y controles de teclado; avance a la meta.
+- Gráfico de peso con períodos de 7, 30 y 90 días, o todo el historial; desplazamiento, zoom, pellizco y controles de teclado. Cada cambio de período restablece el zoom y muestra sus fechas.
 - Calendario de hábitos editable: ninguno, solo ejercicio, solo comer sano o ambos, y días sin registro diferenciados.
-- Estadísticas, promedios semanales y 14 logros con progreso real.
+- Barras separadas para el porcentaje de días con ejercicio y de alimentación sana, calculadas sobre los días registrados.
+- Estadísticas y promedios semanales; pantalla dedicada a 30 logros con progreso, detalles y filtros. Copas de hierro, bronce, plata, oro y platino, más una celebración al conseguir hitos nuevos. Los logros usan todo el historial y las felicitaciones no se repiten al editar o reiniciar.
 - IMC con indicador semicircular en los tonos del tema, categorías y equivalencias en peso.
-- Historial compacto con filtros por íconos, calendario, edición y selección de un registro como punto de partida.
+- Historial compacto con calendario de mes completo o rango inclusivo, filtros por hábito, edición y selección de un registro como punto de partida. Dos meses en escritorio y uno en móvil.
 - Cambio de unidades, preferencias de recordatorios y reinicio de datos.
 
 El IMC es una referencia orientativa y no un diagnóstico. La app muestra categorías adultas desde los 20 años y no calcula percentiles de IMC por edad para menores. Referencia: [categorías de IMC para adultos del CDC](https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html).
@@ -53,7 +55,7 @@ Los scripts ejecutan las herramientas mediante Node directamente para funcionar 
 
 ## Android
 
-La versión **0.2.0** se compiló y verificó el 14 de octubre de 2026. El APK local está en **[output/WeightExercise-debug.apk](output/WeightExercise-debug.apk)**, compatible con Android 7.0 o superior.
+La versión **0.3.0** se compiló y verificó el 14 de octubre de 2026. El APK local está en **[output/WeightExercise-debug.apk](output/WeightExercise-debug.apk)**, compatible con Android 7.0 o superior.
 
 La identidad de paquete y la clave de desarrollo se conservan: puedes actualizar sobre la versión anterior sin desinstalarla. El cambio de marca no borra datos. Los perfiles anteriores conservan su edad hasta que se agregue una fecha de nacimiento desde el perfil.
 

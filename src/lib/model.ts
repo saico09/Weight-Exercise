@@ -24,6 +24,7 @@ export interface DailyRecord {
 
 export interface Settings {
   theme: Theme;
+  accentColor: string | null;
   language: Language;
   weightUnit: WeightUnit;
   heightUnit: HeightUnit;
@@ -37,6 +38,7 @@ export interface AppData {
   settings: Settings;
   initialRecordId: string | null;
   lastPromptDate: string | null;
+  celebratedAchievementIds: string[];
 }
 
 export function defaultData(): AppData {
@@ -46,6 +48,7 @@ export function defaultData(): AppData {
     records: [],
     settings: {
       theme: 'dark',
+      accentColor: null,
       language: 'es',
       weightUnit: 'kg',
       heightUnit: 'cm',
@@ -53,6 +56,7 @@ export function defaultData(): AppData {
     },
     initialRecordId: null,
     lastPromptDate: null,
+    celebratedAchievementIds: [],
   };
 }
 
@@ -345,6 +349,7 @@ export function validateData(raw: unknown): AppData | null {
   const settings = object(input.settings);
   if (settings) {
     if (settings.theme === 'dark' || settings.theme === 'light') result.settings.theme = settings.theme;
+    if (typeof settings.accentColor === 'string' && /^#[0-9a-f]{6}$/i.test(settings.accentColor)) result.settings.accentColor = settings.accentColor.toUpperCase();
     if (settings.language === 'es' || settings.language === 'en') result.settings.language = settings.language;
     if (settings.weightUnit === 'kg' || settings.weightUnit === 'lb') result.settings.weightUnit = settings.weightUnit;
     if (settings.heightUnit === 'cm' || settings.heightUnit === 'ft') result.settings.heightUnit = settings.heightUnit;
@@ -360,5 +365,6 @@ export function validateData(raw: unknown): AppData | null {
   }
   result.initialRecordId = typeof input.initialRecordId === 'string' && result.records.some((record) => record.id === input.initialRecordId) ? input.initialRecordId : null;
   result.lastPromptDate = validDate(input.lastPromptDate) ? input.lastPromptDate : null;
+  if (Array.isArray(input.celebratedAchievementIds)) result.celebratedAchievementIds = [...new Set(input.celebratedAchievementIds.filter((id): id is string => typeof id === 'string' && /^[a-z0-9-]{1,80}$/.test(id)))].slice(0, 500);
   return result;
 }

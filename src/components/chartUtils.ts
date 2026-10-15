@@ -1,7 +1,20 @@
+import { shiftDate, type DailyRecord } from '../lib/model';
+
 export type ChartWindow = { start: number; end: number };
 
 /** Dates are calendar ordinals so daylight-saving changes never distort spacing. */
 export const chartDay = (date: string) => Date.parse(`${date}T12:00:00Z`) / 86_400_000;
+
+/** Explicit calendar bounds keep sparse 1M/3M views distinct. All includes history before a reselected baseline. */
+export function chartPeriod(records: DailyRecord[], days: number, today: string) {
+  const history = records.filter(record => record.date <= today).sort((a, b) => a.date.localeCompare(b.date));
+  const startDate = days > 0 ? shiftDate(today, -(days - 1)) : history[0]?.date || today;
+  const start = chartDay(startDate), end = chartDay(today);
+  return {
+    records: history.filter(record => record.date >= startDate),
+    bounds: { start: start === end ? start - 1 : start, end },
+  };
+}
 
 export function clampChartWindow(window: ChartWindow, bounds: ChartWindow, minimumSpan = 3): ChartWindow {
   const total = Math.max(0, bounds.end - bounds.start);
