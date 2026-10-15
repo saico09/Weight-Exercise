@@ -35,6 +35,22 @@ describe('personalized accent colors', () => {
     }
   });
 
+  it('keeps personalized accents readable on Pro and metallic reward surfaces', () => {
+    const surfaces = {
+      aurora: ['#12152a', '#1b203b', '#252b49'],
+      sand: ['#f5efe5', '#fffaf2', '#ede3d6'],
+      gold: ['#151109', '#272013', '#302719', '#413522', '#453c2b', '#4a3b20'],
+      platinum: ['#dce1e7', '#f0f3f6', '#f8fafc', '#bfcbda'],
+    } as const;
+    for (const theme of Object.keys(surfaces) as (keyof typeof surfaces)[]) {
+      for (const color of [...accentPresets.map(preset => preset.color), '#777777', '#000000', '#FFFFFF']) {
+        const style = accentStyle(theme, color);
+        for (const background of surfaces[theme]) expect(contrastRatio(style['--accent-ink'], background)).toBeGreaterThanOrEqual(4.5);
+        expect(contrastRatio(style['--accent'], style['--accent-contrast'])).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
   it('preserves readable selected-row text when the custom tint blends into a surface', () => {
     for (const color of ['#777777', '#8A8A8A', '#000000', '#FFFFFF', '#F00000', '#FF00FF', '#F6D85C']) {
       for (const theme of ['dark', 'light'] as const) {

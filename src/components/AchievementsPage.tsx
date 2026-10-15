@@ -1,35 +1,20 @@
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import { ArrowUpRight, BookOpen, CalendarDays, Check, Dumbbell, Flame, Leaf, LockKeyhole, Sparkles } from 'lucide-react';
 import type { AppData } from '../lib/model';
 import {
   CUP_LEVELS, FAMILY_DESCRIPTIONS, FAMILY_LABELS, TIER_LABELS,
-  getAchievements, getCupProgress, type Achievement, type AchievementFamily, type AchievementTier,
+  getAchievements, getCupProgress, type Achievement, type AchievementFamily,
 } from '../lib/achievements';
 import { useI18n } from '../lib/i18n';
 import { Modal } from './UI';
+import { AchievementCelebration } from './AchievementCelebration';
+import { TrophyMark } from './TrophyMark';
+export { TrophyMark } from './TrophyMark';
+import type { RewardTheme } from '../lib/rewardThemes';
 import './achievements.css';
 
 const FAMILY_ICONS = { records: BookOpen, streak: Flame, exercise: Dumbbell, healthy: Leaf, balance: Sparkles, weeks: CalendarDays };
 const FAMILIES = Object.keys(FAMILY_LABELS) as AchievementFamily[];
-
-/** One cup silhouette with real metal treatments shared by the gallery and unlock dialog. */
-export function TrophyMark({ tier, size = 'normal' }: { tier: AchievementTier | null; size?: 'small' | 'normal' | 'large' }) {
-  const id = useId();
-  return <span className={`achievement-trophy ${size} metal-${tier ?? 'locked'}`} aria-hidden="true">
-    <svg viewBox="0 0 88 88">
-      <defs>
-        <linearGradient id={`${id}-metal`} x1="0" y1="0" x2="1" y2="1"><stop stopColor="var(--metal-shine)" /><stop offset=".45" stopColor="var(--metal)" /><stop offset="1" stopColor="var(--metal-shadow)" /></linearGradient>
-        <linearGradient id={`${id}-stem`} x1="0" y1="0" x2="1" y2="0"><stop stopColor="var(--metal-shadow)" /><stop offset=".5" stopColor="var(--metal-shine)" /><stop offset="1" stopColor="var(--metal)" /></linearGradient>
-      </defs>
-      <path d="M26 24H15v9c0 11 9 18 19 18M62 24h11v9c0 11-9 18-19 18" fill="none" stroke={`url(#${id}-metal)`} strokeWidth="5" strokeLinecap="round" />
-      <path d="M23 17h42l-4 25c-2 11-9 17-17 17s-15-6-17-17Z" fill={`url(#${id}-metal)`} />
-      <path d="M28 21h4l3 20c1 7 3 10 5 12-6-3-9-7-10-14Z" fill="var(--metal-shine)" opacity=".65" />
-      <path d="M40 57h8v12H40zM29 70h30l3 7H26Z" fill={`url(#${id}-stem)`} />
-      <path d="m44 28 2.8 5.8 6.4.9-4.6 4.5 1.1 6.4-5.7-3-5.7 3 1.1-6.4-4.6-4.5 6.4-.9Z" fill="var(--metal-shadow)" opacity=".7" />
-      <path d="M24 17h40" stroke="var(--metal-shine)" strokeWidth="3" strokeLinecap="round" />
-    </svg>
-  </span>;
-}
 
 function AchievementDetail({ achievement, onClose }: { achievement: Achievement; onClose: () => void }) {
   const { t } = useI18n();
@@ -65,6 +50,7 @@ export function AchievementsPage({ data, onRecord }: { data: AppData; onRecord?:
   const { t } = useI18n();
   const [filter, setFilter] = useState<'all' | 'pending' | 'earned'>('all');
   const [selected, setSelected] = useState<Achievement | null>(null);
+  const [celebrationCup, setCelebrationCup] = useState<RewardTheme | null>(null);
   const achievements = getAchievements(data);
   const cup = getCupProgress(achievements);
   const visible = achievements.filter(item => filter === 'all' || (filter === 'earned' ? item.earned : !item.earned));
@@ -84,7 +70,7 @@ export function AchievementsPage({ data, onRecord }: { data: AppData; onRecord?:
         <p>{cup.next ? t(cup.remaining === 1 ? 'A un logro de tu copa de {tier}.' : 'A {count} logros de tu copa de {tier}.', { count: cup.remaining, tier: t(TIER_LABELS[cup.next.tier]) }) : t('La colección completa. Cada copa cuenta tu historia.')}</p>
         <div className="achievement-cup-path" aria-label={t('Progresión de copas')}>
           {CUP_LEVELS.map(level => <div key={level.tier} className={`${cup.earned >= level.target ? 'reached' : ''} ${cup.current?.tier === level.tier ? 'current' : ''}`}>
-            <span className={`achievement-cup-step metal-${level.tier}`}><TrophyMark tier={level.tier} size="small" />{cup.earned >= level.target && <i><Check size={8} /></i>}</span>
+            {cup.earned >= level.target && (level.tier === 'gold' || level.tier === 'platinum') ? <button type="button" className={`achievement-cup-step replay-cup metal-${level.tier}`} aria-label={t('Volver a celebrar tu copa de {tier}', { tier: t(TIER_LABELS[level.tier]) })} onClick={() => setCelebrationCup(level.tier as RewardTheme)}><TrophyMark tier={level.tier} size="small" /><i><Check size={8} /></i></button> : <span className={`achievement-cup-step metal-${level.tier}`}><TrophyMark tier={level.tier} size="small" />{cup.earned >= level.target && <i><Check size={8} /></i>}</span>}
             <strong>{t(TIER_LABELS[level.tier])}</strong><small>{level.target}</small>
           </div>)}
         </div>
@@ -108,6 +94,7 @@ export function AchievementsPage({ data, onRecord }: { data: AppData; onRecord?:
       </section>;
     })}
     {selected && <AchievementDetail achievement={selected} onClose={() => setSelected(null)} />}
+    {celebrationCup && <AchievementCelebration achievements={[]} rewardThemes={[celebrationCup]} replay onClose={() => setCelebrationCup(null)} onViewAll={() => setCelebrationCup(null)} />}
   </div>;
 }
 
