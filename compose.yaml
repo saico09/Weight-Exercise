@@ -41,6 +41,7 @@ services:
       - ./server/db/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh:ro
       - ./server/db/02-schema.sql:/docker-entrypoint-initdb.d/02-schema.sql:ro
       - ./server/db/05-email-summaries.sql:/docker-entrypoint-initdb.d/05-email-summaries.sql:ro
+      - ./server/db/06-pro-licenses.sql:/docker-entrypoint-initdb.d/06-pro-licenses.sql:ro
     networks: [private]
     healthcheck:
       test: [CMD-SHELL, 'pg_isready -U postgres -d weight_exercise']
@@ -93,6 +94,14 @@ services:
       SMTP_PASS: ${SMTP_PASS:-}
       SMTP_FROM: ${SMTP_FROM:-access@weight-exercise.local}
       PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://127.0.0.1:5173}
+      PRO_LICENSE_ENFORCEMENT: ${PRO_LICENSE_ENFORCEMENT:-false}
+      PRO_LICENSE_OFFLINE_DAYS: ${PRO_LICENSE_OFFLINE_DAYS:-7}
+      PLAY_CLOUD_PROJECT_NUMBER: ${PLAY_CLOUD_PROJECT_NUMBER:-}
+      PLAY_CERTIFICATE_SHA256: ${PLAY_CERTIFICATE_SHA256:-}
+      PLAY_MIN_VERSION_CODE: ${PLAY_MIN_VERSION_CODE:-1}
+      # Private files are supplied through a separate, untracked Compose override.
+      PLAY_SERVICE_ACCOUNT_FILE: ${PLAY_SERVICE_ACCOUNT_FILE:-}
+      PRO_LICENSE_SIGNING_KEY_FILE: ${PRO_LICENSE_SIGNING_KEY_FILE:-}
     ports: ['127.0.0.1:3001:3001']
     networks: [private, local-access]
     depends_on:

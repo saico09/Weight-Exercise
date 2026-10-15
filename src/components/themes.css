@@ -40,38 +40,60 @@ ion-app[data-theme=sand] { --bg:#f5efe5; --surface:#fffaf2; --surface-raised:#ed
 @media(prefers-reduced-motion:no-preference) { [data-theme=aurora] .main-content { animation:aurora-enter .65s cubic-bezier(.16,1,.3,1) both; } [data-theme=sand] .main-content { animation:page-enter .6s ease both; } }
 @keyframes aurora-enter { from { opacity:0; transform:translateY(10px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
 
-/* Viewport-sized light fields remain visible around the glass surfaces while
-   only transforms/opacity animate. No canvas, input interception or layout work. */
+/* The scenery fills the viewport behind the scroll surface. Its SVG curves are
+   static: only three small transform/opacity animations move the wave layers. */
 [data-theme=aurora] .app-root,[data-theme=sand] .app-root { position:relative; isolation:isolate; }
-[data-theme=aurora] .app-root::before,[data-theme=aurora] .app-root::after,
-[data-theme=sand] .app-root::before,[data-theme=sand] .app-root::after { content:''; position:absolute; pointer-events:none; z-index:0; inset:-18%; transform-origin:center; }
-[data-theme=aurora] .app-root::before { background:radial-gradient(ellipse at 85% 15%,#ad73ff70,transparent 48%),radial-gradient(ellipse at 5% 65%,#697dff55,transparent 48%),linear-gradient(125deg,transparent 20%,#8051c32b 37%,#b394ff28 42%,transparent 57%); }
-[data-theme=aurora] .app-root::after { background:linear-gradient(118deg,transparent 28%,#9475ff00 38%,#cdb4ff35 44%,#836dff18 49%,transparent 60%),radial-gradient(ellipse at 70% 90%,#7e4dcc48,transparent 46%); }
-[data-theme=sand] .app-root::before { background:radial-gradient(ellipse at 90% 8%,#f8cf8ca6,transparent 55%),radial-gradient(ellipse at 5% 80%,#d69c6152,transparent 55%); }
-[data-theme=sand] .app-root::after { background:repeating-linear-gradient(118deg,transparent 0 100px,#fffdf15e 130px,#fffdf1a3 158px,#fffdf12e 180px,transparent 210px 310px); }
+.theme-atmosphere { position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; user-select:none; contain:strict; }
+.atmosphere-scenery { display:block; width:100%; height:100%; overflow:visible; }
+.atmosphere-layer,.atmosphere-wind { transform-box:view-box; transform-origin:50% 50%; }
+.atmosphere-edge { fill:none; stroke-width:1.2; vector-effect:non-scaling-stroke; }
+.atmosphere-wind { stroke-width:.8; opacity:.65; }
+.atmosphere-wind path { vector-effect:non-scaling-stroke; }
+.atmosphere-aurora .atmosphere-layer-mid { opacity:.78; }
+.atmosphere-sand .atmosphere-layer-near { opacity:.7; }
 [data-theme=aurora] :is(.app-scroll,.onboarding,.cloud-welcome,.loading-screen,.demo-banner),
 [data-theme=sand] :is(.app-scroll,.onboarding,.cloud-welcome,.loading-screen,.demo-banner) { position:relative; z-index:1; }
-[data-theme=aurora] .card { background:linear-gradient(135deg,#252b428c,#191e35dc),#1b203b85; }
-[data-theme=sand] .card { background:linear-gradient(130deg,#fffaf2ed,#fffaf2c9); }
-@media(prefers-reduced-motion:no-preference) {
-  [data-theme=aurora] .app-root::before { animation:aurora-atmosphere 13s ease-in-out infinite alternate; }
-  [data-theme=aurora] .app-root::after { animation:aurora-ribbon 17s -6s ease-in-out infinite alternate; }
-  [data-theme=sand] .app-root::before { animation:sand-atmosphere 18s ease-in-out infinite alternate; }
-  [data-theme=sand] .app-root::after { animation:sand-sunlight 22s -7s ease-in-out infinite alternate; }
-  /* One short entrance per section, followed by still surfaces for reading. */
-  [data-theme=aurora] .main-content .card,[data-theme=sand] .main-content .card { animation:pro-surface-arrive .5s cubic-bezier(.2,.7,.3,1) backwards; }
-  [data-theme=aurora] .main-content .card:nth-child(2),[data-theme=sand] .main-content .card:nth-child(2) { animation-delay:45ms; }
-  [data-theme=aurora] .main-content .card:nth-child(3),[data-theme=sand] .main-content .card:nth-child(3) { animation-delay:90ms; }
-  [data-theme=aurora] .main-content .card:nth-child(n+4),[data-theme=sand] .main-content .card:nth-child(n+4) { animation-delay:120ms; }
+/* The previous aurora light fields now live inside each component's background,
+   below its text/charts. No pseudo elements or clipping touch interactive content. */
+[data-theme=aurora] :is(.card,.metric-card,.steps-summary) {
+  background-color:#1b203be8;
+  background-image:radial-gradient(ellipse at 75% 18%,#ad73ff40,transparent 57%),radial-gradient(ellipse at 12% 80%,#697dff29,transparent 58%),linear-gradient(118deg,transparent 25%,#c5a1ff14 45%,transparent 65%);
+  background-size:180% 180%,170% 170%,220% 100%;
+  background-position:0% 25%,100% 65%,100% 0%;
+  background-repeat:no-repeat;
 }
-@keyframes aurora-atmosphere { from { opacity:.7; transform:translate3d(-5%,3%,0) rotate(-7deg) scale(.95); } to { opacity:1; transform:translate3d(6%,-5%,0) rotate(8deg) scale(1.08); } }
-@keyframes aurora-ribbon { from { opacity:.5; transform:translate3d(-8%,-3%,0) skewX(-8deg); } to { opacity:.95; transform:translate3d(9%,5%,0) skewX(7deg); } }
-@keyframes sand-atmosphere { from { opacity:.65; transform:translate3d(4%,-3%,0) scale(.98); } to { opacity:1; transform:translate3d(-6%,4%,0) scale(1.08); } }
-@keyframes sand-sunlight { from { opacity:.45; transform:translate3d(-8%,0,0) rotate(-3deg); } to { opacity:.9; transform:translate3d(8%,3%,0) rotate(3deg); } }
+[data-theme=sand] :is(.card,.metric-card,.steps-summary) {
+  background-color:#fffaf2dc;
+  background-image:radial-gradient(ellipse at 85% 15%,#f8cf8c42,transparent 58%),radial-gradient(ellipse at 10% 85%,#d69c611a,transparent 57%),linear-gradient(118deg,transparent 25%,#ffffff70 45%,transparent 65%);
+  background-size:180% 180%,170% 170%,220% 100%;
+  background-position:0% 25%,100% 65%,100% 0%;
+  background-repeat:no-repeat;
+}
+[data-theme=aurora] { --surface-motion-time:16s; }
+[data-theme=sand] { --surface-motion-time:21s; }
+@media(prefers-reduced-motion:no-preference) {
+  .atmosphere-layer-far { animation:atmosphere-wave-far 17s -5s ease-in-out infinite alternate; }
+  .atmosphere-layer-mid { animation:atmosphere-wave-mid 21s -12s ease-in-out infinite alternate; }
+  .atmosphere-layer-near { animation:atmosphere-wave-near 15s -9s ease-in-out infinite alternate; }
+  .atmosphere-sand .atmosphere-layer-far { animation-duration:25s; }
+  .atmosphere-sand .atmosphere-layer-mid { animation-duration:29s; }
+  .atmosphere-sand .atmosphere-layer-near { animation-duration:23s; }
+  .atmosphere-wind { animation:atmosphere-sand-wind 19s -7s ease-in-out infinite alternate; }
+  [data-theme=aurora] :is(.card,.metric-card,.steps-summary),
+  [data-theme=sand] :is(.card,.metric-card,.steps-summary) { animation:pro-surface-light var(--surface-motion-time) -5s ease-in-out infinite alternate; }
+  [data-theme=aurora] .main-content .card,[data-theme=sand] .main-content .card { animation:pro-surface-arrive .5s cubic-bezier(.2,.7,.3,1) backwards,pro-surface-light var(--surface-motion-time) -5s ease-in-out infinite alternate; }
+  [data-theme=aurora] .main-content .card:nth-child(2),[data-theme=sand] .main-content .card:nth-child(2) { animation-delay:45ms,-10s; }
+  [data-theme=aurora] .main-content .card:nth-child(3),[data-theme=sand] .main-content .card:nth-child(3) { animation-delay:90ms,-2s; }
+  [data-theme=aurora] .main-content .card:nth-child(n+4),[data-theme=sand] .main-content .card:nth-child(n+4) { animation-delay:120ms,-7s; }
+}
+@keyframes atmosphere-wave-far { from { transform:translate3d(-5%,-5%,0) scaleY(.94); opacity:.7; } to { transform:translate3d(5%,7%,0) scaleY(1.08); opacity:1; } }
+@keyframes atmosphere-wave-mid { from { transform:translate3d(7%,5%,0) rotate(-3deg); } to { transform:translate3d(-7%,-6%,0) rotate(3deg); } }
+@keyframes atmosphere-wave-near { from { transform:translate3d(-6%,5%,0) scaleY(1.06); } to { transform:translate3d(6%,-6%,0) scaleY(.94); } }
+@keyframes atmosphere-sand-wind { from { transform:translate3d(-8%,2%,0) skewY(-2deg); opacity:.4; } to { transform:translate3d(8%,-3%,0) skewY(2deg); opacity:.85; } }
+@keyframes pro-surface-light { from { background-position:0% 25%,100% 65%,100% 0%; } to { background-position:100% 75%,0% 30%,0% 0%; } }
 @keyframes pro-surface-arrive { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 @media(prefers-reduced-motion:reduce) {
   [data-theme=aurora] .main-content,[data-theme=sand] .main-content,
-  [data-theme=aurora] .main-content .card,[data-theme=sand] .main-content .card,
-  [data-theme=aurora] .app-root::before,[data-theme=aurora] .app-root::after,
-  [data-theme=sand] .app-root::before,[data-theme=sand] .app-root::after { animation:none; transform:none; }
+  [data-theme=aurora] :is(.card,.metric-card,.steps-summary),[data-theme=sand] :is(.card,.metric-card,.steps-summary),
+  .atmosphere-layer,.atmosphere-wind { animation:none; transform:none; }
 }

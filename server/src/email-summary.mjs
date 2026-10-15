@@ -35,7 +35,7 @@ export function summaryText(snapshot, settings, scheduledFor, backupDate, userna
   return { english, lines, window };
 }
 
-export function createSummaryService({ pool, transaction, mailer, secret, appUrl }) {
+export function createSummaryService({ pool, transaction, mailer, secret, appUrl, canUsePro = async () => true }) {
   const parsedUrl = new URL(appUrl);
   if (parsedUrl.protocol !== 'https:' && !(parsedUrl.protocol === 'http:' && ['127.0.0.1','localhost'].includes(parsedUrl.hostname))) throw new Error('PUBLIC_APP_URL must use HTTPS or a loopback development host.');
   const publicUrl = appUrl.replace(/\/+$/, '');
@@ -108,6 +108,9 @@ export function createSummaryService({ pool, transaction, mailer, secret, appUrl
     });
   }
   async function deliver(job) {
+    if (!await canUsePro(job.user_id)) {
+      await pool.query("UPDATE email_deliveries SET status='cancelled',locked_until=NULL WHERE id=$1", [job.id]); return;
+    }
     const stored = await transaction(async client => {
       await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
       const row = (await client.query(`SELECT u.email,u.username,e.*,p.preferences,p.profile,p.metadata,p.updated_at AS backup_updated_at
@@ -130,7 +133,7 @@ export function createSummaryService({ pool, transaction, mailer, secret, appUrl
     const footer = mailer.mode === 'mailpit' ? (content.english ? 'Local preview: this message stays in Mailpit.' : 'Prueba local: este correo permanece en Mailpit.') : '';
     // Recheck opt-in after generating the workbook; account deletion or opt-out cancels queued work.
     const allowed = (await pool.query("SELECT d.id FROM email_deliveries d JOIN email_preferences e ON e.user_id=d.user_id JOIN users u ON u.id=d.user_id WHERE d.id=$1 AND d.status='sending' AND e.enabled AND u.email=$2 AND e.unsubscribe_version=$3", [job.id, row.email, row.unsubscribe_version])).rowCount;
-    if (!allowed) return;
+    if (!allowed || !await canUsePro(job.user_id)) return;
     await mailer.send({ to: { address: row.email }, messageId: `<summary-${job.id}@weight-exercise.local>`, subject: content.english ? 'Weight&Exercise · Your progress summary' : 'Weight&Exercise · Tu resumen de progreso',
       text: [...content.lines, '', cancelText, url, '', footer].join('\n\n'),
       html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;background:#111715;color:#f6faf7;padding:28px;border-top:5px solid ${accent};border-radius:20px"><h1 style="font-size:24px">Weight&amp;Exercise</h1>${content.lines.map(line => `<p style="line-height:1.6">${escape(line)}</p>`).join('')}<p style="font-size:12px;color:#c6d0ca">${escape(cancelText)} <a style="color:${accent}" href="${escape(url)}">${content.english ? 'Unsubscribe' : 'Cancelar suscripción'}</a></p><small>${escape(footer)}</small></div>`,

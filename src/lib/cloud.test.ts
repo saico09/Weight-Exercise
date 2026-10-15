@@ -5,6 +5,26 @@ import { defaultData } from './model';
 afterEach(() => vi.unstubAllGlobals());
 
 describe('cloud requests', () => {
+  it('binds license activation to the signed-in account and forwards native proof fields', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ticket: 'signed-ticket' })));
+    vi.stubGlobal('fetch', fetchMock);
+    const proof = { challengeId: 'challenge', integrityToken: 'google-token', deviceSignature: 'signature', proofNonce: 'native-nonce' };
+    await cloud.licenseVerify(proof, 'user-a');
+    expect(fetchMock).toHaveBeenCalledWith('/api/license/verify', expect.objectContaining({
+      method: 'POST', credentials: 'include', cache: 'no-store', body: JSON.stringify(proof),
+      headers: expect.objectContaining({ 'X-WE-Account': 'user-a' }),
+    }));
+  });
+
+  it('keeps personal data export separate from licensed backup access', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ revision: 0, updatedAt: null, data: null })));
+    vi.stubGlobal('fetch', fetchMock);
+    await cloud.accountExport('user-a');
+    expect(fetchMock).toHaveBeenCalledWith('/api/account/export', expect.objectContaining({
+      method: 'GET', credentials: 'include', headers: expect.objectContaining({ 'X-WE-Account': 'user-a' }),
+    }));
+  });
+
   it('uses the HttpOnly-cookie session and trims the email without storing a token', async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);

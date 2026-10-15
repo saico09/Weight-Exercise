@@ -1,15 +1,24 @@
 apply plugin: 'com.android.application'
 
+// Public verification key only. The signing private key belongs exclusively on the API server.
+def licensePublicKey = (providers.gradleProperty('WE_LICENSE_PUBLIC_KEY').orNull ?: System.getenv('WE_LICENSE_PUBLIC_KEY') ?: '')
+    .replace('-----BEGIN PUBLIC KEY-----', '').replace('-----END PUBLIC KEY-----', '').replaceAll('\\s', '')
+if (licensePublicKey && !(licensePublicKey ==~ /[A-Za-z0-9+\/=]+/)) {
+    throw new GradleException('WE_LICENSE_PUBLIC_KEY must be an RSA public key in base64 SPKI format (PEM is also accepted).')
+}
+
 android {
+    buildFeatures { buildConfig true }
     namespace = "cl.forma.weightexercise"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId "cl.forma.weightexercise"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10
-        versionName "0.8.2"
+        versionCode 11
+        versionName "0.8.3"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField 'String', 'WE_LICENSE_PUBLIC_KEY', '"' + licensePublicKey + '"'
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
              // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
@@ -36,10 +45,29 @@ dependencies {
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
     implementation project(':capacitor-android')
+    implementation 'com.google.android.play:integrity:1.6.0'
     testImplementation "junit:junit:$junitVersion"
+    testImplementation 'org.json:json:20240303'
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+}
+
+tasks.register('validateProReleaseLicense') {
+    doLast {
+        if (!licensePublicKey) {
+            throw new GradleException('Pro release requires WE_LICENSE_PUBLIC_KEY. Set it in your private Gradle properties or environment; use the public SPKI key matching the API signing key. Debug previews do not require Google Play setup.')
+        }
+        try {
+            def key = java.security.KeyFactory.getInstance('RSA').generatePublic(new java.security.spec.X509EncodedKeySpec(java.util.Base64.decoder.decode(licensePublicKey)))
+            if (!(key instanceof java.security.interfaces.RSAPublicKey) || key.modulus.bitLength() < 2048) throw new IllegalArgumentException()
+        } catch (Exception ignored) {
+            throw new GradleException('WE_LICENSE_PUBLIC_KEY must contain a valid RSA SPKI public key of at least 2048 bits.')
+        }
+    }
+}
+tasks.configureEach { task ->
+    if (task.name == 'preReleaseBuild') task.dependsOn('validateProReleaseLicense')
 }
 
 apply from: 'capacitor.build.gradle'

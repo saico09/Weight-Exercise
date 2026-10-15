@@ -29,7 +29,7 @@ export class CloudError extends Error {
 async function request<T>(path: string, method = 'GET', body?: unknown, accountId?: string): Promise<T> {
   if (CLOUD_NATIVE_UNAVAILABLE) throw new CloudError('native_unconfigured');
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 12_000);
+  const timeout = setTimeout(() => controller.abort(), path === '/license/verify' ? 20_000 : 12_000);
   try {
     const response = await fetch(`${validConfiguredApi || '/api'}${path}`, {
       method, credentials: 'include', cache: 'no-store', signal: controller.signal,
@@ -48,7 +48,11 @@ async function request<T>(path: string, method = 'GET', body?: unknown, accountI
 }
 
 export const cloud = {
+  licenseConfig: (accountId: string) => request<{ configured: boolean; cloudProjectNumber?: string; packageName: string; offlineDays: number }>('/license/config', 'GET', undefined, accountId),
+  licenseChallenge: (devicePublicKey: string, accountId: string) => request<{ challengeId: string; requestHash: string; cloudProjectNumber: string }>('/license/challenge', 'POST', { devicePublicKey }, accountId),
+  licenseVerify: (proof: { challengeId: string; integrityToken: string; deviceSignature: string; proofNonce: string }, accountId: string) => request<{ ticket: string }>('/license/verify', 'POST', proof, accountId),
   account: () => request<CloudAccountState>('/account'),
+  accountExport: (accountId: string) => request<CloudBackup>('/account/export', 'GET', undefined, accountId),
   requestCode: (email: string) => request('/auth/request-code', 'POST', { email: email.trim() }),
   verifyCode: (email: string, code: string, username?: string) => request<{ user: CloudUser }>('/auth/verify-code', 'POST', { email: email.trim(), code, ...(username?.trim() ? { username: username.trim() } : {}) }),
   rename: (username: string, accountId: string) => request<{ user: CloudUser }>('/account', 'PATCH', { username: username.trim() }, accountId),
@@ -85,5 +89,16 @@ export function cloudErrorMessage(error: unknown): string {
     backup_required: 'Guarda primero un respaldo con registros desde Ajustes para activar los resúmenes.',
     unavailable: 'El servidor local no está disponible. Puedes seguir usando la app sin conexión.',
     native_unconfigured: 'La cuenta y el respaldo están disponibles en la vista previa del PC. La conexión segura del teléfono se habilitará cuando configuremos el servidor.',
+    license_required: 'Verifica tu licencia de Pro para usar este servicio.',
+    pro_required: 'Verifica tu licencia de Pro para usar este servicio.',
+    license_unconfigured: 'La activación de Pro aún no está configurada. Tus datos locales se conservan.',
+    license_invalid: 'No pudimos confirmar una licencia válida. Usa la versión oficial de Google Play e inténtalo de nuevo.',
+    license_device_limit: 'Tu cuenta alcanzó el límite de dispositivos. Contacta con soporte para liberar uno.',
+    license_revoked: 'La autorización de este dispositivo fue revocada. Contacta con soporte.',
+    license_not_configured: 'La activación de Pro aún no está configurada. Tus datos locales se conservan.',
+    license_denied: 'No pudimos confirmar una licencia válida. Usa la versión oficial de Google Play e inténtalo de nuevo.',
+    license_unavailable: 'La verificación no está disponible. Comprueba tu conexión e inténtalo más tarde.',
+    license_busy: 'Espera un momento y vuelve a verificar tu licencia.',
+    license_challenge_expired: 'La verificación venció. Pulsa «Verificar mi licencia» para comenzar de nuevo.',
   } as Record<string, string>)[code] || 'No pudimos completar la solicitud. Inténtalo nuevamente.';
 }

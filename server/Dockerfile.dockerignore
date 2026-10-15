@@ -4,5 +4,7 @@
 !server/package-lock.json
 !server/src/
 !server/src/**
+!server/scripts/
+!server/scripts/revoke-pro.mjs
 !shared/
 !shared/**

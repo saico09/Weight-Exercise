@@ -6,6 +6,8 @@ import { useI18n } from '../lib/i18n';
 import type { AppData, Language } from '../lib/model';
 import { Brand, LanguageSwitch, Modal } from './UI';
 import './cloud.css';
+import { clearProLicense } from '../lib/proLicense';
+import { exportPersonalData } from '../lib/localDataExport';
 
 const usernamePattern = String.raw`[\p{L}\p{N}_\-]{3,30}`;
 
@@ -50,7 +52,7 @@ function LocalInbox() {
   return mailMode === 'mailpit' ? <div className="cloud-local-note"><span>{t('Prueba local: los códigos llegan a la bandeja de pruebas, no a tu correo real.')}</span><a href="http://127.0.0.1:8025" target="_blank" rel="noopener noreferrer">{t('Abrir bandeja local en este PC')}<ExternalLink size={13} /></a></div> : mailMode === 'real' ? <p className="cloud-security-note"><Mail size={14} />{t('El código llegará a tu correo real. Revisa también la carpeta de spam.')}</p> : null;
 }
 
-function AccountAccess({ onDone }: { onDone?: () => void }) {
+export function AccountAccess({ onDone }: { onDone?: () => void }) {
   const { t } = useI18n();
   const { setUser, refresh } = useCloudAccount();
   const [email, setEmail] = useState('');
@@ -134,7 +136,7 @@ function EditAccount({ onClose, notify }: { onClose: () => void; notify: (messag
   </Modal>;
 }
 
-export function CloudAccountPanel({ data, onRestore, notify, demo = false }: { data: AppData; onRestore: (data: AppData) => void | Promise<void>; notify: (message: string) => void; demo?: boolean }) {
+export function CloudAccountPanel({ data, onRestore, notify, demo = false, restricted = false }: { data: AppData; onRestore: (data: AppData) => void | Promise<void>; notify: (message: string) => void; demo?: boolean; restricted?: boolean }) {
   const { t, locale } = useI18n();
   const account = useCloudAccount();
   const [dialog, setDialog] = useState<'login' | 'edit' | 'backup' | 'restore' | 'delete' | 'logout' | null>(null);
@@ -189,9 +191,10 @@ export function CloudAccountPanel({ data, onRestore, notify, demo = false }: { d
     {demo ? <p className="notice">{t('Estás en la demo. Sal de ella para usar tu cuenta y respaldar tus registros reales.')}</p> : account.user ? <>
       <div className="cloud-profile"><span className="cloud-avatar"><UserRound size={24} /></span><div><strong>{account.user.username}</strong><span>{account.user.email}</span></div><button type="button" className="icon-button" onClick={() => setDialog('edit')} aria-label={t('Editar cuenta')}><Pencil size={16} /></button></div>
       <details className="cloud-identity"><summary>{t('ID de tu cuenta')}</summary><code>{account.user.id}</code></details>
-      <p className="muted">{t('El respaldo es manual. Tú decides qué guardar y cuándo restaurarlo; iniciar sesión no mezcla tus registros.')}</p>
+      {!restricted && <><p className="muted">{t('El respaldo es manual. Tú decides qué guardar y cuándo restaurarlo; iniciar sesión no mezcla tus registros.')}</p>
       <div className="cloud-action-grid"><button className="secondary-button" disabled={busy || !data.profile} onClick={() => openBackup('backup')}><CloudUpload size={18} /><span>{t('Respaldar ahora')}</span></button><button className="secondary-button" disabled={busy} onClick={() => openBackup('restore')}><CloudDownload size={18} /><span>{t('Restaurar respaldo')}</span></button></div>
-      {!data.profile && <p className="footnote">{t('Completa tu perfil antes de crear un respaldo. Si ya tienes uno, puedes restaurarlo ahora.')}</p>}
+      {!data.profile && <p className="footnote">{t('Completa tu perfil antes de crear un respaldo. Si ya tienes uno, puedes restaurarlo ahora.')}</p>}</>}
+      {restricted && <button className="secondary-button full-width" disabled={busy} onClick={() => void run(async () => { const owner = userRef.current; if (!owner) throw new CloudError('unauthorized'); const snapshot = await cloud.accountExport(owner); if (owner !== userRef.current) throw new CloudError('account_changed'); await exportPersonalData(snapshot, data.settings.language, 'cloud'); })}><CloudDownload size={18} />{t('Descargar mis datos de la nube')}</button>}
       <div className="cloud-account-footer"><button className="text-link" disabled={busy} onClick={() => setDialog('logout')}><LogOut size={15} />{t('Cerrar sesión')}</button><button className="text-link cloud-delete-link" disabled={busy} onClick={() => { setDeleteConfirmation(''); setDialog('delete'); }}><Trash2 size={14} />{t('Eliminar cuenta')}</button></div>
     </> : <><p className="muted">{t('Crea una cuenta con tu correo para guardar una copia de tus preferencias y registros.')}</p><button className="primary-button full-width" disabled={account.loading || CLOUD_NATIVE_UNAVAILABLE} onClick={() => setDialog('login')}><KeyRound size={17} />{t(account.loading ? 'Conectando…' : 'Crear cuenta o iniciar sesión')}</button>{account.unavailable && <div className="cloud-offline-status"><p>{t(cloudErrorMessage(new CloudError(CLOUD_NATIVE_UNAVAILABLE ? 'native_unconfigured' : 'unavailable')))}</p>{!CLOUD_NATIVE_UNAVAILABLE && <button className="text-link" onClick={() => void account.refresh()}><RefreshCw size={13} />{t('Volver a conectar')}</button>}</div>}</>}
     {message && !dialog && <p className="notice" role="alert">{message}</p>}
@@ -208,7 +211,7 @@ export function CloudAccountPanel({ data, onRestore, notify, demo = false }: { d
       <button className="primary-button full-width" disabled={busy || !isOwner || (dialog === 'restore' && !backup?.data)} onClick={dialog === 'backup' ? confirmBackup : confirmRestore}>{busy && <LoaderCircle className="cloud-spinner" size={16} />}{t(busy ? 'Un momento…' : dialog === 'backup' ? 'Confirmar y respaldar' : 'Confirmar y restaurar')}</button>
       <button className="text-link centered" disabled={busy} onClick={() => setDialog(null)}>{t('Cancelar')}</button>
     </Modal>}
-    {dialog === 'logout' && <Modal title={t('Cerrar sesión')} onClose={() => { if (!busy) setDialog(null); }}><p className="notice">{t('Los registros de este dispositivo permanecerán aquí. Si lo compartes, usa «Empezar de cero» después de salir para borrarlos del dispositivo.')}</p>{message && <p role="alert" className="notice">{message}</p>}<button className="primary-button full-width" disabled={busy} onClick={() => void run(async () => { if (!account.user) throw new CloudError('unauthorized'); await cloud.logout(account.user.id); account.setUser(null); setDialog(null); notify(t('Sesión cerrada.')); })}>{t(busy ? 'Un momento…' : 'Confirmar cierre de sesión')}</button></Modal>}
-    {dialog === 'delete' && <Modal title={t('Eliminar cuenta y respaldo')} onClose={() => { if (!busy) setDialog(null); }}><p className="notice">{t('Se borrarán tu cuenta, sus preferencias y todos sus registros del servidor. No se puede deshacer. Los datos guardados en este dispositivo se conservan.')}</p><label className="field">{t('Escribe ELIMINAR para confirmar')}<input autoComplete="off" value={deleteConfirmation} onChange={event => setDeleteConfirmation(event.target.value)} /></label>{message && <p role="alert" className="notice">{message}</p>}<button className="danger-button full-width" disabled={busy || deleteConfirmation !== 'ELIMINAR'} onClick={() => void run(async () => { if (!account.user) throw new CloudError('unauthorized'); await cloud.deleteAccount(account.user.id); account.setUser(null); setDialog(null); notify(t('Cuenta y respaldo eliminados.')); })}>{t(busy ? 'Un momento…' : 'Eliminar mi cuenta')}</button><button className="text-link centered" disabled={busy} onClick={() => setDialog(null)}>{t('Cancelar')}</button></Modal>}
+    {dialog === 'logout' && <Modal title={t('Cerrar sesión')} onClose={() => { if (!busy) setDialog(null); }}><p className="notice">{t('Los registros de este dispositivo permanecerán aquí. Si lo compartes, usa «Empezar de cero» después de salir para borrarlos del dispositivo.')}</p>{message && <p role="alert" className="notice">{message}</p>}<button className="primary-button full-width" disabled={busy} onClick={() => void run(async () => { if (!account.user) throw new CloudError('unauthorized'); await cloud.logout(account.user.id); await clearProLicense(); account.setUser(null); setDialog(null); notify(t('Sesión cerrada.')); })}>{t(busy ? 'Un momento…' : 'Confirmar cierre de sesión')}</button></Modal>}
+    {dialog === 'delete' && <Modal title={t('Eliminar cuenta y respaldo')} onClose={() => { if (!busy) setDialog(null); }}><p className="notice">{t('Se borrarán tu cuenta, sus preferencias y todos sus registros del servidor. No se puede deshacer. Los datos guardados en este dispositivo se conservan.')}</p><label className="field">{t('Escribe ELIMINAR para confirmar')}<input autoComplete="off" value={deleteConfirmation} onChange={event => setDeleteConfirmation(event.target.value)} /></label>{message && <p role="alert" className="notice">{message}</p>}<button className="danger-button full-width" disabled={busy || deleteConfirmation !== 'ELIMINAR'} onClick={() => void run(async () => { if (!account.user) throw new CloudError('unauthorized'); await cloud.deleteAccount(account.user.id); await clearProLicense(); account.setUser(null); setDialog(null); notify(t('Cuenta y respaldo eliminados.')); })}>{t(busy ? 'Un momento…' : 'Eliminar mi cuenta')}</button><button className="text-link centered" disabled={busy} onClick={() => setDialog(null)}>{t('Cancelar')}</button></Modal>}
   </section>;
 }

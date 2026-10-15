@@ -3,6 +3,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import pg from 'pg';
 import { createMailer } from './mailer.mjs';
 import { createSummaryService } from './email-summary.mjs';
+import { createLicenseService, loadLicenseConfig } from './pro-license.mjs';
 import { ApiError, input, object, email, username, validateSnapshot, tokenHash, makeToken, makeCode, keyedHash, safeEqual, sessionToken, sessionCookie, expiredCookie } from './security.mjs';
 
 // This first deployment is intentionally local. Internet deployment requires HTTPS,
@@ -15,7 +16,8 @@ if (!origins.size || [...origins].some(origin => !/^http:\/\/(127\.0\.0\.1|local
 const pool = new pg.Pool({ max: 3, idleTimeoutMillis: 10000, connectionTimeoutMillis: 3000 });
 pool.on('error', () => console.error('Database connection unavailable.'));
 const mail = createMailer();
-const summaries = createSummaryService({ pool, transaction, mailer: mail, secret, appUrl: process.env.PUBLIC_APP_URL || 'http://127.0.0.1:5173' });
+const licensing = createLicenseService({ pool, transaction, config: loadLicenseConfig() });
+const summaries = createSummaryService({ pool, transaction, mailer: mail, secret, appUrl: process.env.PUBLIC_APP_URL || 'http://127.0.0.1:5173', canUsePro: licensing.hasEntitlement });
 const userView = row => ({ id: row.id, email: row.email, username: row.username });
 const hash = (...values) => keyedHash(secret, ...values);
 const invalidCode = () => new ApiError(400, 'invalid_code', 'El código no es válido o expiró. Solicita uno nuevo si agotaste los intentos.');
@@ -71,7 +73,7 @@ async function newSession(client, userId) {
   await client.query('DELETE FROM sessions WHERE user_id=$1 AND token_hash IN (SELECT token_hash FROM sessions WHERE user_id=$1 ORDER BY created_at DESC OFFSET 8)', [userId]);
   return token;
 }
-async function body(req) {
+async function body(req, maximumBytes = 2_100_000) {
   input(req.headers['content-type']?.split(';')[0] === 'application/json', 'Se necesita JSON.');
   let length = 0; const chunks = [];
   for await (const chunk of req) {
@@ -79,7 +81,7 @@ async function body(req) {
     bufferedRequestBytes += chunk.length;
     req[requestBytes] = length;
     if (bufferedRequestBytes > 8_400_000) throw new ApiError(503, 'unavailable', 'Hay varios respaldos en curso. Intenta nuevamente en un momento.');
-    if (length > 2_100_000) throw new ApiError(413, 'invalid_input', 'El archivo es demasiado grande.');
+    if (length > maximumBytes) throw new ApiError(413, 'invalid_input', 'El archivo es demasiado grande.');
     chunks.push(chunk);
   }
   let value;
@@ -158,12 +160,29 @@ const server = http.createServer(async (req, res) => {
     const user = await getUser(req);
     if (!user) throw new ApiError(401, 'unauthorized', 'Inicia sesión para continuar.');
     checkAccount(req, user);
+    if (path.startsWith('/api/license/')) {
+      if (req.headers['x-we-account'] !== user.id) throw new ApiError(409, 'account_changed', 'Actualiza la cuenta antes de verificar Pro.');
+      if (req.method === 'GET' && path === '/api/license/config') return json(res, 200, licensing.publicConfig());
+      if (req.method === 'POST' && path === '/api/license/challenge') {
+        await limit(`license-challenge:${user.id}`, 10, 900);
+        return json(res, 200, await licensing.challenge(user.id, await body(req, 2048)));
+      }
+      if (req.method === 'POST' && path === '/api/license/verify') {
+        await limit(`license-verify:${user.id}`, 10, 900);
+        await limit(`license-google:${ip}`, 60, 3600);
+        return json(res, 200, await licensing.verify(user.id, await body(req, 40000)));
+      }
+    }
+    if (path === '/api/backup') await licensing.requireEntitlement(user.id);
     if (path === '/api/email-summary') {
       if (req.headers['x-we-account'] !== user.id) throw new ApiError(409, 'account_changed', 'Actualiza la cuenta antes de configurar los correos.');
       if (req.method === 'GET') return json(res, 200, await summaries.read(user.id));
       if (req.method === 'PUT') {
         await limit(`email-settings:${user.id}`, 30, 3600);
-        return json(res, 200, await summaries.update(user.id, await body(req)));
+        const settings = await body(req);
+        // Reading settings and opting out remain possible after a license expires.
+        if (settings.enabled !== false) await licensing.requireEntitlement(user.id);
+        return json(res, 200, await summaries.update(user.id, settings));
       }
     }
     if (req.method === 'PATCH' && path === '/api/account') {
@@ -207,7 +226,7 @@ const server = http.createServer(async (req, res) => {
       await pool.query('DELETE FROM users WHERE id=$1', [user.id]);
       return json(res, 200, { ok: true }, expiredCookie);
     }
-    if (req.method === 'GET' && path === '/api/backup') {
+    if (req.method === 'GET' && (path === '/api/backup' || path === '/api/account/export')) {
       const result = await transaction(async client => {
         // Snapshot read sees preferences and records from one committed revision.
         await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
@@ -256,6 +275,7 @@ const cleanup = setInterval(async () => {
     await pool.query('DELETE FROM auth_challenges WHERE expires_at < now()');
     await pool.query('DELETE FROM sessions WHERE expires_at < now()');
     await pool.query('DELETE FROM rate_limits WHERE expires_at < now()');
+    if (licensing.publicConfig().configured) await pool.query('DELETE FROM pro_license_challenges WHERE expires_at < now()');
   } catch { console.error('Deferred auth cleanup unavailable.'); }
 }, 60000);
 cleanup.unref();

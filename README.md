@@ -172,6 +172,12 @@ Para probar en PC: Basic permite descargar `WeightExercise.we-transfer`; en Pro,
 
 ## Desarrollo
 
+### Pro 0.8.3: movimiento y acceso protegido
+
+Aurora muestra tres capas de ondas violetas en movimiento; Sand, dunas y líneas de viento. Los reflejos suaves se desplazan dentro de las tarjetas. Son vectores originales, sin servicios ni imágenes adicionales, y se detienen al activar «reducir movimiento» en el dispositivo.
+
+La preparación de licencias combina la cuenta por código de correo, Google Play Integrity y un permiso firmado vinculado al dispositivo, de hasta siete días sin conexión. La versión Android release exige verificación; el APK debug y la vista de desarrollo son previews. La expiración no borra registros: la pantalla de acceso permite exportarlos y administrar la cuenta. Antes de publicar faltan Play Console, claves privadas, servidor HTTPS y pruebas reales de compra/instalación. Consulta [la configuración y los límites de la protección Pro](docs/PRO-LICENSING.md).
+
 ```powershell
 npm run dev       # Vista de desarrollo
 npm run build     # TypeScript y compilación web
