@@ -8,6 +8,7 @@ export const rewardThemeEnglish: Record<string, string> = {
   '{earned} de {target} logros': '{earned} of {target} achievements',
   'Tu constancia brilla': 'Your consistency shines',
   'Una historia extraordinaria': 'An extraordinary story',
+  'Eres el auténtico pro': 'You are the true pro',
   'Dorado. Elegante. Ganado por ti.': 'Golden. Elegant. Earned by you.',
   'Plata. Precisión. Tu colección completa.': 'Silver. Precision. Your complete collection.',
 };

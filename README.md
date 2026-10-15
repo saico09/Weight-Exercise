@@ -144,7 +144,7 @@ En Estadísticas, cada tarjeta numérica incluye un minigráfico de sus propios 
 
 En Historial, selecciona registros para **Comparar**. Un registro se compara con el punto de partida; varios usan el primero en orden cronológico como referencia. Se muestran fechas, cambios de peso e IMC, hábitos y diferencias de pasos cuando existen datos. Un resumen final presenta los dos pesos, sus fechas y la diferencia neta entre referencia y último registro seleccionado, indicando aumento, descenso o igualdad; no suma las diferencias de las filas. La selección se conserva al filtrar y se indica cuántos seleccionados quedaron fuera de los filtros. El botón Excel permite exportar el mes visible, los filtros actuales o todo el historial; las notas se guardan como texto, nunca como fórmulas.
 
-**Celebraciones de logros, en ambas ediciones:** al guardar un registro que desbloquea logros nuevos aparece una ventana «¡Bien hecho!» con copa, los logros obtenidos y acceso a la colección. Si se consiguen varios con el mismo registro se agrupan en una sola ventana. Los logros ya reconocidos no vuelven a celebrarse al iniciar, actualizar o restaurar un respaldo; siguen visibles en la colección.
+**Celebraciones de logros, en ambas ediciones:** al guardar un registro que desbloquea logros nuevos aparece una ventana «¡Felicitaciones!» con copa, los logros obtenidos y acceso a la colección. Si se consiguen varios con el mismo registro se agrupan en una sola ventana. Los logros ya reconocidos no vuelven a celebrarse al iniciar, actualizar o restaurar un respaldo; siguen visibles en la colección.
 
 Los informes PDF de Estadísticas incluyen el historial completo y comparan el rango elegido con el período inmediatamente anterior de igual duración. Presentan peso promedio, hábitos, cobertura de registros y pasos disponibles, además de gráficos y tabla. Respetan idioma, unidad, tema, fuentes y color; la falta de datos no se presenta como un cambio real. PDF y XLSX se generan al solicitarlos, sin almacenarse como archivos en PostgreSQL. Para regenerar muestras PDF con datos ficticios:
 
@@ -189,3 +189,9 @@ npm run android   # Compilar, sincronizar y abrir Android Studio
 Los scripts usan Node directamente para admitir rutas con `&`. `npm run dev` y `npm run preview` escuchan en la red local; los iniciadores de Windows escuchan solo en `127.0.0.1`.
 
 [Ideas y prioridades de Pro](docs/PRO-ROADMAP.md) · [Servidor local y correo](docs/LOCAL-CLOUD.md) · [Fotografías, fuentes y licencias](ASSETS.md)
+
+## Detalles de la versión 0.8.4
+
+Platino añade pulido de facetas y destellos pausados en la copa, la meta, la navegación y el selector de tema. El movimiento reducido conserva una presentación estática. En Inicio, la vitrina completa y la celebración de Platino aparece «Eres el auténtico pro»: es un reconocimiento por los logros y no cambia la edición de la app.
+
+Cada logro nuevo recibe una felicitación explícita. Si se consiguen varios juntos, una sola ventana los enumera a todos; tocar un logro conseguido vuelve a felicitar al usuario. Oro y Platino mantienen sus celebraciones especiales.

@@ -29,7 +29,7 @@ export default function Dashboard({ data, onDaily, onProfile, onHistory, onEditD
   const weekHealthy = weekRecords.filter(record => record.healthy).length;
   const ratio = stats.totalDays ? stats.exerciseDays / stats.totalDays * 100 : 0;
   const healthyRatio = stats.totalDays ? stats.healthyDays / stats.totalDays * 100 : 0;
-  const headlines = { dark: 'Activa el beast mode', light: 'Tu mejor versión', aurora: 'Cada paso cuenta', sand: 'Ve a tu ritmo', gold: 'Tu constancia brilla', platinum: 'Cada paso deja huella' };
+  const headlines = { dark: 'Activa el beast mode', light: 'Tu mejor versión', aurora: 'Cada paso cuenta', sand: 'Ve a tu ritmo', gold: 'Tu constancia brilla', platinum: 'Eres el auténtico pro' };
   const goalDepth = data.settings.goalChartStyle === 'depth';
 
   return <>

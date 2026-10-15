@@ -24,6 +24,14 @@ export function TrophyMark({ tier, size = 'normal' }: { tier: AchievementTier | 
       {tier === 'platinum' ? <g><path d="m44 29 7 7-7 11-7-11Z" fill="#e7f5ff" stroke="#fff" strokeWidth="1" /><path d="m37 36 7-1 7 1-7 11Z" fill="#6e91be" /><path d="m44 29 0 18 7-11Z" fill="white" opacity=".8" /><path d="M27 79h34" stroke="var(--metal-shine)" strokeWidth="2" /></g> : <path d="m44 28 2.8 5.8 6.4.9-4.6 4.5 1.1 6.4-5.7-3-5.7 3 1.1-6.4-4.6-4.5 6.4-.9Z" fill="var(--metal-shadow)" stroke={tier === 'gold' ? 'var(--metal-shine)' : 'none'} strokeWidth=".8" opacity=".9" />}
       <path d={tier === 'platinum' ? 'M24 20h40' : 'M24 17h40'} stroke="var(--metal-shine)" strokeWidth="3" strokeLinecap="round" />
       {precious && <g className="trophy-glints" fill="white"><path d="m64 11 1.7 4.3L70 17l-4.3 1.7L64 23l-1.7-4.3L58 17l4.3-1.7Z" /><path d="m25 65 1 2.5 2.5 1-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1Z" />{tier === 'platinum' && <path d="m15 15 1 3 3 1-3 1-1 3-1-3-3-1 3-1Z" />}</g>}
+      {tier === 'platinum' && <>
+        <g className="trophy-platinum-polish" fill="none" stroke="#fff" strokeLinecap="round"><path d="m29 22 9 29M47 60v6M31 72h24" strokeWidth=".7" opacity=".7" /><path d="m42.5 10 1.5-1.5 1.5 1.5-1.5 2Z" fill="#fff" strokeWidth=".4" /></g>
+        <g className="trophy-platinum-glints" fill="#fff">
+          <path className="platinum-glint platinum-glint-rim" d="m18 34 .9 3.6 3.6.9-3.6.9L18 43l-.9-3.6-3.6-.9 3.6-.9Z" />
+          <path className="platinum-glint platinum-glint-base" d="m64 57 1.2 4.8L70 63l-4.8 1.2L64 69l-1.2-4.8L58 63l4.8-1.2Z" />
+          <path className="platinum-glint platinum-glint-gem" d="m44 30 .7 3.3 3.3.7-3.3.7L44 38l-.7-3.3L40 34l3.3-.7Z" />
+        </g>
+      </>}
     </svg>
   </span>;
 }
