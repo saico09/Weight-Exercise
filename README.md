@@ -114,3 +114,7 @@ La bienvenida y Ajustes incluyen «Creada por GreenBean», con el isotipo oficia
 ## Ajuste de marca 0.8.6
 
 El crédito GreenBean se muestra en el pie común de todas las secciones. Usa la semilla completa de los PNG transparentes oficiales, con la variante clara u oscura según el fondo, sin caja ni recorte del símbolo. Se conserva también en la bienvenida y se elimina la repetición dentro de la tarjeta de Ajustes.
+
+## Historial compacto 0.8.7
+
+Desde el cuarto mes calendario, incluido, las filas del historial reducen su altura manteniéndose todas visibles y editables. El mes actual y los dos anteriores conservan su tamaño. El criterio depende de la fecha del registro y no cambia al filtrar; se mantienen hábitos, notas, punto de partida y, en Pro, selección para comparar y exportación.

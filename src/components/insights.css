@@ -77,3 +77,12 @@
   .compact-history .history-record-meta > span { font-size: 8px; }
   .compact-history .record-note { max-width: 105px; }
 }
+
+/* Keep every older record available; only reduce the vertical spacing. */
+.compact-history .history-month-compact .history-record { min-height:60px; padding:8px 0; }
+.compact-history .history-month-compact .history-record-main { gap:8px; }
+.compact-history .history-month-compact .history-day { font-size:22px; min-width:26px; width:26px; }
+.compact-history .history-month-compact .history-day-detail { gap:2px; }
+.compact-history .history-month-compact .history-record-meta { gap:1px; }
+.compact-history .history-month-compact .history-weight { font-size:24px; }
+.compact-history .history-month-compact .habit-indicator { width:20px; height:20px; }
