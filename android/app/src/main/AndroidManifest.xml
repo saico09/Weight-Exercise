@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <queries>
+        <package android:name="cl.forma.weightexercise.basic" />
+    </queries>
+
     <application
         android:allowBackup="false"
         android:fullBackupContent="@xml/backup_rules"
@@ -23,6 +27,15 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="cl.forma.weightexercise.IMPORT_BASIC" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="content"
+                    android:host="cl.forma.weightexercise.basic.migration"
+                    android:pathPrefix="/transfer/"
+                    android:mimeType="application/vnd.weightexercise.basic-migration+json" />
             </intent-filter>
 
         </activity>

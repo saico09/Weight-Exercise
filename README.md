@@ -1,4 +1,4 @@
-# Weight&Exercise · Pro y Basic v0.7
+# Weight&Exercise · Pro y Basic v0.8
 
 App Android para registrar peso, ejercicio y alimentación, con interfaz adaptable a teléfono y PC. Ionic React, TypeScript y Capacitor. Los registros se guardan primero en el dispositivo; Pro incorpora respaldo manual con cuenta y resúmenes por correo, ejecutados por un servidor Docker local. La versión 0.7 mantiene alineadas las acciones en pantallas pequeñas, unifica las tarjetas de estadísticas, añade foto de perfil y copa en la cabecera, y desbloquea los temas Oro y Platino con los logros. Aurora y Sand incluyen movimiento ambiental discreto.
 
@@ -157,6 +157,18 @@ node scripts/preview-reports.mjs
 Inicio muestra los pasos de hoy, la meta y su porcentaje de avance. Ajustes permite elegir una meta personal de 100 a 50.000 pasos. Si no se elige una, la app usa **7.000 como referencia orientativa para adultos de 18 años o más**, apoyada en la [revisión de evidencia presentada por la Universidad de Sídney en 2025](https://www.sydney.edu.au/news-opinion/news/2025/07/24/rethink-the-10000-a-day-step-goal-study-suggests.html); no es una recomendación individual ni una regla universal. Para menores no se asigna esa referencia automáticamente. El arco se completa al llegar a la meta, conserva el conteo real si se supera y muestra «—» cuando faltan datos.
 
 El IMC es una referencia, no un diagnóstico. Se muestran categorías adultas desde los 20 años; la app no calcula percentiles para menores. [Referencia del CDC](https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html).
+
+## Migración local de Basic a Pro (v0.8)
+
+Instala ambas ediciones actualizadas en el mismo teléfono. En **Basic → Ajustes → Transferir a Pro**, revisa el resumen y pulsa **Copiar y abrir Pro**. Pro muestra la cantidad de días nuevos, coincidentes y con diferencias antes de **Confirmar importación**. También se puede iniciar la guía desde la bienvenida o Ajustes de Pro, en **Importar desde Basic**.
+
+Se copian perfil/foto, pesos, hábitos, notas, motivación, preferencias compartidas y logros. Basic permanece intacta. En una Pro vacía se adopta el perfil de Basic; si Pro ya tiene perfil se conservan sus preferencias, meta y punto de partida. Los días nuevos se añaden; para los días con diferencias se conserva Pro por defecto y se puede elegir explícitamente usar Basic. Los pasos nativos de Pro se preservan. Repetir una copia no duplica fechas. No se transfieren cuentas, sesiones ni permisos; los recordatorios de una nueva Pro quedan desactivados hasta configurarlos allí. La migración se guarda primero de forma local, sin subir nada automáticamente a la cuenta.
+
+Android usa un Intent explícito entre los paquetes de ambas ediciones y un FileProvider privado, limitado al directorio temporal de migración, con acceso temporal de lectura. Ambos extremos comprueban paquete, versión mínima 8 y firma. Pro valida estrictamente el documento antes de importar: versión de formato, límites, fechas, tipos, duplicados y referencias. El máximo es 4 MiB; la bandeja privada mantiene hasta tres transferencias pendientes, válidas durante 24 horas, y consume cada una al cerrar o terminar su revisión. Los temporales vencidos se limpian al usar el puente. Las operaciones de importación, restauración y reinicio se coordinan; una transferencia entrante espera si hay una edición o confirmación abierta. Se desactivan los logs de Capacitor para evitar registrar cargas de preferencias o transferencias.
+
+**Antes de publicar:** Basic (`cl.forma.weightexercise.basic`) y Pro (`cl.forma.weightexercise`) deben compartir la **clave de firma de distribución de Play App Signing**, no solo la clave de subida. Al registrar la segunda app, elegir reutilizar la clave de firma de la primera. Si Google genera dos claves distintas, el puente rechazará la transferencia. [Firma de aplicaciones en Google Play](https://developer.android.com/studio/publish/app-signing) · [Transferencia segura de archivos entre apps](https://developer.android.com/training/secure-file-sharing).
+
+Para probar en PC: Basic permite descargar `WeightExercise.we-transfer`; en Pro, **Importar desde Basic → Elegir archivo de Basic** abre la misma validación y confirmación. El archivo contiene datos personales y debe guardarse de forma privada. Esta alternativa de archivo solo aparece en la vista web; Android abre Pro directamente. Las pruebas automatizadas cubren formato, conflictos, repetición y protocolo nativo; la entrega entre apps aún requiere una prueba en teléfono/emulador antes de publicar.
 
 ## Desarrollo
 
