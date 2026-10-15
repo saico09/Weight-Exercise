@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { chartDay, chartPeriod, clampChartWindow, nextChartStyle, sampleChartPoints, weightChartDomain, zoomChartWindow } from './chartUtils';
+import { chartDay, chartPeriod, clampChartWindow, nextChartStyle, sampleChartPoints, signedChartValue, weightChartDomain, zoomChartWindow } from './chartUtils';
 import { demoData, shiftDate } from '../lib/model';
 
 describe('calendar chart periods', () => {
@@ -64,16 +64,33 @@ describe('dense chart downsampling', () => {
 });
 
 describe('truthful chart styles', () => {
-  it('starts both flat and perspective columns at zero, regardless of a narrow weight range', () => {
-    for (const style of ['bars', 'depth'] as const) {
-      const domain = weightChartDomain([79.8, 80, 80.2], 79, style);
-      expect(domain.min).toBe(0);
-      expect(domain.max).toBeGreaterThan(80.2);
+  it('never suggests a positive or negative difference when the displayed tick rounds to zero', () => {
+    expect(signedChartValue(-.03, 'en-US')).toBe('0');
+    expect(signedChartValue(.03, 'en-US')).toBe('0');
+    expect(signedChartValue(-.15, 'es-CL')).toBe('−0,2');
+    expect(signedChartValue(.14, 'en-US')).toBe('+0.1');
+  });
+  it('shows small differences as signed changes around an explicit zero-change reference', () => {
+    const domain = weightChartDomain([79.8, 80, 80.2], 60, 'bars', 80);
+    expect(domain.min).toBeLessThan(79.8);
+    expect(domain.max).toBeGreaterThan(80.2);
+    expect(domain.max - domain.min).toBeLessThan(1);
+    expect(domain.min - 80).toBeLessThan(0);
+    expect(domain.max - 80).toBeGreaterThan(0);
+  });
+  it('retains the same reference baseline when zooming into later lower or higher weights', () => {
+    for (const values of [[78, 78.5], [82, 82.5]]) {
+      const domain = weightChartDomain(values, 60, 'bars', 80);
+      expect(domain.min).toBeLessThanOrEqual(Math.min(...values, 80));
+      expect(domain.max).toBeGreaterThanOrEqual(Math.max(...values, 80));
     }
+    const flat = weightChartDomain([80, 80], 60, 'bars', 80);
+    expect(flat.min).toBeLessThan(80);
+    expect(flat.max).toBeGreaterThan(80);
   });
   it('retains a readable bounded line view and cycles through all styles', () => {
     expect(weightChartDomain([79.8, 80.2], 60, 'line').min).toBeGreaterThan(70);
     expect(weightChartDomain([79.8, 80.2], 60, 'line').showGoal).toBe(false);
-    expect(['area', 'line', 'bars', 'depth'].map(style => nextChartStyle(style as 'area'))).toEqual(['line', 'bars', 'depth', 'area']);
+    expect(['area', 'line', 'bars'].map(style => nextChartStyle(style as 'area'))).toEqual(['line', 'bars', 'area']);
   });
 });

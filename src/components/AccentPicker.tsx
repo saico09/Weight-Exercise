@@ -46,7 +46,7 @@ function AccentEditor({ theme, value, onClose, onApply }: { theme: Theme; value:
         </label>
       </div>
       <div className="accent-current-color"><span>{draft ? selectedPreset ? t(selectedPreset.name) : t('Color personalizado') : t('Colores originales')}</span>{draft && <code>{draft.toUpperCase()}</code>}</div>
-      <button type="button" className="text-link accent-restore" onClick={() => setDraft(null)} disabled={draft === null}><RotateCcw size={13} />{t('Restaurar originales')}</button>
+      <button type="button" className="accent-restore" onClick={() => setDraft(null)} disabled={draft === null}><RotateCcw size={16} />{t('Restaurar originales')}{draft === null && <Check size={15} aria-hidden="true" />}</button>
       <p className="accent-accessibility-note">{t('El texto se adapta para que siempre se lea bien.')}</p>
       <div className="accent-picker-actions"><button type="button" className="secondary-button" onClick={onClose}>{t('Cancelar')}</button><button type="button" className="primary-button" onClick={() => onApply(draft)}>{t('Aplicar color')}<Check size={16} /></button></div>
     </div>

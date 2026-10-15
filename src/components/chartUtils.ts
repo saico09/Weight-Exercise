@@ -1,16 +1,25 @@
 import { shiftDate, type DailyRecord } from '../lib/model';
 
 export type ChartWindow = { start: number; end: number };
-export type WeightChartStyle = 'area' | 'line' | 'bars' | 'depth';
-export const WEIGHT_CHART_STYLES: readonly WeightChartStyle[] = ['area', 'line', 'bars', 'depth'];
+export type WeightChartStyle = 'area' | 'line' | 'bars';
+export const WEIGHT_CHART_STYLES: readonly WeightChartStyle[] = ['area', 'line', 'bars'];
 export function nextChartStyle(style: WeightChartStyle): WeightChartStyle { return WEIGHT_CHART_STYLES[(WEIGHT_CHART_STYLES.indexOf(style) + 1) % WEIGHT_CHART_STYLES.length]; }
-/** Columns always start at zero; line views retain a readable local range. */
-export function weightChartDomain(values: number[], goal: number, style: WeightChartStyle) {
+export function signedChartValue(value: number, locale: string): string {
+  const rounded = Math.sign(value) * Math.round((Math.abs(value) + Number.EPSILON) * 10) / 10;
+  return `${rounded > 0 ? '+' : rounded < 0 ? '−' : ''}${Math.abs(rounded).toLocaleString(locale, { maximumFractionDigits: 1 })}`;
+}
+/** Columns measure signed change from an explicit reference, never cropped absolute weight. */
+export function weightChartDomain(values: number[], goal: number, style: WeightChartStyle, reference?: number) {
   const finite = values.filter(Number.isFinite);
   const low = finite.length ? Math.min(...finite) : 0, high = finite.length ? Math.max(...finite) : 1;
   const spread = high - low;
   const showGoal = Number.isFinite(goal) && Math.abs(goal - (finite.at(-1) ?? 0)) < Math.max(spread * 1.7, 3);
-  if (style === 'bars' || style === 'depth') return { min: 0, max: Math.max(high, showGoal ? goal : 0, 1) * 1.12, showGoal };
+  if (style === 'bars') {
+    const baseline = Number.isFinite(reference) ? reference! : finite[0] ?? 0;
+    const bottom = Math.min(low, baseline, showGoal ? goal : Infinity), top = Math.max(high, baseline, showGoal ? goal : -Infinity);
+    const padding = Math.max(.1, (top - bottom) * .16);
+    return { min: bottom - padding, max: top + padding, showGoal };
+  }
   return { min: Math.min(low, showGoal ? goal : Infinity) - Math.max(.5, spread * .2), max: Math.max(high, showGoal ? goal : -Infinity) + Math.max(.5, spread * .2), showGoal };
 }
 

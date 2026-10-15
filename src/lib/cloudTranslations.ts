@@ -20,6 +20,7 @@ export const cloudEnglish: Record<string, string> = {
   'Reenviar código': 'Resend code',
   'Solo quien tenga acceso a tu correo podrá entrar. El código por correo no es una verificación de dos factores.': 'Access to your email is required to sign in. An email code is not two-factor authentication.',
   'TU PRÓXIMO NIVEL': 'YOUR NEXT LEVEL',
+  'Acompañando tu progreso': 'Alongside your progress',
   'Cada avance.': 'Every step.',
   'Siempre contigo.': 'Always with you.',
   'Más maneras de entender tu progreso. Un espacio que se adapta a ti.': 'More ways to understand your progress. A space that adapts to you.',

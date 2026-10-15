@@ -4,7 +4,8 @@ export type Theme = 'dark' | 'light' | 'aurora' | 'sand';
 export type Language = 'es' | 'en';
 export type WeightUnit = 'kg' | 'lb';
 export type HeightUnit = 'cm' | 'ft';
-export type ChartStyle = 'area' | 'line' | 'bars' | 'depth';
+export type ChartStyle = 'area' | 'line' | 'bars';
+export type GoalChartStyle = 'ring' | 'depth';
 
 export interface Profile {
   heightCm: number;
@@ -38,7 +39,9 @@ export interface Settings {
   recap: { enabled: boolean; period: 'weekly' | 'monthly'; time: string };
   motivation: { message: string; image: string | null };
   steps: { enabled: boolean };
+  stepGoal: number | null;
   chartStyle: ChartStyle;
+  goalChartStyle: GoalChartStyle;
 }
 
 export interface AppData {
@@ -66,7 +69,9 @@ export function defaultData(): AppData {
       recap: { enabled: false, period: 'weekly', time: '19:00' },
       motivation: { message: 'Hazlo por él', image: null },
       steps: { enabled: false },
+      stepGoal: null,
       chartStyle: 'area',
+      goalChartStyle: 'ring',
     },
     initialRecordId: null,
     lastPromptDate: null,
@@ -295,6 +300,7 @@ export function demoData(now = new Date()): AppData {
     exercise: ![2, 5].includes(index % 7),
     healthy: index % 6 !== 4,
     note: index === 29 ? 'Un paso más. A mi ritmo.' : '',
+    steps: index === 29 ? 5432 : 4000 + (index * 731) % 6000,
   }));
   data.initialRecordId = data.records[0].id;
   data.lastPromptDate = today;
@@ -369,7 +375,11 @@ export function validateData(raw: unknown): AppData | null {
   if (settings) {
     result.settings.motivation = normalizeMotivation(settings.motivation);
     result.settings.steps.enabled = object(settings.steps)?.enabled === true;
-    if (['area', 'line', 'bars', 'depth'].includes(String(settings.chartStyle))) result.settings.chartStyle = settings.chartStyle as ChartStyle;
+    if (finiteIn(settings.stepGoal, 100, 50000) && Number.isInteger(settings.stepGoal)) result.settings.stepGoal = settings.stepGoal;
+    if (['area', 'line', 'bars'].includes(String(settings.chartStyle))) result.settings.chartStyle = settings.chartStyle as ChartStyle;
+    // The former perspective weight columns now belong to the goal card.
+    if (settings.chartStyle === 'depth') result.settings.goalChartStyle = 'depth';
+    if (settings.goalChartStyle === 'ring' || settings.goalChartStyle === 'depth') result.settings.goalChartStyle = settings.goalChartStyle;
     const recap = object(settings.recap);
     if (recap) {
       result.settings.recap.enabled = recap.enabled === true;

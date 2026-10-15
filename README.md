@@ -1,6 +1,6 @@
-# Weight&Exercise · Pro v0.5 / Basic v0.4
+# Weight&Exercise · Pro y Basic v0.6
 
-App Android para registrar peso, ejercicio y alimentación, con interfaz adaptable a teléfono y PC. Ionic React, TypeScript y Capacitor. Los registros se guardan primero en el dispositivo; Pro incorpora respaldo manual con cuenta y resúmenes por correo, ejecutados por un servidor Docker local. Esta actualización amplía Pro a v0.5; Basic conserva las funciones de v0.4.
+App Android para registrar peso, ejercicio y alimentación, con interfaz adaptable a teléfono y PC. Ionic React, TypeScript y Capacitor. Los registros se guardan primero en el dispositivo; Pro incorpora respaldo manual con cuenta y resúmenes por correo, ejecutados por un servidor Docker local. La versión 0.6 renueva la bienvenida de Pro, los gráficos y la comparación del historial, y añade minigráficos expandibles a las estadísticas de ambas ediciones.
 
 ## Basic y Pro
 
@@ -12,12 +12,14 @@ Las ediciones se mantienen en las ramas **`basic`** y **`pro`**, con dos carpeta
 | Editar registros, hábitos y punto de partida | Sí | Sí |
 | Temas Dark y Light; español e inglés; kg/lb y cm/pies | Sí | Sí |
 | Gráfico de peso, meta, IMC y estadísticas esenciales | Sí | Sí |
+| Minigráficos en las métricas; expansión al ancho de dos tarjetas | Sí | Sí |
 | Logros, copas y celebraciones | Sí | Sí |
 | Motivación con foto y mensaje personalizables | Sí | Sí |
 | Recordatorio para registrar el peso | Sí | Sí |
 | Colores personalizados | — | Sí |
 | Temas Aurora y Sand, además de Dark y Light | — | Sí |
-| Gráfico de área, línea, barras o perspectiva 3D | — | Sí |
+| Peso en área, línea o columnas de variación | — | Sí |
+| Progreso de la meta con selector 2D/3D | — | Sí |
 | Promedios y comparación entre semanas | — | Sí |
 | Selección y comparación de registros del historial | — | Sí |
 | Exportación Excel (.xlsx) por mes, filtros o historial completo | — | Sí |
@@ -26,6 +28,7 @@ Las ediciones se mantienen en las ramas **`basic`** y **`pro`**, con dos carpeta
 | Cuenta por código de correo y respaldo manual | — | Prueba local en PC |
 | Resumen semanal o mensual por correo con Excel adjunto | — | Opcional, desde el servidor local |
 | Pasos de Health Connect en registros existentes | — | Android 14+, pendiente de prueba física |
+| Progreso diario de pasos y meta personal ajustable | — | Sí |
 
 El botón **Necesito Motivación** aparece en Inicio y en el editor diario. Abre un gatito con «Hazlo por él»; permite reemplazar la foto y el mensaje. Las fotos se redimensionan y se eliminan sus metadatos en el dispositivo antes de guardarlas. La imagen preparada ocupa como máximo unos 183 KiB.
 
@@ -88,7 +91,7 @@ El volumen Docker conserva la base al reiniciar servicios. No uses `down -v` si 
 
 ## Android instalable
 
-Los APK de prueba de Pro v0.5 y Basic v0.4 se generan localmente en:
+Los APK de prueba de Pro y Basic v0.6 se generan localmente en:
 
 - `output/WeightExercise-Pro-debug.apk`
 - `output/WeightExercise-Basic-debug.apk`
@@ -117,11 +120,21 @@ El script compila la web, sincroniza Capacitor y ejecuta Gradle. Genera `android
 
 En Android, [Capacitor Preferences](https://capacitorjs.com/docs/apis/preferences) guarda los datos en las preferencias privadas de la app; en navegador se usa el almacenamiento del sitio. La configuración nativa desactiva el respaldo y la transferencia automática de Android. Borrar datos del sitio, desinstalar o borrar los datos de la app puede eliminar los registros.
 
-Los recordatorios solicitan permiso al activarlos. Basic ofrece el aviso de registro diario; Pro añade un recuento semanal o mensual que compara registros con sus fechas, peso y hábitos. Los textos se actualizan con la información disponible cuando se programa el aviso; no existe un servicio de seguimiento en segundo plano que invente nuevas mediciones. Android puede retrasarlos por ahorro de batería. La vista web no garantiza avisos si el navegador está cerrado.
+Los recordatorios solicitan permiso al activarlos. **Basic y Pro** ofrecen el aviso de registro diario, que se repite a la hora y los días elegidos. **Pro** añade un recuento semanal o mensual con fechas, pesos, diferencia neta y días de ejercicio y alimentación sana. Se necesitan al menos dos registros dentro de los 7 o 30 días anteriores al último pesaje disponible; el texto incluye las fechas reales para no presentar un peso antiguo como si fuera de hoy.
 
-Pro ofrece cuatro apariencias: Dark, Light, Aurora y Sand, con fuentes locales y color personalizable. El botón junto al rango del gráfico alterna área, línea, barras y barras con perspectiva 3D; conserva los mismos datos y los controles para desplazar y ampliar.
+El recuento nativo agenda **un próximo aviso**: el domingo para la frecuencia semanal o el día 1 para la mensual, a la hora elegida. Se recalcula al abrir o volver a la app, al guardar registros y al cambiar su configuración. Puede aparecer con la app cerrada después de programarse, pero no es una serie indefinida: para preparar un aviso posterior hay que volver a abrir o usar la app. El contenido es una instantánea de los datos disponibles al programarlo; no existe un servicio de medición permanente en segundo plano. Android puede retrasar los avisos por ahorro de batería. Los recordatorios programados requieren la app instalada; el navegador solo ofrece una notificación de prueba. Estos avisos locales son independientes de los resúmenes por correo del servidor.
 
-En Historial, selecciona registros para **Comparar**. Un registro se compara con el punto de partida; varios usan el primero en orden cronológico como referencia. Se muestran fechas, cambios de peso e IMC, hábitos y diferencias de pasos cuando existen datos. La selección se conserva al filtrar y se indica cuántos seleccionados quedaron fuera de los filtros. El botón Excel permite exportar el mes visible, los filtros actuales o todo el historial; las notas se guardan como texto, nunca como fórmulas.
+Pro ofrece cuatro apariencias con fuentes locales y color personalizable. Su bienvenida presenta Dark («Beast mode»), Light («Minimalista»), Aurora («smart modern») y Sand («Tranquilidad», con «quiet vibes») con fotografías incluidas en la app, animaciones propias y confirmación de selección. Las imágenes se usan bajo sus licencias documentadas en [ASSETS.md](ASSETS.md). Idioma y personalización comparten una barra compacta; restaurar el color original es una acción visible dentro del selector. Las animaciones respetan la preferencia del dispositivo de reducir movimiento.
+
+Inicio cambia su frase según el tema: «Activa el beast mode», «Tu mejor versión», «Cada paso cuenta» y «Ve a tu ritmo». Basic incorpora las dos primeras con sus temas Dark y Light.
+
+En Pro, el botón junto al rango del gráfico de pesos alterna **área, línea y variación**. La vista de columnas representa diferencias positivas o negativas respecto del primer pesaje del período, con peso y fecha de referencia visibles y una línea de cambio cero. Esa referencia permanece fija al desplazar o ampliar el gráfico. Así se distinguen variaciones pequeñas sin recortar engañosamente columnas de peso absoluto. Los controles de desplazamiento y zoom siguen disponibles. La perspectiva **3D se encuentra en «Tu próxima meta»**, mediante un selector 2D/3D que conserva el mismo porcentaje de avance; ambas preferencias se guardan. La preferencia 3D de versiones anteriores se migra a la tarjeta de la meta.
+
+En Estadísticas, cada tarjeta numérica incluye un minigráfico de sus propios datos. Al tocarla ocupa el ancho de dos tarjetas y el espacio intermedio, amplía el gráfico y muestra fechas y rango de valores; las demás tarjetas se reacomodan. Otro toque la contrae. Esto está disponible en Basic y Pro para sus respectivas métricas; un valor ausente no se convierte en un cero y un único registro no inventa una tendencia.
+
+En Historial, selecciona registros para **Comparar**. Un registro se compara con el punto de partida; varios usan el primero en orden cronológico como referencia. Se muestran fechas, cambios de peso e IMC, hábitos y diferencias de pasos cuando existen datos. Un resumen final presenta los dos pesos, sus fechas y la diferencia neta entre referencia y último registro seleccionado, indicando aumento, descenso o igualdad; no suma las diferencias de las filas. La selección se conserva al filtrar y se indica cuántos seleccionados quedaron fuera de los filtros. El botón Excel permite exportar el mes visible, los filtros actuales o todo el historial; las notas se guardan como texto, nunca como fórmulas.
+
+**Celebraciones de logros, en ambas ediciones:** al guardar un registro que desbloquea logros nuevos aparece una ventana «¡Bien hecho!» con copa, los logros obtenidos y acceso a la colección. Si se consiguen varios con el mismo registro se agrupan en una sola ventana. Los logros ya reconocidos no vuelven a celebrarse al iniciar, actualizar o restaurar un respaldo; siguen visibles en la colección.
 
 Los informes PDF de Estadísticas incluyen el historial completo y comparan el rango elegido con el período inmediatamente anterior de igual duración. Presentan peso promedio, hábitos, cobertura de registros y pasos disponibles, además de gráficos y tabla. Respetan idioma, unidad, tema, fuentes y color; la falta de datos no se presenta como un cambio real. PDF y XLSX se generan al solicitarlos, sin almacenarse como archivos en PostgreSQL. Para regenerar muestras PDF con datos ficticios:
 
@@ -130,6 +143,8 @@ node scripts/preview-reports.mjs
 ```
 
 **Pasos en Pro:** Health Connect requiere Android 14 o posterior y permiso de lectura. La app consulta únicamente los últimos 30 días que ya tengan un registro de peso, al abrirse y durante su uso visible; nunca crea pesajes ni ejecuta un servicio permanente de seguimiento. Agrega fuentes mediante Health Connect para evitar dobles conteos y distingue un total cero de la ausencia de datos. El conteo del propio teléfono depende de sus sensores y actualizaciones; en otros dispositivos hace falta una app que escriba pasos en Health Connect. Restaurar un respaldo deja la sincronización desactivada hasta que el usuario vuelva a habilitarla.
+
+Inicio muestra los pasos de hoy, la meta y su porcentaje de avance. Ajustes permite elegir una meta personal de 100 a 50.000 pasos. Si no se elige una, la app usa **7.000 como referencia orientativa para adultos de 18 años o más**, apoyada en la [revisión de evidencia presentada por la Universidad de Sídney en 2025](https://www.sydney.edu.au/news-opinion/news/2025/07/24/rethink-the-10000-a-day-step-goal-study-suggests.html); no es una recomendación individual ni una regla universal. Para menores no se asigna esa referencia automáticamente. El arco se completa al llegar a la meta, conserva el conteo real si se supera y muestra «—» cuando faltan datos.
 
 El IMC es una referencia, no un diagnóstico. Se muestran categorías adultas desde los 20 años; la app no calcula percentiles para menores. [Referencia del CDC](https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html).
 

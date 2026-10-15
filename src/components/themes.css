@@ -28,6 +28,9 @@ ion-app[data-theme=sand] { --bg:#f5efe5; --surface:#fffaf2; --surface-raised:#ed
 .settings-theme.sand .mini-line { background:#a87d5a; }
 .settings-theme.aurora .mini-line { background:#a99cf9; }
 .settings-theme .theme-description { display:block; line-height:1.6; }
+.settings-theme .theme-mini { position:relative; }
+.settings-theme .theme-mini-badge { position:absolute; top:12px; right:10px; font:8px/1.2 'DM Sans',sans-serif; letter-spacing:.4px; color:#80634e; }
+.settings-theme.aurora .theme-mini > span { font-size:13px; font-weight:500; letter-spacing:.3px; }
 .extra-theme-choices { grid-column:2; margin-top:16px; gap:10px; }
 .extra-theme-choices .theme-mini { height:82px; }
 .extra-theme-choices .theme-mini > span { font-size:15px; }

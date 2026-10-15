@@ -27,7 +27,9 @@
 .accent-spectrum-option:focus-within { outline: 2px solid var(--accent-ink); outline-offset: 3px; }
 .accent-current-color { margin: 15px 0 12px; display: flex; gap: 10px; justify-content: space-between; align-items: center; font-size: 10px; color: var(--muted); min-height: 17px; }
 .accent-current-color code { color: var(--accent-ink); font-size: 10px; }
-.accent-restore { font-size: 10px; }
+.accent-restore { width:100%; min-height:44px; display:flex; justify-content:center; align-items:center; gap:9px; border:1px solid var(--accent-ink); border-radius:12px; background:var(--accent-soft); color:var(--accent-ink); font-size:12px; font-weight:600; transition:background .2s,border-color .2s; }
+.accent-restore:hover:not(:disabled) { background:var(--surface-raised); }
+.accent-restore:disabled { opacity:.65; border-color:var(--border); color:var(--muted); background:var(--surface-soft); }
 .accent-accessibility-note { color: var(--faint); font-size: 9px; line-height: 1.6; margin-top: 12px; }
 .accent-picker-actions { display: grid; grid-template-columns: .8fr 1.2fr; gap: 10px; margin-top: 22px; }
 .accent-picker-actions > button { padding-inline: 10px; font-size: 11px; min-width: 0; }

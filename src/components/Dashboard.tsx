@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { ArrowDownRight, ArrowUpRight, Check, ChevronRight, Dumbbell, Flame, Leaf, Minus, Plus, Target, TrendingUp } from 'lucide-react';
-import type { AppData, ChartStyle } from '../lib/model';
+import { ArrowDownRight, ArrowUpRight, Check, ChevronRight, Dumbbell, Flame, Layers3, Leaf, Minus, Plus, Target, TrendingUp } from 'lucide-react';
+import type { AppData, ChartStyle, GoalChartStyle } from '../lib/model';
 import { dateKey, displayWeight, getStats, shiftDate } from '../lib/model';
 import { useI18n } from '../lib/i18n';
 import { ProgressRing, WeightChart } from './Charts';
@@ -12,7 +12,7 @@ import { IS_PRO } from '../lib/edition';
 import { StepsSummary } from './Steps';
 import './charts-dashboard.css';
 
-export default function Dashboard({ data, onDaily, onProfile, onHistory, onEditDay, onMotivationChange, onChartStyle, onSettings }: { data: AppData; onDaily: () => void; onProfile: () => void; onHistory: () => void; onEditDay: (date: string) => void; onMotivationChange: (value: MotivationPreferences) => void; onChartStyle: (style: ChartStyle) => void; onSettings: () => void }) {
+export default function Dashboard({ data, onDaily, onProfile, onHistory, onEditDay, onMotivationChange, onChartStyle, onGoalChartStyle, onSettings }: { data: AppData; onDaily: () => void; onProfile: () => void; onHistory: () => void; onEditDay: (date: string) => void; onMotivationChange: (value: MotivationPreferences) => void; onChartStyle: (style: ChartStyle) => void; onGoalChartStyle: (style: GoalChartStyle) => void; onSettings: () => void }) {
   const { t, locale } = useI18n();
   const [period, setPeriod] = useState(30);
   const stats = getStats(data);
@@ -28,9 +28,11 @@ export default function Dashboard({ data, onDaily, onProfile, onHistory, onEditD
   const weekHealthy = weekRecords.filter(record => record.healthy).length;
   const ratio = stats.totalDays ? stats.exerciseDays / stats.totalDays * 100 : 0;
   const healthyRatio = stats.totalDays ? stats.healthyDays / stats.totalDays * 100 : 0;
+  const headlines = { dark: 'Activa el beast mode', light: 'Tu mejor versión', aurora: 'Cada paso cuenta', sand: 'Ve a tu ritmo' };
+  const goalDepth = data.settings.goalChartStyle === 'depth';
 
   return <>
-    <SectionHeading eyebrow={t('CADA DÍA CUENTA')} title={t(data.settings.theme === 'dark' ? 'TU MEJOR VERSIÓN.' : 'Todo empieza contigo.')} action={<div className="dashboard-actions"><button className={`primary-button ${todayRecord ? 'recorded-button' : ''}`} onClick={onDaily}>{todayRecord ? <Check size={18} /> : <Plus size={18} />}{t(todayRecord ? 'Hoy ya cuenta' : 'Registrar mi día')}<ChevronRight size={17} /></button><Motivation value={data.settings.motivation} onChange={onMotivationChange} /></div>} />
+    <SectionHeading eyebrow={t('CADA DÍA CUENTA')} title={t(headlines[data.settings.theme])} action={<div className="dashboard-actions"><button className={`primary-button ${todayRecord ? 'recorded-button' : ''}`} onClick={onDaily}>{todayRecord ? <Check size={18} /> : <Plus size={18} />}{t(todayRecord ? 'Hoy ya cuenta' : 'Registrar mi día')}<ChevronRight size={17} /></button><Motivation value={data.settings.motivation} onChange={onMotivationChange} /></div>} />
     {IS_PRO && <StepsSummary data={data} onSettings={onSettings} />}
     <div className="dashboard-grid">
       <section className="card weight-card">
@@ -41,8 +43,8 @@ export default function Dashboard({ data, onDaily, onProfile, onHistory, onEditD
         <div className="chart-footer"><span><span className="dot" />{t('Tu constancia deja huella.')}</span><SmallLink onClick={onHistory}>{t('Ver historial')}</SmallLink></div>
       </section>
       <section className="card goal-card">
-        <div className="card-head"><span className="card-title"><Target size={18} />{t('Tu próxima meta')}</span><button className="icon-button" aria-label={t('Editar mi meta')} onClick={onProfile}><ArrowUpRight size={19} /></button></div>
-        <ProgressRing progress={stats.progress} remaining={stats.remaining} unit={unit} />
+        <div className="card-head"><span className="card-title"><Target size={18} />{t('Tu próxima meta')}</span><div className="goal-card-actions">{IS_PRO && <button type="button" className="chart-style-cycle goal-style-cycle" aria-label={t(goalDepth ? 'Ver meta en 2D' : 'Ver meta en 3D')} aria-pressed={goalDepth} onClick={() => onGoalChartStyle(goalDepth ? 'ring' : 'depth')}><Layers3 size={13} /><span>{goalDepth ? '3D' : '2D'}</span></button>}<button className="icon-button" aria-label={t('Editar mi meta')} onClick={onProfile}><ArrowUpRight size={19} /></button></div></div>
+        <ProgressRing progress={stats.progress} remaining={stats.remaining} unit={unit} style={IS_PRO ? data.settings.goalChartStyle : 'ring'} />
         <div className="goal-values"><div><span>{t('Tu inicio')}</span><strong>{weight(stats.initialWeight)} <small>{unit}</small></strong></div><span className="goal-connector">······<ArrowUpRight size={17} /></span><div><span>{t('Tu meta')}</span><strong className="accent">{weight(stats.goalWeight)} <small>{unit}</small></strong></div></div><div className="goal-note"><SparkleMark />{t('Cada paso también es un logro.')}</div>
       </section>
       <section className="card habits-card interactive-habits">

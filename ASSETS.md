@@ -6,14 +6,23 @@ Las fotografías se incluyen como parte del diseño de la aplicación y se guard
 | --- | --- | --- |
 | `public/images/dark-fitness.jpg` | foad shariyati | [Man lifting weights in black gym attire, Pexels](https://www.pexels.com/photo/man-lifting-weights-in-black-gym-attire-30284373/) |
 | `public/images/light-fitness.jpg` | Anna Tarazevich | [Woman Doing Yoga on the Beach with Arms Raised, Pexels](https://www.pexels.com/photo/woman-doing-yoga-on-the-beach-with-arms-raised-6712289/) |
+| `public/images/aurora-fitness.jpg` | Airam Dato-on | [Woman Running Outdoors in Black Athletic Wear, Pexels](https://www.pexels.com/photo/woman-running-outdoors-in-black-athletic-wear-29881497/) |
+| `public/images/sand-fitness.jpg` | RAY LEI | [Yellow Toned Image of a Woman Meditating in Morning Sun, Pexels](https://www.pexels.com/photo/yellow-toned-image-of-a-woman-meditating-in-morning-sun-13849252/) |
 | `public/images/motivation-kitten.jpg` | Pixabay, vía Pexels | [White and Grey Kitten on Brown and Black Leopard Print Textile, Pexels](https://www.pexels.com/photo/white-and-grey-kitten-on-brown-and-black-leopard-print-textile-45201/) |
 
-Las dos fotografías de entrenamiento están disponibles bajo la [licencia de Pexels](https://www.pexels.com/license/), que permite su uso gratuito en aplicaciones, incluso comerciales, y su modificación. No son fotografías de dominio público: se conservan los derechos de sus autores. La licencia prohíbe sugerir que las personas fotografiadas respaldan el producto, revender copias sin modificar o redistribuirlas como un banco de fotografías. Los retratos se usan únicamente como ambientación del selector de apariencia, sin asociarlos a resultados de salud ni testimonios.
+Las cuatro fotografías de los temas están disponibles bajo la [licencia de Pexels](https://www.pexels.com/license/), que permite su uso gratuito en aplicaciones, incluso comerciales, y su modificación. No son fotografías de dominio público: se conservan los derechos de sus autores. La licencia prohíbe sugerir que las personas fotografiadas respaldan el producto, revender copias sin modificar o redistribuirlas como un banco de fotografías. Los retratos se usan únicamente como ambientación del selector de apariencia, sin asociarlos a resultados de salud ni testimonios.
 
 Descargadas el 14 de octubre de 2026 desde el CDN oficial de Pexels, en JPEG de 1000 × 1500 píxeles con compresión de entrega:
 
 - [Archivo fuente dark](https://images.pexels.com/photos/30284373/pexels-photo-30284373.jpeg?auto=compress&cs=tinysrgb&w=1000&q=85)
 - [Archivo fuente light](https://images.pexels.com/photos/6712289/pexels-photo-6712289.jpeg?auto=compress&cs=tinysrgb&w=1000&q=85)
+
+Aurora y Sand se descargaron el 15 de octubre de 2026, a 900 píxeles de ancho, para la bienvenida de Pro v0.6. Las fichas y la licencia se revisaron ese mismo día. La aplicación añade superposiciones de luz mediante CSS y conserva las fotografías originales descargadas:
+
+- [Archivo fuente Aurora](https://images.pexels.com/photos/29881497/pexels-photo-29881497.jpeg?auto=compress&cs=tinysrgb&w=900&q=82)
+- [Archivo fuente Sand](https://images.pexels.com/photos/13849252/pexels-photo-13849252.jpeg?auto=compress&cs=tinysrgb&w=900&q=82)
+
+La fotografía final de Aurora muestra a una corredora de perfil con ropa deportiva negra y sin mirar a cámara. Su encuadre y el acento violeta se aplican mediante CSS, sin alterar el archivo original descargado.
 
 El gatito de motivación se descargó el 15 de octubre de 2026, a 720 píxeles de ancho, desde el [CDN oficial](https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg?auto=compress&cs=tinysrgb&w=720&q=82). Su ficha de Pexels lo identifica como «Free to use (CC0)». Se incluye como ilustración de la función de motivación, sin relación con marcas ni testimonios. Las imágenes que el usuario elija reemplazar se redimensionan en su dispositivo y no se agregan al repositorio.
 

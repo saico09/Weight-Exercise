@@ -21,7 +21,7 @@ describe('selected record comparison', () => {
   });
   it('keeps absent step data distinct from a measured zero', () => {
     const data = demoData(new Date(2026, 9, 15));
-    data.records[0].steps = 0; data.records[2].steps = 1200;
+    data.records[0].steps = 0; delete data.records[1].steps; data.records[2].steps = 1200;
     const result = compareRecords(data, data.records.slice(0, 3).map(record => record.id))!;
     expect(result.rows.map(row => row.stepsChange)).toEqual([0, null, 1200]);
   });
@@ -32,5 +32,21 @@ describe('selected record comparison', () => {
     expect(result.reference.id).toBeNull();
     expect(result.rows[0].exerciseChange).toBeNull();
     expect(result.rows[0].healthyChange).toBeNull();
+  });
+  it.each([[-2.4, 77.6], [3.2, 83.2], [0, 80]])('summarizes net change %s from first to last selected record, not the sum of rows', (delta, lastWeight) => {
+    const data = demoData(new Date(2026, 9, 15));
+    data.records[0].weightKg = 80; data.records[4].weightKg = 85; data.records[10].weightKg = lastWeight;
+    const result = compareRecords(data, [data.records[10].id, data.records[4].id, data.records[0].id])!;
+    expect(result.summary.from.id).toBe(data.records[0].id);
+    expect(result.summary.to.id).toBe(data.records[10].id);
+    expect(result.summary.weightChangeKg).toBeCloseTo(delta);
+  });
+  it('keeps a single selection relative to the user baseline even if the selection precedes it', () => {
+    const data = demoData(new Date(2026, 9, 15));
+    data.initialRecordId = data.records[10].id;
+    const result = compareRecords(data, [data.records[2].id])!;
+    expect(result.summary.from.id).toBe(data.records[10].id);
+    expect(result.summary.to.id).toBe(data.records[2].id);
+    expect(result.summary.weightChangeKg).toBeCloseTo(data.records[2].weightKg - data.records[10].weightKg);
   });
 });

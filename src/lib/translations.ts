@@ -1,3 +1,5 @@
+import { metricCardEnglish } from './metricCardTranslations';
+import { progressChartEnglish } from './progressChartTranslations';
 import { accentTranslations } from './accent-translations';
 import { achievementTranslations } from './achievement-translations';
 import { calendarTranslations } from './calendar-translations';
@@ -7,14 +9,18 @@ import { motivationReportEnglish } from './motivationReportTranslations';
 import { proExperienceEnglish } from './proExperienceTranslations';
 import { historyProEnglish } from './historyProTranslations';
 import { emailSummaryEnglish } from './emailSummaryTranslations';
+import { themeShowcaseEnglish } from './themeShowcaseTranslations';
 /** English copy keyed by the Spanish source. Dates and numbers use Intl separately. */
 export const english: Record<string, string> = {
+  ...metricCardEnglish,
+  ...progressChartEnglish,
   ...editionEnglish,
   ...cloudEnglish,
   ...motivationReportEnglish,
   ...proExperienceEnglish,
   ...historyProEnglish,
   ...emailSummaryEnglish,
+  ...themeShowcaseEnglish,
   ...accentTranslations,
   ...achievementTranslations,
   ...calendarTranslations,

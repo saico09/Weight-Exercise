@@ -49,6 +49,8 @@ export function validateSnapshot(data) {
   input(['dark', 'light', 'aurora', 'sand'].includes(data.settings.theme) && ['es', 'en'].includes(data.settings.language));
   input(['kg', 'lb'].includes(data.settings.weightUnit) && ['cm', 'ft'].includes(data.settings.heightUnit));
   input(data.settings.chartStyle === undefined || ['area','line','bars','depth'].includes(data.settings.chartStyle));
+  input(data.settings.goalChartStyle === undefined || ['ring','depth'].includes(data.settings.goalChartStyle));
+  input(data.settings.stepGoal === undefined || data.settings.stepGoal === null || (Number.isInteger(data.settings.stepGoal) && data.settings.stepGoal >= 100 && data.settings.stepGoal <= 50000));
   const { settings, profile, records, ...metadata } = data;
   return { settings, profile, records, metadata };
 }

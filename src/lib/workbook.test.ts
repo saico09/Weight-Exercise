@@ -57,7 +57,7 @@ describe('real XLSX export', () => {
     expect(files.get('xl/worksheets/sheet1.xml')).toContain('Solo este día');
   });
   it('uses blanks for missing steps and numeric zero for a measured zero', () => {
-    const data = demoData(new Date(2026, 9, 15)); data.records[1].steps = 0;
+    const data = demoData(new Date(2026, 9, 15)); delete data.records[0].steps; data.records[1].steps = 0;
     const files = entries(buildProgressWorkbook(data, { records: data.records.slice(0, 2) }));
     expect(files.get('xl/worksheets/sheet2.xml')).toContain('<c r="G2" s="5"/>');
     expect(files.get('xl/worksheets/sheet2.xml')).toContain('<c r="G3" s="5" t="n"><v>0</v></c>');

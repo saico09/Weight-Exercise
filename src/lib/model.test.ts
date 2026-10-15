@@ -265,7 +265,9 @@ describe('persisted schema validation', () => {
       recap: { enabled: false, period: 'weekly', time: '19:00' },
       motivation: { message: 'Hazlo por él', image: null },
       steps: { enabled: false },
+      stepGoal: null,
       chartStyle: 'area',
+      goalChartStyle: 'ring',
     });
     expect(result?.initialRecordId).toBeNull();
     expect(result?.lastPromptDate).toBeNull();

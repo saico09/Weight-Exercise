@@ -78,4 +78,32 @@
 .chart-style-cycle { display: inline-flex; align-items: center; justify-content: center; gap: 5px; color: var(--accent-ink); border: 1px solid var(--border); background: var(--surface-soft); border-radius: 20px; min-height: 29px; padding: 5px 9px; font-size: 9px; flex-shrink: 0; }
 .interactive-weight-chart .chart-style-cycle svg { width: 13px; height: 13px; min-height: 0; }
 .chart-weight-column { transition: opacity .2s; }
+.chart-reference-caption { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 10px; color: var(--muted); padding: 5px 0 7px; }
+.chart-reference-caption > span { min-width: 0; }
+.chart-reference-caption small { margin-left: 7px; color: var(--faint); font-size: 9px; white-space: nowrap; }
+.chart-reference-caption > strong { color: var(--accent-ink); white-space: nowrap; font-weight: 500; font-variant-numeric: tabular-nums; }
+.chart-reference-line { stroke: var(--text); stroke-opacity: .5; stroke-width: 1; stroke-dasharray: 4 4; }
+.chart-reference-label { fill: var(--text); }
+.goal-card-actions { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; flex-shrink: 0; }
+.goal-card .card-head { gap: 8px; }
+.goal-card .card-head .card-title { gap: 6px; min-width: 0; }
+.goal-style-cycle { padding: 5px 7px; min-height: 29px; gap: 4px; }
+.goal-style-cycle[aria-pressed=true] { border-color: color-mix(in srgb, var(--accent-ink) 45%, transparent); background: var(--accent-soft); }
+.goal-depth-visual { animation: goal-depth-reveal .65s cubic-bezier(.16,1,.3,1) both; }
+.progress-ring-depth > div { transform: translateY(-3%); }
+.progress-ring-depth .ring-percentage { font-size: 52px; }
+.progress-ring-depth > div > span:nth-child(2) { margin-top: 3px; font-size: 9px; }
+.progress-ring-depth strong { margin-top: 6px; font-size: 9px; }
+@keyframes goal-depth-reveal { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 370px) {
+  .goal-card-actions { gap: 3px; }
+  .goal-card .card-head .card-title { font-size: 11px; }
+  .goal-card .card-head .card-title > svg { width: 15px; }
+  .goal-style-cycle { padding: 5px 6px; }
+  .progress-ring-depth .ring-percentage { font-size: 44px; }
+  .progress-ring-depth .ring-percentage small { font-size: 19px; }
+  .progress-ring-depth > div > span:nth-child(2), .progress-ring-depth strong { font-size: 8px; }
+  .chart-reference-caption { font-size: 9px; }
+  .chart-reference-caption small { display: block; margin-left: 0; margin-top: 2px; }
+}
 @media (prefers-reduced-motion: reduce) { .chart-weight-column { transition: none; } }

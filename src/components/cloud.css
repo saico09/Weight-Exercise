@@ -2,8 +2,8 @@
 .cloud-welcome { min-height: 0; height: 100%; width: 100%; overflow-y: auto; max-width: 1120px; margin: 0 auto; padding: max(30px, env(safe-area-inset-top)) 36px max(35px, env(safe-area-inset-bottom)); animation: cloud-arrive .45s ease both; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 .cloud-welcome-top { display: flex; justify-content: space-between; align-items: center; }
 .cloud-welcome-tools { display: flex; gap: 14px; align-items: center; }
-.cloud-welcome-layout { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 70px; min-height: calc(100vh - 150px); padding-top: 32px; }
-.cloud-welcome-story h1 { font-family: var(--heading-font); font-size: clamp(40px, 5vw, 68px); font-weight: 600; line-height: 1.02; letter-spacing: -1px; margin: 19px 0; }
+.cloud-welcome-layout { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 55px; padding:40px 0 20px; }
+.cloud-welcome-story h1 { font-family: var(--heading-font); font-size: clamp(30px, 3.3vw, 43px); font-weight: 500; line-height: 1.12; letter-spacing: -.7px; margin: 12px 0; text-wrap:balance; }
 .cloud-welcome-story h1 em { color: var(--accent-ink); font-style: normal; }
 .cloud-welcome-story > p { color: var(--muted); font-size: 13px; line-height: 1.8; max-width: 340px; }
 .cloud-welcome-story ul { list-style: none; display: grid; gap: 17px; padding: 0; margin: 24px 0 0; }
@@ -69,3 +69,9 @@
 @media (max-width: 350px) { .cloud-welcome { padding-left: 14px; padding-right: 14px; } .cloud-welcome-card { padding: 20px 15px; } .cloud-welcome-story h1 { font-size: 42px; } .cloud-profile { gap: 9px; } .cloud-avatar { width: 37px; height: 37px; } .cloud-action-grid { grid-template-columns: 1fr; } .cloud-action-grid button { flex-direction: row; } }
 @media (max-width: 430px) { .cloud-welcome-top { align-items: flex-start; gap: 12px; } .cloud-welcome-tools { flex-direction: column-reverse; align-items: flex-end; gap: 12px; } .cloud-welcome-tools .language-control > svg { display: none; } }
 @media (prefers-reduced-motion: reduce) { .cloud-welcome, .cloud-spinner { animation: none; } }
+.cloud-welcome-orbit { width:148px; height:148px; margin:22px 0 18px; }
+.cloud-welcome-orbit::before { width:118px; height:118px; }
+.cloud-welcome-orbit > div { width:82px; height:82px; border-radius:23px; }
+@media(max-width:780px) { .cloud-welcome-story h1 { font-size:34px; } }
+@media(max-width:600px) { .cloud-welcome-layout { padding-top:20px; gap:22px; } .cloud-welcome-story h1 { font-size:32px; margin:10px 0; max-width:100%; } .cloud-welcome-story > p { max-width:100%; font-size:11px; line-height:1.6; } .cloud-welcome-story ul { margin-top:15px; gap:10px; } }
+@media(max-width:350px) { .cloud-welcome-story h1 { font-size:29px; } }

@@ -7,7 +7,7 @@ export interface RecordComparison {
   record: DailyRecord; days: number; weightChangeKg: number; bmi: number; bmiChange: number;
   exerciseChange: number | null; healthyChange: number | null; stepsChange: number | null;
 }
-export function compareRecords(data: AppData, selectedIds: readonly string[]): { reference: ComparisonReference; rows: RecordComparison[]; usesInitial: boolean } | null {
+export function compareRecords(data: AppData, selectedIds: readonly string[]): { reference: ComparisonReference; rows: RecordComparison[]; usesInitial: boolean; summary: { from: ComparisonReference; to: DailyRecord; weightChangeKg: number } } | null {
   if (!data.profile) return null;
   const selected = new Set(selectedIds);
   const records = data.records.filter(record => selected.has(record.id)).sort((a, b) => a.date.localeCompare(b.date));
@@ -18,7 +18,8 @@ export function compareRecords(data: AppData, selectedIds: readonly string[]): {
     ? stats.initialRecord || { id: null, date: stats.startDate, weightKg: stats.initialWeight }
     : records[0];
   const initialBmi = bmi(reference.weightKg, data.profile.heightCm);
-  return { reference, usesInitial, rows: records.map(record => ({
+  const latest = records[records.length - 1];
+  return { reference, usesInitial, summary: { from: reference, to: latest, weightChangeKg: latest.weightKg - reference.weightKg }, rows: records.map(record => ({
     record,
     days: Math.round((Date.parse(`${record.date}T12:00:00Z`) - Date.parse(`${reference.date}T12:00:00Z`)) / 86_400_000),
     weightChangeKg: record.weightKg - reference.weightKg,

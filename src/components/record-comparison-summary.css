@@ -1,0 +1,17 @@
+.comparison-final-summary { border: 1px solid color-mix(in srgb, var(--accent-ink) 28%, var(--border)); background: var(--accent-soft); border-radius: 16px; padding: 22px; margin-top: 20px; }
+.comparison-final-summary > .eyebrow { color: var(--accent-ink); font-size: 9px; }
+.comparison-final-value { display: flex; align-items: center; gap: 10px; color: var(--accent-ink); margin-top: 12px; }
+.comparison-final-value > strong { font: 500 39px/1.15 var(--heading-font); font-variant-numeric: tabular-nums; letter-spacing: -1px; }
+.comparison-final-summary > p { font-size: 12px; color: var(--text); margin: 7px 0 19px; line-height: 1.6; }
+.comparison-final-endpoints { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 15px; padding-top: 17px; border-top: 1px solid var(--border); }
+.comparison-final-endpoints > div { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.comparison-final-endpoints > div:last-child { text-align: right; }
+.comparison-final-endpoints span, .comparison-final-endpoints time { font-size: 10px; color: var(--muted); line-height: 1.4; }
+.comparison-final-endpoints strong { font-weight: 500; font-size: 17px; font-variant-numeric: tabular-nums; }
+.comparison-final-endpoints > svg { color: var(--accent-ink); }
+@media (max-width: 370px) {
+  .comparison-final-summary { padding: 17px 15px; }
+  .comparison-final-value > strong { font-size: 34px; }
+  .comparison-final-endpoints { gap: 9px; }
+  .comparison-final-endpoints span, .comparison-final-endpoints time { font-size: 9px; }
+}

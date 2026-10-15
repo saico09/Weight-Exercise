@@ -1,0 +1,16 @@
+export const metricCardEnglish: Record<string, string> = {
+  'Ampliar gráfico': 'Expand chart',
+  'Contraer gráfico': 'Collapse chart',
+  'Pesos desde tu inicio elegido': 'Weights since your selected start',
+  'Diferencia de peso respecto a tu inicio': 'Weight difference from your starting point',
+  'Tu mínimo acumulado en cada fecha': 'Your running minimum on each date',
+  'Tu máximo acumulado en cada fecha': 'Your running maximum on each date',
+  'Pesos de los últimos 7 días · línea: promedio': 'Weights in the last 7 days · line: average',
+  'Promedio anterior → promedio de los últimos 7 días': 'Previous average → average of the last 7 days',
+  'Días de ejercicio por semana registrada · línea: promedio': 'Exercise days per recorded week · line: average',
+  'Días consecutivos de registro en cada fecha': 'Consecutive recording days on each date',
+  'Un punto por ahora. La tendencia aparecerá con más registros.': 'One point for now. More records will reveal the trend.',
+  'Aún no hay suficientes registros para este gráfico.': 'There are not enough records for this chart yet.',
+  'Mín.': 'Min.',
+  'Máx.': 'Max.',
+};

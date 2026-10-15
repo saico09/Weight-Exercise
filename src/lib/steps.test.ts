@@ -36,7 +36,7 @@ describe('Health Connect daily association', () => {
   });
   it('migrates old storage and round-trips new fields without losing measurements', () => {
     const data = mergeSteps(sample(), [{ date: '2026-10-14', steps: 4500 }]);
-    data.settings.theme = 'aurora'; data.settings.chartStyle = 'depth'; data.settings.steps.enabled = true;
+    data.settings.theme = 'aurora'; data.settings.chartStyle = 'bars'; data.settings.goalChartStyle = 'depth'; data.settings.steps.enabled = true;
     expect(validateData(data)).toEqual(data);
     const old = JSON.parse(JSON.stringify(sample())); delete old.settings.steps; delete old.settings.chartStyle;
     expect(validateData(old)?.settings.steps.enabled).toBe(false);

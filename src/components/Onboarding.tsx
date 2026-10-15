@@ -7,8 +7,8 @@ import { Brand, HeightSwitch, LanguageSwitch, UnitSwitch } from './UI';
 import RulerPicker from './RulerPicker';
 import BirthDatePicker, { defaultBirthDate } from './BirthDatePicker';
 import AccentPicker from './AccentPicker';
-import ThemeChoices from './ThemeChoices';
-import { isLightTheme, themeInfo } from '../lib/themes';
+import ThemeShowcase from './ThemeShowcase';
+import { themeInfo } from '../lib/themes';
 import { IS_PRO } from '../lib/edition';
 import './onboarding-controls.css';
 
@@ -80,17 +80,16 @@ export default function Onboarding({ settings, onTheme, onLanguage, onAccentColo
     }
   };
 
-  return <div className={`onboarding onboarding-refined ${step === 0 ? 'theme-onboarding' : 'measure-onboarding'}`}>
+  return <div className={`onboarding onboarding-refined ${step === 0 ? `theme-onboarding ${IS_PRO ? 'theme-onboarding-pro' : ''}` : 'measure-onboarding'}`}>
     <header className="onboarding-header"><Brand /><button className="text-link" onClick={onDemo}>{t('Explorar demo')} <ArrowRight size={16} /></button></header>
     {step === 0 ? <main className="theme-start">
       <div className="onboarding-intro">
-        <div className="onboarding-language"><LanguageSwitch value={config.language} onChange={language => { setConfig(current => ({ ...current, language })); onLanguage(language); }} /></div>
+        <div className="onboarding-style-toolbar"><div className="onboarding-language"><LanguageSwitch value={config.language} onChange={language => { setConfig(current => ({ ...current, language })); onLanguage(language); }} /></div>{IS_PRO && <div className="onboarding-accent"><AccentPicker theme={theme} value={config.accentColor} onChange={accentColor => { setConfig(current => ({ ...current, accentColor })); onAccentColor(accentColor); }} /></div>}</div>
         <span className="eyebrow">{t('DA EL PRIMER PASO')}</span>
         <h1>{t('Tu progreso.')}<br /><span>{t('Tu energía.')}</span></h1>
         <p>{t('Elige el estilo que mejor te representa')}</p>
-        {IS_PRO && <div className="onboarding-accent"><AccentPicker theme={theme} value={config.accentColor} onChange={accentColor => { setConfig(current => ({ ...current, accentColor })); onAccentColor(accentColor); }} /></div>}
       </div>
-      <div className={`theme-panels ${chosen ? `chosen-${chosen}` : ''}`}>
+      {IS_PRO ? <ThemeShowcase value={chosen} onChange={choose} /> : <div className={`theme-panels ${chosen ? `chosen-${chosen}` : ''}`}>
         <button className={`theme-panel dark-panel ${chosen === 'dark' ? 'chosen' : ''}`} onClick={() => choose('dark')} aria-pressed={chosen === 'dark'}>
           <img src="/images/dark-fitness.jpg" alt={t('Atleta entrenando con una mancuerna')} />
           <span className="theme-panel-tag"><Zap size={14} /> {t('BEAST MODE')}</span>
@@ -101,11 +100,10 @@ export default function Onboarding({ settings, onTheme, onLanguage, onAccentColo
           <span className="theme-panel-tag"><Sparkles size={14} /> {t('MINIMALISTA')}</span>
           <span className="theme-panel-content"><span className="theme-title">Light<span className="theme-select-circle">{chosen === 'light' ? <Check /> : <ArrowUpRightIcon />}</span></span><span>{t('Respira. Muévete. Fluye.')}</span><span className="theme-palette"><i /><i /><i /></span></span>
         </button>
-      </div>
-      {IS_PRO && <ThemeChoices extrasOnly value={chosen} onChange={choose} />}
+      </div>}
       <div className="theme-start-footer"><p>{t('Puedes cambiar de estilo cuando quieras.')}</p><button className="primary-button" disabled={!chosen} onClick={next}>{t('Este es mi estilo')}</button></div>
     </main> : <main className="onboarding-measure">
-      <div className={`step-sidebar step-sidebar-${theme}`}><img src={`/images/${isLightTheme(theme) ? 'light' : 'dark'}-fitness.jpg`} alt="" /><div><Brand compact /><h2>{t(themeInfo[theme].tagline)}</h2><p>{t('No se trata de hacerlo perfecto.')}<br />{t('Se trata de empezar.')}</p></div></div>
+      <div className={`step-sidebar step-sidebar-${theme}`}><img src={`/images/${theme}-fitness.jpg`} alt="" /><div><Brand compact /><h2>{t(themeInfo[theme].tagline)}</h2><p>{t('No se trata de hacerlo perfecto.')}<br />{t('Se trata de empezar.')}</p></div></div>
       <form className={`measure-content ${step === 4 ? 'birthdate-step' : ''}`} onSubmit={event => { event.preventDefault(); next(); }}>
         <div className="step-top"><button type="button" className="icon-button" onClick={() => { setStep(step - 1); setError(''); }} aria-label={t('Paso anterior')}><ArrowLeft size={20} /></button><span>{t('PASO')} {String(step).padStart(2, '0')} <span>/ 04</span></span></div>
         <div className="step-dots">{[1, 2, 3, 4].map(number => <i key={number} className={number <= step ? 'filled' : ''} />)}</div>
