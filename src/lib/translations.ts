@@ -14,6 +14,19 @@ import { editionEnglish } from './editionTranslations';
 import { motivationReportEnglish } from './motivationReportTranslations';
 /** English copy keyed by the Spanish source. Dates and numbers use Intl separately. */
 export const english: Record<string, string> = {
+  'Descargar Excel': 'Download Excel',
+  'Envío periódico': 'Scheduled email',
+  'Activar envío periódico de Excel por correo': 'Set up scheduled Excel emails',
+  'Herramientas del historial · Pro': 'History tools · Pro',
+  'También puedes activar un envío semanal o mensual por correo': 'You can also enable weekly or monthly emails',
+  'Tu Excel, directo a tu correo': 'Your Excel, straight to your inbox',
+  'Recibe tu historial XLSX cada semana o cada mes.': 'Receive your XLSX history every week or month.',
+  'Activa un envío semanal o mensual, con el día y la hora que prefieras': 'Enable weekly or monthly emails on your preferred day and time',
+  'Recibe un resumen y el historial XLSX de tu respaldo en la nube': 'Receive a summary and XLSX history from your cloud backup',
+  'Los envíos son opcionales y puedes desactivarlos cuando quieras': 'Emails are optional and you can turn them off anytime',
+  'Ejemplo de un correo periódico con tu historial Excel adjunto.': 'Example of a scheduled email with your Excel history attached.',
+  'Correo semanal': 'Weekly email',
+  'Historial.xlsx adjunto': 'History.xlsx attached',
   ...migrationEnglish,
   ...profileEnglish,
   ...proTeaserEnglish,

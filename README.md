@@ -118,3 +118,7 @@ El crédito GreenBean se muestra en el pie común de todas las secciones. Usa la
 ## Historial compacto 0.8.7
 
 Desde el cuarto mes calendario, incluido, las filas del historial reducen su altura manteniéndose todas visibles y editables. El mes actual y los dos anteriores conservan su tamaño. El criterio depende de la fecha del registro y no cambia al filtrar; se mantienen hábitos, notas, punto de partida y, en Pro, selección para comparar y exportación.
+
+## Historial e IMC 0.8.9
+
+El encabezado de IMC es más compacto en todos los temas. Historial presenta Comparar, Excel y Envío periódico en una sola fila con candados. Las vistas de Excel explican la descarga XLSX y los envíos semanales o mensuales de Pro, con ejemplos ficticios. Basic no contiene el exportador ni la programación de correo.

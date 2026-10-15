@@ -20,6 +20,13 @@
 .pro-teaser-short .pro-teaser-icon{width:27px;flex-basis:27px;height:27px;border:0;background:none}
 .pro-teaser-short .pro-teaser-lock{flex-direction:column;gap:3px;font-size:7px}
 .compact-history>.pro-teaser-shelf{margin:0 0 14px}
+.pro-history-actions{display:grid;grid-template-columns:1fr .85fr 1.45fr;gap:6px;min-width:0;margin:0}
+.pro-history-action{display:flex;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:44px;padding:7px 6px;border:1px solid var(--border);border-radius:12px;background:var(--surface-soft);color:var(--text);font-size:10px;line-height:1.25}
+.pro-history-action>svg{flex-shrink:0;color:var(--accent-ink)}
+.pro-history-action>span{min-width:0;text-align:left}
+.pro-history-action>.pro-history-lock{width:9px;color:var(--muted)}
+.pro-history-action:hover{border-color:var(--accent-ink)}
+.pro-history-action:focus-visible{outline:2px solid var(--accent-ink);outline-offset:3px}
 .pro-preview{min-width:0}
 .modal:has(.pro-preview) .modal-heading{margin-bottom:18px}
 .modal:has(.pro-preview) .modal-heading .eyebrow{display:none}
@@ -60,6 +67,10 @@
 .preview-compare-result{margin-top:20px;padding-top:15px;border-top:1px solid var(--border);display:grid;grid-template-columns:22px auto 1fr;gap:6px;align-items:center;color:var(--accent-ink);animation:preview-reveal 3s ease-in-out}
 .preview-compare-result strong{font-size:18px;white-space:nowrap}
 .preview-compare-result>span{max-width:98px;justify-self:end;text-align:right;font-size:9px;line-height:1.5;color:var(--muted)}
+.preview-sheet-wrap{width:100%;min-width:0}
+.preview-sheet-mail{display:flex;gap:9px;align-items:center;margin-bottom:15px;padding:10px;border:1px solid var(--border);border-radius:12px;background:var(--accent-soft);color:var(--accent-ink)}
+.preview-sheet-mail>span{flex:1;font-size:11px;font-weight:600}
+.preview-sheet-mail small{display:block;margin-top:4px;font-size:9px;font-weight:400;color:var(--muted)}
 .preview-sheet-demo{width:100%;min-width:0;border:1px solid var(--border);border-radius:10px;background:var(--surface);overflow:hidden;transform:rotate(-2deg);box-shadow:0 9px 18px #0001}
 .preview-sheet-demo>div{display:flex;align-items:center;gap:6px;padding:12px 9px;color:var(--accent-ink);font-size:9px}
 .preview-sheet-demo>div>span{margin-left:auto;font-size:8px;letter-spacing:1px}

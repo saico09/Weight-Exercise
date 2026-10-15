@@ -45,6 +45,10 @@
 .achievement-progress progress::-moz-progress-bar { background: var(--accent-ink); }
 .achievement-progress span { font-size: 10px; white-space: nowrap; color: var(--muted); }
 .bmi-current-category { border: 1px solid var(--accent-ink); color: var(--accent-ink); }
+[data-theme] .bmi-layout > .section-heading { margin-bottom:0; gap:8px; }
+[data-theme] .bmi-layout > .section-heading h1 { font-size:clamp(22px,6vw,30px); line-height:1.2; letter-spacing:-.4px; margin:6px 0; }
+[data-theme] .bmi-layout > .section-heading .eyebrow { font-size:10px; }
+[data-theme] .bmi-layout > .section-heading p { font-size:11px; line-height:1.5; margin:0; }
 .bmi-range-row .range-dot { background: var(--faint); }
 .bmi-range-row.current .range-dot { background: var(--accent-ink); }
 .bmi-range-row.current { color: var(--accent-ink); }
