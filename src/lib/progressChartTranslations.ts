@@ -1,4 +1,5 @@
 export const progressChartEnglish: Record<string, string> = {
+  'Meta: {weight} {unit}': 'Goal: {weight} {unit}',
   'Activa el beast mode': 'Activate beast mode',
   'Tu mejor versión': 'Your best self',
   'Cada paso cuenta': 'Every step counts',

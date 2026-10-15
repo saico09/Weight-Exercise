@@ -4,7 +4,7 @@ const config: CapacitorConfig = {
   appName: 'Weight&Exercise Basic',
   webDir: 'dist',
   loggingBehavior: 'none',
-  android: { backgroundColor: '#101311' },
+  android: { backgroundColor: '#101311', allowMixedContent: false },
   plugins: {
     SystemBars: {
       insetsHandling: 'css',

@@ -7,7 +7,7 @@ import { ProgressRing, WeightChart } from './Charts';
 import { chartPeriod } from './chartUtils';
 import { SectionHeading, SmallLink } from './UI';
 import Motivation from './Motivation';
-import { ProTeaserShelf } from './ProTeaser';
+import ProTeaser from './ProTeaser';
 import type { MotivationPreferences } from '../lib/motivation';
 import './charts-dashboard.css';
 import './responsive-layout.css';
@@ -37,7 +37,7 @@ export default function Dashboard({ data, onDaily, onProfile, onHistory, onEditD
         <div className="card-head"><span className="card-title"><TrendingUp size={18} />{t('Tu evolución')}</span><span className="pill subtle"><span className="dot" />{chart.records.length} {t(chart.records.length === 1 ? 'registro' : 'registros')}</span></div>
         <div className="weight-overview"><div><span className="muted small">{t('PESO ACTUAL')}</span><div className="big-weight" style={{ '--weight-number-width': Math.max(3, weight(stats.currentWeight).length) * .62 } as CSSProperties}><strong className="big-weight-number">{weight(stats.currentWeight)}</strong><span>{unit}</span></div></div><div className="weight-change"><span className="change-pill">{stats.change <= 0 ? <ArrowDownRight size={17} /> : <ArrowUpRight size={17} />}{stats.change > 0 ? '+' : ''}{weight(stats.change)} {unit}</span><span>{t('desde tu inicio')}</span></div></div>
         <div className="chart-toolbar"><div className="chart-legend"><span className="dot" />{t('Peso registrado')}</div><div className="segmented small-segmented">{[[7, '7D'], [30, '1M'], [90, '3M'], [0, 'Todo']].map(([value, label]) => <button key={value} className={period === value ? 'active' : ''} onClick={() => setPeriod(Number(value))} aria-pressed={period === value}>{t(String(label))}</button>)}</div></div>
-        <WeightChart key={`${period}:${today}`} records={chart.records} periodBounds={chart.bounds} hasHistory={data.records.length > 0} unit={unit} goal={stats.goalWeight} />
+        <WeightChart key={`${period}:${today}`} records={chart.records} periodBounds={chart.bounds} hasHistory={data.records.length > 0} unit={unit} goal={stats.goalWeight} styleAction={<ProTeaser feature="charts" trigger="chart" />} />
         <div className="chart-footer"><span><span className="dot" />{t('Tu constancia deja huella.')}</span><SmallLink onClick={onHistory}>{t('Ver historial')}</SmallLink></div>
       </section>
       <section className="card goal-card">
@@ -76,7 +76,7 @@ export default function Dashboard({ data, onDaily, onProfile, onHistory, onEditD
           <div className="activity-bottom"><span>{Math.round(healthyRatio)}% {t('de tus días registrados')}</span><Leaf size={15} /></div>
         </div>
       </section>
-    </div><ProTeaserShelf features={['charts', 'steps']} /><div className="bottom-quote"><span className="quote-line" /><span>{t('EL ÚNICO RITMO QUE IMPORTA ES EL TUYO.')}</span><span className="quote-line" /></div>
+    </div><ProTeaser feature="steps" compact /><div className="bottom-quote"><span className="quote-line" /><span>{t('EL ÚNICO RITMO QUE IMPORTA ES EL TUYO.')}</span><span className="quote-line" /></div>
   </>;
 }
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { chartDay, chartPeriod, clampChartWindow, sampleChartPoints, zoomChartWindow } from './chartUtils';
-import { demoData, shiftDate } from '../lib/model';
+import { chartDay, chartPeriod, clampChartWindow, sampleChartPoints, weightChartDomain, zoomChartWindow } from './chartUtils';
+import { demoData, fromKg, shiftDate } from '../lib/model';
 
 describe('calendar chart periods', () => {
   const today = '2026-10-14';
@@ -60,5 +60,25 @@ describe('dense chart downsampling', () => {
     const records = [{ x: 5, value: 81 }];
     expect(sampleChartPoints(records, 180)).toBe(records);
     expect(sampleChartPoints([], 180)).toEqual([]);
+  });
+});
+
+describe('readable weight goals', () => {
+  it('keeps a distant goal outside the scale instead of flattening the recorded trend', () => {
+    const nearby = weightChartDomain([79.8, 80.2], 80);
+    const distant = weightChartDomain([79.8, 80.2], 60);
+    expect(nearby.showGoal).toBe(true);
+    expect(distant.showGoal).toBe(false);
+    expect({ min: nearby.min, max: nearby.max }).toEqual({ min: distant.min, max: distant.max });
+  });
+  it('preserves the goal position and visibility when changing measurement units', () => {
+    const kg = weightChartDomain([76], 76.4);
+    const lb = weightChartDomain([fromKg(76, 'lb')], fromKg(76.4, 'lb'), fromKg(1, 'lb'));
+    expect(lb.showGoal).toBe(kg.showGoal);
+    expect((lb.max - fromKg(76.4, 'lb')) / (lb.max - lb.min)).toBeCloseTo((kg.max - 76.4) / (kg.max - kg.min));
+  });
+  it('supports a single point and never adds a goal marker to an empty history', () => {
+    expect(weightChartDomain([], 0).showGoal).toBe(false);
+    expect(weightChartDomain([76], 76)).toEqual({ min: 75.5, max: 76.5, showGoal: true });
   });
 });

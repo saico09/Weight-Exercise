@@ -2,6 +2,16 @@ import { shiftDate, type DailyRecord } from '../lib/model';
 
 export type ChartWindow = { start: number; end: number };
 
+/** Keep the plotted scale about recorded values, independently of a distant goal. */
+export function weightChartDomain(values: number[], goal: number, unitScale = 1) {
+  const finite = values.filter(Number.isFinite);
+  const low = finite.length ? Math.min(...finite) : 0, high = finite.length ? Math.max(...finite) : 1;
+  const scale = Number.isFinite(unitScale) && unitScale > 0 ? unitScale : 1;
+  const padding = Math.max(.5 * scale, (high - low) * .2);
+  const min = low - padding, max = high + padding;
+  return { min, max, showGoal: finite.length > 0 && Number.isFinite(goal) && goal >= min && goal <= max };
+}
+
 /** Dates are calendar ordinals so daylight-saving changes never distort spacing. */
 export const chartDay = (date: string) => Date.parse(`${date}T12:00:00Z`) / 86_400_000;
 

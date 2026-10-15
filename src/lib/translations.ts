@@ -1,4 +1,7 @@
 import { proTeaserEnglish } from './proTeaserTranslations';
+import { lockedProThemeEnglish } from './lockedProThemeTranslations';
+import { feedbackEnglish } from './feedbackTranslations';
+import { creatorEnglish } from './creatorTranslations';
 import { migrationEnglish } from './migrationTranslations';
 import { rewardThemeEnglish } from './rewardThemeTranslations';
 import { profileEnglish } from './profileTranslations';
@@ -14,6 +17,9 @@ export const english: Record<string, string> = {
   ...migrationEnglish,
   ...profileEnglish,
   ...proTeaserEnglish,
+  ...lockedProThemeEnglish,
+  ...feedbackEnglish,
+  ...creatorEnglish,
   ...rewardThemeEnglish,
   ...metricCardEnglish,
   ...progressChartEnglish,

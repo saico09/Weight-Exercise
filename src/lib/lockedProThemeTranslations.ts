@@ -1,0 +1,17 @@
+export const lockedProThemeEnglish: Record<string, string> = {
+  'Tu estilo, a tu manera.': 'Your style, your way.',
+  'Nocturno. Fluido. Magnético.': 'Nocturnal. Fluid. Magnetic.',
+  'Cálido. Editorial. En equilibrio.': 'Warm. Editorial. Balanced.',
+  'Tranquilidad': 'Tranquility',
+  'Déjate llevar por Aurora.': 'Find your flow with Aurora.',
+  'Encuentra tu calma con Sand.': 'Find your calm with Sand.',
+  'Ondas violetas que se mueven con calma.': 'Violet waves that flow gently.',
+  'Luces suaves dentro de tus tarjetas y un estilo moderno.': 'Soft light inside your cards and a modern style.',
+  'Dunas y líneas de arena que se deslizan como el viento.': 'Dunes and sand ripples that drift with the breeze.',
+  'Tonos cálidos, tipografía editorial y un espacio sereno.': 'Warm tones, editorial type and a serene space.',
+  'Pequeños avances, cada día.': 'Small steps, every day.',
+  'Una muestra de {theme}. Tu estilo actual no cambia.': 'A preview of {theme}. Your current style stays the same.',
+  '{theme}. Exclusivo de Pro. Ver vista previa.': '{theme}. Exclusive to Pro. Open preview.',
+  'EXCLUSIVO DE WEIGHT&EXERCISE PRO': 'EXCLUSIVE TO WEIGHT&EXERCISE PRO',
+  'Este estilo está disponible en Weight&Exercise Pro, la app independiente de pago.': 'This style is available in Weight&Exercise Pro, the separate paid app.',
+};

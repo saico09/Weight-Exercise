@@ -98,3 +98,15 @@ Platino añade pulido de facetas y destellos pausados en la copa, la meta, la na
 Cada logro nuevo recibe una felicitación explícita. Si se consiguen varios juntos, una sola ventana los enumera a todos; tocar un logro conseguido vuelve a felicitar al usuario. Oro y Platino mantienen sus celebraciones especiales.
 
 Basic expone vistas previas bloqueadas de gráficos avanzados, meta 3D, pasos, comparación, Excel, informes PDF, estilos, resúmenes y respaldo. Están situadas junto a las secciones relacionadas y abren ejemplos visuales animados con datos ficticios o una explicación. No consultan registros reales, exportan archivos, crean cuentas ni solicitan permisos de Pro. Las animaciones son breves, se pueden repetir y respetan el movimiento reducido. Se mantiene «Próximamente en Google Play» hasta tener una ficha pública. La verificación de aislamiento durante la compilación sigue comprobando que no se distribuyan implementaciones, bibliotecas ni permisos exclusivos de Pro.
+
+## Detalles de la versión 0.8.5
+
+Aurora y Sand aparecen como tarjetas con candado junto a Dark y Light en Configuración. Cada tarjeta abre su propia muestra visual con colores y movimiento del estilo elegido; no cambia el tema de Basic. La comparación ilustrativa presenta tres registros y explica que Pro permite comparar dos o más. El acceso bloqueado para cambiar de gráfico está dentro del gráfico de Inicio.
+
+La meta del gráfico de peso se identifica con un marcador distinguible y su valor numérico se lee fuera del trazado. Una meta fuera de escala conserva su valor visible sin comprimir el gráfico. Estas muestras no incluyen los motores de temas, exportación, sincronización ni comparación de Pro.
+
+Ambas ediciones incorporan **Enviar sugerencias**, con correo de respuesta opcional, comprobación de un solo uso, límites de envío y detección de duplicados en el servidor. No adjunta registros ni datos de salud. El envío funciona en la vista local; el APK necesita configurar el servidor HTTPS antes de publicarlo. Consulta [sugerencias y antispam](docs/FEEDBACK.md).
+
+Se restringe la compartición de archivos Android a las carpetas de exportaciones, se bloquean conexiones HTTP y las compilaciones incluyen una política de contenido. [Alcance y configuración de seguridad](docs/local-security.md).
+
+La bienvenida y Ajustes incluyen «Creada por GreenBean», con el isotipo oficial local autorizado por su propietario. La procedencia se documenta en [ASSETS.md](ASSETS.md).

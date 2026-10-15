@@ -9,6 +9,9 @@ import { HeightSwitch, LanguageSwitch, SectionHeading, UnitSwitch } from './UI';
 import ProTeaser from './ProTeaser';
 import RewardThemes from './RewardThemes';
 import BasicMigration from './BasicMigration';
+import LockedProThemes from './LockedProThemes';
+import Feedback from './Feedback';
+import CreatorCredit from './CreatorCredit';
 
 export default function SettingsPage({ data, demo, onSettings, onReset, notify }: { data: AppData; demo: boolean; onSettings: (settings: Partial<Settings>) => void; onReset: () => void; notify: (message: string) => void }) {
   const { t, language, locale } = useI18n();
@@ -30,14 +33,13 @@ export default function SettingsPage({ data, demo, onSettings, onReset, notify }
   return <><SectionHeading eyebrow={t('A TU MANERA')} title={t('Tu espacio, tus reglas.')} text={t('Unos pocos ajustes para sentirte en casa.')} />
     <div className="settings-layout">
       <section className="card appearance-card">
-        <div className="card-head"><div><span className="eyebrow">{t('01 / TU ENERGÍA')}</span><h2>{t('Dos estilos. El mismo tú.')}</h2></div><Sparkles size={20} /></div>
+        <div className="card-head"><div><span className="eyebrow">{t('01 / TU ENERGÍA')}</span><h2>{t('Tu estilo, a tu manera.')}</h2></div><Sparkles size={20} /></div>
         <p className="muted">{t('Elige cómo quieres vivir tu progreso.')}</p>
         <div className="settings-themes">{(['dark', 'light'] as const).map(theme => <button key={theme} className={`settings-theme ${theme} ${data.settings.theme === theme ? 'selected' : ''}`} onClick={() => onSettings({ theme })} aria-pressed={data.settings.theme === theme}>
           <div className="theme-mini"><div className="mini-line" /><span>{theme === 'dark' ? 'Beast mode' : t('Minimalista')}</span><div className="mini-chart"><svg viewBox="0 0 160 44" aria-hidden="true"><path d="M0 3 18 11 35 8 52 20 70 17 87 29 104 26 122 34 140 32 160 42" fill="none" stroke="currentColor" strokeWidth="2.5" /></svg></div></div>
           <div className="settings-theme-label"><span>{theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}{theme === 'dark' ? 'Dark' : 'Light'}</span><i>{data.settings.theme === theme && <Check size={13} />}</i></div><span className="theme-description">{t(theme === 'dark' ? 'Intenso. Enfocado. Premium.' : 'Ligero. Sereno. Muy tú.')}</span>
-        </button>)}</div>
+        </button>)}<LockedProThemes /></div>
         <RewardThemes data={data} onSelect={theme => onSettings({ theme })} />
-        <ProTeaser feature="style" compact />
         <div className="settings-language"><span>{t('Idioma')}</span><LanguageSwitch value={language} onChange={next => { onSettings({ language: next }); setMessage(''); }} /></div>
       </section>
       <section className="card notification-card">
@@ -69,6 +71,7 @@ export default function SettingsPage({ data, demo, onSettings, onReset, notify }
       </section>
       <ProTeaser feature="backup" />
       <BasicMigration data={data} demo={demo} />
-      <section className="card privacy-card"><div className="soft-icon"><ShieldCheck size={22} /></div><h3>{t('Tu historia se queda contigo.')}</h3><p>{t('Los registros se guardan solo en este dispositivo, sin cuenta ni respaldo en la nube. Si borras los datos de la app o la desinstalas, se perderán.')}</p><button className="reset-button" onClick={onReset}><Trash2 size={17} /><span>{t(demo ? 'Reiniciar la demo' : 'Empezar de cero')}</span><ChevronRight size={17} /></button><span className="app-version">WEIGHT&EXERCISE · {EDITION.toUpperCase()} · V{APP_VERSION}</span></section>
+      <Feedback />
+      <section className="card privacy-card"><div className="soft-icon"><ShieldCheck size={22} /></div><h3>{t('Tu historia se queda contigo.')}</h3><p>{t('Los registros se guardan solo en este dispositivo, sin cuenta ni respaldo en la nube. Si borras los datos de la app o la desinstalas, se perderán.')}</p><button className="reset-button" onClick={onReset}><Trash2 size={17} /><span>{t(demo ? 'Reiniciar la demo' : 'Empezar de cero')}</span><ChevronRight size={17} /></button><div className="app-signature"><span className="app-version">WEIGHT&EXERCISE · {EDITION.toUpperCase()} · V{APP_VERSION}</span><CreatorCredit /></div></section>
     </div></>;
 }
