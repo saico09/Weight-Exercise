@@ -43,7 +43,7 @@ describe('real XLSX export', () => {
     expect(files.get('xl/workbook.xml')).toContain('name="Registros"');
     expect(files.get('xl/_rels/workbook.xml.rels')).toContain('Target="worksheets/sheet2.xml"');
     expect(files.get('xl/worksheets/sheet2.xml')).toContain(`<c r="B2" s="2" t="n"><v>${data.records[0].weightKg}</v></c>`);
-    expect(files.get('xl/worksheets/sheet2.xml')).toContain('autoFilter ref="A1:I31"');
+    expect(files.get('xl/worksheets/sheet2.xml')).toContain(`autoFilter ref="A1:I${data.records.length + 1}"`);
   });
   it('exports only the explicitly selected scope and encodes notes as text, never formulas', () => {
     const data = demoData(new Date(2026, 9, 15));

@@ -4,6 +4,8 @@ import {
   displayHeight, displayWeight, fromKg, getStats, shiftDate, toKg, validateData, ageFromBirthDate, profileAge,
 } from './model';
 import type { AppData, DailyRecord } from './model';
+import { getAchievements, getCupProgress } from './achievements';
+import { getRewardThemes } from './rewardThemes';
 
 const today = new Date(2026, 9, 14, 12);
 
@@ -292,15 +294,21 @@ describe('persisted schema validation', () => {
     expect(validateData({ ...original, settings: { ...original.settings, accentColor: 'red' } })?.settings.accentColor).toBeNull();
   });
 
-  it('returns independent defaults and explicit 30-day preview data', () => {
+  it('keeps real defaults empty and completes every cup, achievement and reward theme in the demo', () => {
     const one = defaultData();
     one.settings.notifications.days.pop();
     expect(defaultData().settings.notifications.days).toHaveLength(7);
     const preview = demoData(today);
-    expect(preview.records).toHaveLength(30);
-    expect(preview.records[0].date).toBe('2026-09-15');
+    expect(preview.records).toHaveLength(365);
+    expect(preview.records[0].date).toBe(shiftDate(dateKey(today), -364));
     expect(preview.records.at(-1)?.date).toBe('2026-10-14');
     expect(preview.initialRecordId).toBe(preview.records[0].id);
+    expect(getAchievements(preview, today).every(achievement => achievement.earned)).toBe(true);
+    expect(getCupProgress(getAchievements(preview, today))).toMatchObject({ earned: 30, total: 30, percentage: 100, current: { tier: 'platinum' }, next: null });
+    expect(getRewardThemes(preview, today).every(theme => theme.unlocked)).toBe(true);
+    expect(getStats(preview, today).progress).toBe(100);
+    expect(preview.records.some(record => !record.exercise)).toBe(true);
+    expect(preview.records.some(record => !record.healthy)).toBe(true);
     expect(defaultData().records).toHaveLength(0);
   });
 });

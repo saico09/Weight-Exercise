@@ -289,20 +289,20 @@ export function getStats(data: AppData, now = new Date()): Stats {
   };
 }
 
-/** Explicit, disposable preview data; never added to a new user's real history. */
+/** A completed year unlocks every demo milestone; real histories always start empty. */
 export function demoData(now = new Date()): AppData {
   const data = defaultData();
   const today = dateKey(now);
-  const first = shiftDate(today, -29);
+  const first = shiftDate(today, -364);
   data.profile = { heightCm: 178, initialWeightKg: 86.4, goalWeightKg: 76, age: 28, initialDate: first };
-  data.records = Array.from({ length: 30 }, (_, index) => ({
+  data.records = Array.from({ length: 365 }, (_, index) => ({
     id: `demo-${index + 1}`,
     date: shiftDate(first, index),
-    weightKg: index === 0 ? 86.4 : index === 29 ? 81.2 : Math.round((86.4 - index * 0.18 + Math.sin(index * 1.7) * 0.27) * 10) / 10,
+    weightKg: index === 0 ? 86.4 : index === 364 ? 76 : Math.round((86.4 - index * (10.4 / 364) + Math.sin(index * 1.7) * 0.27) * 10) / 10,
     exercise: ![2, 5].includes(index % 7),
     healthy: index % 6 !== 4,
-    note: index === 29 ? 'Un paso más. A mi ritmo.' : '',
-    steps: index === 29 ? 5432 : 4000 + (index * 731) % 6000,
+    note: index === 364 ? 'Un año de constancia. Meta cumplida.' : '',
+    steps: index === 364 ? 8532 : 4000 + (index * 731) % 6000,
   }));
   data.initialRecordId = data.records[0].id;
   data.lastPromptDate = today;

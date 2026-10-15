@@ -21,7 +21,7 @@ describe('calendar chart periods', () => {
   });
   it('lets all show the full history independently of a newer chosen initial record', () => {
     base.initialRecordId = base.records.at(-1)!.id;
-    expect(chartPeriod(base.records, 0, today).records).toHaveLength(30);
+    expect(chartPeriod(base.records, 0, today).records).toEqual(base.records);
   });
 });
 
