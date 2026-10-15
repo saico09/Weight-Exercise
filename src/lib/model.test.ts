@@ -4,6 +4,8 @@ import {
   displayHeight, displayWeight, fromKg, getStats, shiftDate, toKg, validateData, ageFromBirthDate, profileAge,
 } from './model';
 import type { AppData, DailyRecord } from './model';
+import { getAchievements, getCupProgress } from './achievements';
+import { unlockedRewardThemes } from './rewardThemes';
 
 const today = new Date(2026, 9, 14, 12);
 
@@ -288,15 +290,24 @@ describe('persisted schema validation', () => {
     expect(validateData({ ...original, settings: { ...original.settings, accentColor: 'red' } })?.settings.accentColor).toBeNull();
   });
 
-  it('returns independent defaults and explicit 30-day preview data', () => {
+  it.each([today, new Date(2024, 1, 29, 12), new Date(2027, 0, 1, 12)])('returns independent defaults and a fully achieved 365-day preview at %s', now => {
     const one = defaultData();
     one.settings.notifications.days.pop();
     expect(defaultData().settings.notifications.days).toHaveLength(7);
-    const preview = demoData(today);
-    expect(preview.records).toHaveLength(30);
-    expect(preview.records[0].date).toBe('2026-09-15');
-    expect(preview.records.at(-1)?.date).toBe('2026-10-14');
+    const preview = demoData(now);
+    expect(preview.records).toHaveLength(365);
+    expect(preview.records[0].date).toBe(shiftDate(dateKey(now), -364));
+    expect(preview.records.at(-1)?.date).toBe(dateKey(now));
+    expect(new Set(preview.records.map(record => record.date)).size).toBe(365);
     expect(preview.initialRecordId).toBe(preview.records[0].id);
+    expect(preview.records.at(-1)?.weightKg).toBe(preview.profile?.goalWeightKg);
+    const achievements = getAchievements(preview, now);
+    expect(achievements).toHaveLength(30);
+    expect(achievements.every(achievement => achievement.earned)).toBe(true);
+    expect(getCupProgress(achievements)).toMatchObject({ current: { tier: 'platinum' }, percentage: 100, next: null });
+    expect(unlockedRewardThemes(preview, now)).toEqual(['gold', 'platinum']);
+    expect(preview.records.some(record => !record.exercise)).toBe(true);
+    expect(preview.records.some(record => !record.healthy)).toBe(true);
     expect(defaultData().records).toHaveLength(0);
   });
 });
