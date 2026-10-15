@@ -157,7 +157,18 @@ ion-app[data-theme=light] { --bg: #edf5f5; --surface: #ffffffb8; --surface-raise
 .bottom-nav button i { position: absolute; bottom: 4px; width: 3px; height: 3px; background: var(--accent-ink); border-radius: 50%; opacity: 0; }
 .bottom-nav button.active i { opacity: 1; }
 .nav-tooltip { display: none; position: absolute; bottom: 54px; font-size: 10px; padding: 7px 10px; border-radius: 7px; background: var(--surface-raised); border: 1px solid var(--border); color: var(--text); white-space: nowrap; }
-.bottom-nav button:hover .nav-tooltip, .bottom-nav button:focus-visible .nav-tooltip { display: block; }
+.edition-badge { font-family: var(--font-body); font-size: 9px; font-weight: 800; letter-spacing: .13em; color: var(--accent-ink); border: 1px solid var(--border); border-radius: 6px; padding: 5px 7px; align-self: center; }
+.recap-settings { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); }
+.recap-settings .segmented { display: flex; margin: 12px 0; gap: 8px; }
+.recap-settings .segmented button { padding: 10px 14px; border: 1px solid var(--border); border-radius: 9px; }
+.recap-settings .segmented .active { color: var(--accent-ink); background: var(--accent-soft); }
+.bottom-nav button:focus-visible .nav-tooltip { display: block; }
+@media (hover: hover) and (pointer: fine) {
+  .bottom-nav button:hover .nav-tooltip { display: block; }
+}
+@media (hover: none), (pointer: coarse) {
+  .bottom-nav .nav-tooltip { display: none !important; }
+}
 .demo-banner { background: var(--accent); color: #183b2b; min-height: 32px; padding: 6px 24px; display: flex; justify-content: center; align-items: center; gap: 26px; font-size: 10px; z-index: 2; flex-shrink: 0; }
 .demo-banner > span, .demo-banner > button { display: flex; gap: 6px; align-items: center; }
 .demo-banner button { font-size: 10px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }

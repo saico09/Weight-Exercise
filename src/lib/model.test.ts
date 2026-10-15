@@ -262,6 +262,8 @@ describe('persisted schema validation', () => {
     expect(result?.settings).toEqual({
       theme: 'dark', accentColor: null, language: 'es', weightUnit: 'kg', heightUnit: 'ft',
       notifications: { enabled: true, time: '20:00', days: [0, 1] },
+      recap: { enabled: false, period: 'weekly', time: '19:00' },
+      motivation: { message: 'Hazlo por él', image: null },
     });
     expect(result?.initialRecordId).toBeNull();
     expect(result?.lastPromptDate).toBeNull();

@@ -6,9 +6,11 @@ import { useI18n } from '../lib/i18n';
 import { ProgressRing, WeightChart } from './Charts';
 import { chartPeriod } from './chartUtils';
 import { SectionHeading, SmallLink } from './UI';
+import Motivation from './Motivation';
+import type { MotivationPreferences } from '../lib/motivation';
 import './charts-dashboard.css';
 
-export default function Dashboard({ data, onDaily, onProfile, onHistory, onEditDay }: { data: AppData; onDaily: () => void; onProfile: () => void; onHistory: () => void; onEditDay: (date: string) => void }) {
+export default function Dashboard({ data, onDaily, onProfile, onHistory, onEditDay, onMotivationChange }: { data: AppData; onDaily: () => void; onProfile: () => void; onHistory: () => void; onEditDay: (date: string) => void; onMotivationChange: (value: MotivationPreferences) => void }) {
   const { t, locale } = useI18n();
   const [period, setPeriod] = useState(30);
   const stats = getStats(data);
@@ -26,7 +28,7 @@ export default function Dashboard({ data, onDaily, onProfile, onHistory, onEditD
   const healthyRatio = stats.totalDays ? stats.healthyDays / stats.totalDays * 100 : 0;
 
   return <>
-    <SectionHeading eyebrow={t('CADA DÍA CUENTA')} title={t(data.settings.theme === 'dark' ? 'TU MEJOR VERSIÓN.' : 'Todo empieza contigo.')} action={<button className={`primary-button ${todayRecord ? 'recorded-button' : ''}`} onClick={onDaily}>{todayRecord ? <Check size={18} /> : <Plus size={18} />}{t(todayRecord ? 'Hoy ya cuenta' : 'Registrar mi día')}<ChevronRight size={17} /></button>} />
+    <SectionHeading eyebrow={t('CADA DÍA CUENTA')} title={t(data.settings.theme === 'dark' ? 'TU MEJOR VERSIÓN.' : 'Todo empieza contigo.')} action={<div className="dashboard-actions"><button className={`primary-button ${todayRecord ? 'recorded-button' : ''}`} onClick={onDaily}>{todayRecord ? <Check size={18} /> : <Plus size={18} />}{t(todayRecord ? 'Hoy ya cuenta' : 'Registrar mi día')}<ChevronRight size={17} /></button><Motivation value={data.settings.motivation} onChange={onMotivationChange} /></div>} />
     <div className="dashboard-grid">
       <section className="card weight-card">
         <div className="card-head"><span className="card-title"><TrendingUp size={18} />{t('Tu evolución')}</span><span className="pill subtle"><span className="dot" />{chart.records.length} {t(chart.records.length === 1 ? 'registro' : 'registros')}</span></div>
@@ -43,12 +45,12 @@ export default function Dashboard({ data, onDaily, onProfile, onHistory, onEditD
       <section className="card habits-card interactive-habits">
         <div className="card-head"><div><span className="eyebrow">{t('TU RITMO, ESTA SEMANA')}</span><h2>{t('Tus hábitos, día a día.')}</h2></div><span className="streak"><Flame size={17} />{stats.streak} {t(stats.streak === 1 ? 'día de racha' : 'días de racha')}</span></div>
         <div className="habit-week-grid" aria-label={t('Ejercicio y alimentación de los últimos siete días')}>
-          <div className="habit-row-labels" aria-hidden="true"><span /><span title={t('Ejercicio')}><Dumbbell size={16} /></span><span title={t('Comer sano')}><Leaf size={16} /></span></div>
+          <div className="habit-row-labels" aria-hidden="true"><span /><span><Dumbbell size={16} /></span><span><Leaf size={16} /></span></div>
           {weekDays.map(day => {
             const record = weekRecords.find(item => item.date === day);
             const date = new Date(`${day}T12:00:00`);
             const state = !record ? 'Sin registro' : record.exercise && record.healthy ? 'Ejercicio y comida sana' : record.exercise ? 'Solo ejercicio' : record.healthy ? 'Solo comida sana' : 'Sin ejercicio ni comida sana';
-            return <button key={day} type="button" onClick={() => onEditDay(day)} className={`habit-day-button ${day === today ? 'is-today' : ''} ${record ? 'is-recorded' : 'is-unrecorded'}`} aria-label={`${date.toLocaleDateString(locale, { day: 'numeric', month: 'long' })}. ${t(state)}. ${t(record ? 'Editar registro' : 'Añadir registro')}`} title={`${t(state)} · ${t(record ? 'Editar' : 'Añadir')}`}>
+            return <button key={day} type="button" onClick={() => onEditDay(day)} className={`habit-day-button ${day === today ? 'is-today' : ''} ${record ? 'is-recorded' : 'is-unrecorded'}`} aria-label={`${date.toLocaleDateString(locale, { day: 'numeric', month: 'long' })}. ${t(state)}. ${t(record ? 'Editar registro' : 'Añadir registro')}`}>
               <span className="habit-day-date"><span>{day === today ? t('HOY') : date.toLocaleDateString(locale, { weekday: 'short' }).replace('.', '').toUpperCase()}</span><strong>{date.getDate()}</strong></span>
               <HabitCheck value={record ? record.exercise : null} />
               <HabitCheck value={record ? record.healthy : null} />

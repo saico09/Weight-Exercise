@@ -8,3 +8,7 @@ test-results/
 .qa/
 .tools/
 output/
+.env
+.env.*
+!.env.example
+server/node_modules/

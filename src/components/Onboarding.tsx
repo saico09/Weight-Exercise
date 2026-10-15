@@ -7,6 +7,7 @@ import { Brand, HeightSwitch, LanguageSwitch, UnitSwitch } from './UI';
 import RulerPicker from './RulerPicker';
 import BirthDatePicker, { defaultBirthDate } from './BirthDatePicker';
 import AccentPicker from './AccentPicker';
+import { IS_PRO } from '../lib/edition';
 import './onboarding-controls.css';
 
 type OnboardingProps = {
@@ -85,7 +86,7 @@ export default function Onboarding({ settings, onTheme, onLanguage, onAccentColo
         <span className="eyebrow">{t('DA EL PRIMER PASO')}</span>
         <h1>{t('Tu progreso.')}<br /><span>{t('Tu energía.')}</span></h1>
         <p>{t('Elige el estilo que mejor te representa')}</p>
-        <div className="onboarding-accent"><AccentPicker theme={theme} value={config.accentColor} onChange={accentColor => { setConfig(current => ({ ...current, accentColor })); onAccentColor(accentColor); }} /></div>
+        {IS_PRO && <div className="onboarding-accent"><AccentPicker theme={theme} value={config.accentColor} onChange={accentColor => { setConfig(current => ({ ...current, accentColor })); onAccentColor(accentColor); }} /></div>}
       </div>
       <div className={`theme-panels ${chosen ? `chosen-${chosen}` : ''}`}>
         <button className={`theme-panel dark-panel ${chosen === 'dark' ? 'chosen' : ''}`} onClick={() => choose('dark')} aria-pressed={chosen === 'dark'}>

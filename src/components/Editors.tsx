@@ -5,8 +5,10 @@ import { ageFromBirthDate, dateKey, displayHeight, fromKg, getStats, profileAge,
 import { useI18n } from '../lib/i18n';
 import BirthDatePicker from './BirthDatePicker';
 import { HabitChoice, HeightSwitch, Modal, UnitSwitch } from './UI';
+import Motivation from './Motivation';
+import type { MotivationPreferences } from '../lib/motivation';
 
-export function RecordEditor({ data, record, daily, initialDate, onClose, onSave, onDelete }: { data: AppData; record?: DailyRecord; daily: boolean; initialDate?: string; onClose: () => void; onSave: (record: DailyRecord, initial: boolean) => void; onDelete: (id: string) => void }) {
+export function RecordEditor({ data, record, daily, initialDate, onClose, onSave, onDelete, onMotivationChange }: { data: AppData; record?: DailyRecord; daily: boolean; initialDate?: string; onClose: () => void; onSave: (record: DailyRecord, initial: boolean) => void; onDelete: (id: string) => void; onMotivationChange: (value: MotivationPreferences) => void }) {
   const { t } = useI18n();
   const [unit, setUnit] = useState(data.settings.weightUnit);
   const [date, setDate] = useState(record?.date || initialDate || dateKey());
@@ -29,6 +31,7 @@ export function RecordEditor({ data, record, daily, initialDate, onClose, onSave
   }}>
     <div className="form-row"><label className="field">{t('Fecha')}<input type="date" value={date} max={dateKey()} min="1900-01-01" required disabled={daily} onChange={e => setDate(e.target.value)} /></label><UnitSwitch value={unit} onChange={changeUnit} /></div>
     <label className="record-weight"><span>{t(date === dateKey() ? 'Tu peso de hoy' : 'Tu peso de ese día')}</span><div><input aria-label={t('Peso del registro')} inputMode="decimal" type="text" value={weight} onChange={e => { const v = e.target.value.replace(',', '.'); if (/^\d*\.?\d*$/.test(v)) { setWeight(v); setCanonicalWeight(toKg(Number(v), unit)); } }} required /><span>{unit}</span></div></label>
+    <Motivation value={data.settings.motivation} onChange={onMotivationChange} compact />
     <HabitChoice question="¿Te moviste hoy?" hint="Cada movimiento cuenta. Descansar también es parte del camino." icon={<Dumbbell size={18} />} value={exercise} onChange={setExercise} />
     <HabitChoice question="¿Toca comer sano hoy?" icon={<Leaf size={18} />} value={healthy} onChange={setHealthy} yes="Sí, hoy sí" no="Hoy no" />
     <label className="field">{t('Una nota para ti')} <span className="muted">{t('(opcional)')}</span><textarea rows={2} maxLength={2000} value={note} onChange={e => setNote(e.target.value)} placeholder={t('¿Cómo te sentiste? ¿Algo que quieras recordar?')} /></label>
