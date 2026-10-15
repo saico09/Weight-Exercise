@@ -1,5 +1,7 @@
 # Weight&Exercise · v0.4
 
+**Esta carpeta corresponde a la rama `basic`.** Su vista local usa el puerto **5174** y su APK lleva el identificador `cl.forma.weightexercise.basic`. La infraestructura de cuenta y respaldo se ejecuta desde la carpeta de la rama `pro`; Basic funciona completamente sin servidor.
+
 App Android para registrar peso, ejercicio y alimentación, con interfaz adaptable a teléfono y PC. Ionic React, TypeScript y Capacitor. Los registros se guardan primero en el dispositivo; Pro incorpora un prototipo de respaldo manual con cuenta, probado en un servidor Docker local.
 
 ## Basic y Pro

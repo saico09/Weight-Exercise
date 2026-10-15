@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Weight&amp;Exercise</string>
-    <string name="title_activity_main">Weight&amp;Exercise</string>
-    <string name="package_name">cl.forma.weightexercise</string>
-    <string name="custom_url_scheme">cl.forma.weightexercise</string>
+    <string name="app_name">Weight&amp;Exercise Basic</string>
+    <string name="title_activity_main">Weight&amp;Exercise Basic</string>
+    <string name="package_name">cl.forma.weightexercise.basic</string>
+    <string name="custom_url_scheme">cl.forma.weightexercise.basic</string>
 </resources>

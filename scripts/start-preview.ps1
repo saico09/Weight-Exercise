@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [ValidateRange(1024, 65535)]
-    [int]$Port = 5173,
+    [int]$Port = 5174,
     [switch]$NoBrowser
 )
 
@@ -27,7 +27,7 @@ function Test-PreviewPort {
 function Test-WeightExercisePreview {
     try {
         $response = Invoke-WebRequest -Uri $previewUrl -UseBasicParsing -TimeoutSec 2
-        return $response.Content -match '<title>\s*Weight\s*(?:&|&amp;)\s*Exercise\s*</title>'
+        return $response.Content -match '<title>\s*Weight\s*(?:&|&amp;)\s*Exercise\s+Basic\s*</title>'
     } catch {
         return $false
     }
@@ -36,7 +36,7 @@ function Test-WeightExercisePreview {
 try {
     if (Test-PreviewPort) {
         if (-not (Test-WeightExercisePreview)) {
-            throw "El puerto $Port pertenece a otra aplicacion. No se ha cerrado ningun proceso. Usa otro puerto: powershell -ExecutionPolicy Bypass -File `"scripts\start-preview.ps1`" -Port 5174"
+            throw "El puerto $Port pertenece a otra aplicacion. No se ha cerrado ningun proceso. Usa otro puerto: powershell -ExecutionPolicy Bypass -File `"scripts\start-preview.ps1`" -Port 5175"
         }
         Write-Host "Weight&Exercise ya esta disponible en $previewUrl" -ForegroundColor Green
     } else {

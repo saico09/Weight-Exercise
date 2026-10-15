@@ -4,7 +4,7 @@ android {
     namespace = "cl.forma.weightexercise"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "cl.forma.weightexercise"
+        applicationId "cl.forma.weightexercise.basic"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 4
