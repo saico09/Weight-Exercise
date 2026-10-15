@@ -5,12 +5,12 @@ import {
 } from 'lucide-react';
 import type { AppData, DailyRecord, HeightUnit } from '../lib/model';
 import {
-  BMI_RANGES, bmiCategory, displayHeight, displayWeight, getStats, profileAge,
+  BMI_RANGES, bmiCategory, dateKey, displayHeight, displayWeight, getStats, profileAge,
 } from '../lib/model';
 import { BmiGauge } from './Charts';
 import { HeightSwitch, SectionHeading } from './UI';
 import { HistoryCalendar } from './HistoryCalendar';
-import { matchesHistoryDate, type HistoryDateFilter } from '../lib/calendar';
+import { matchesHistoryDate, shiftCalendarMonth, type HistoryDateFilter } from '../lib/calendar';
 import { useI18n } from '../lib/i18n';
 import { IS_PRO } from '../lib/edition';
 import { metricSeries } from '../lib/metricSeries';
@@ -166,6 +166,7 @@ export function HistoryPage({ data, onRecord, onNewRecord, demo = false }: Insig
   ).reverse();
   const visibleIds = new Set(records.map(record => record.id));
   const hiddenSelections = selectedIds.filter(id => !visibleIds.has(id)).length;
+  const compactThroughMonth = shiftCalendarMonth(dateKey().slice(0, 7), -3);
   const groups = new Map<string, DailyRecord[]>();
   for (const record of records) {
     const key = record.date.slice(0, 7);
@@ -183,7 +184,7 @@ export function HistoryPage({ data, onRecord, onNewRecord, demo = false }: Insig
     {calendarOpen && <HistoryCalendar value={dateFilter} recordDates={data.records.map(record => record.date)} onClose={() => setCalendarOpen(false)} onApply={value => { setDateFilter(value); setCalendarOpen(false); }} />}
     {comparisonOpen && <RecordComparison data={data} selectedIds={selectedIds} onClose={() => setComparisonOpen(false)} />}
     {records.length === 0 ? <div className="card empty-state"><CalendarDays size={32} /><h2>{t(data.records.length ? 'No hay registros con estos filtros.' : 'La primera página está por escribirse.')}</h2><p className="muted">{t(data.records.length ? 'Prueba otras fechas o muestra todos tus hábitos.' : 'Un peso, un hábito, un pequeño momento para ti.')}</p>{data.records.length ? <button className="secondary-button" onClick={() => { setDateFilter(null); setFilter('all'); }}>{t('Ver todos los registros')} <ArrowRight size={16} /></button> : <button className="primary-button" onClick={onNewRecord}>{t('Crear mi primer registro')} <Plus size={16} /></button>}</div> :
-      <div className="history-list">{Array.from(groups, ([key, entries]) => <section className="history-month" key={key} aria-labelledby={`month-${key}`}>
+      <div className="history-list">{Array.from(groups, ([key, entries]) => <section className={`history-month ${key <= compactThroughMonth ? 'history-month-compact' : ''}`} key={key} aria-labelledby={`month-${key}`}>
         <div className="card-head"><div className="history-month-heading"><h2 id={`month-${key}`}>{dateLabel(`${key}-01`, { month: 'long', year: 'numeric' })}</h2>{IS_PRO && <WorkbookExport disabled={demo} data={data} records={entries} filteredRecords={records} label={`${dateLabel(`${key}-01`, { month: 'long', year: 'numeric' })}${filter !== 'all' || dateFilter ? ` · ${t('con filtros')}` : ''}`} />}</div><span className="muted">{entries.length} {t(entries.length === 1 ? 'día' : 'días')}</span></div>
         <div className="card">{entries.map(record => {
           const initial = stats.initialRecord?.id === record.id || (!stats.initialRecord && record.date === stats.startDate);

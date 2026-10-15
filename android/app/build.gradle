@@ -15,8 +15,8 @@ android {
         applicationId "cl.forma.weightexercise"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 14
-        versionName "0.8.6"
+        versionCode 15
+        versionName "0.8.7"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField 'String', 'WE_LICENSE_PUBLIC_KEY', '"' + licensePublicKey + '"'
         aaptOptions {
