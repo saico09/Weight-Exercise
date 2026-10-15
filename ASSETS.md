@@ -2,9 +2,16 @@
 
 ## Marca GreenBean
 
-`public/images/greenbean-brand.png` es una copia íntegra del isotipo oficial verde claro `greenbean-8EB69B.png`, aportado por el propietario y utilizado por su solicitud de incorporar «Creada por GreenBean». Procedencia: repositorio local `StaticContentBucket`, ruta `static/content/GreenBean/General/Brand/`; su `README.md` identifica este original como el isotipo de Dark Mode. Se conserva el PNG transparente de 1254 × 1254 px sin modificar, y solo se encuadra mediante CSS sobre una base oscura en ambos modos. No se consulta ningún servidor para mostrarlo.
+Se incluyen intactos los dos isotipos PNG transparentes oficiales del repositorio local StaticContentBucket, en static/content/GreenBean/General/Brand/: verde claro greenbean-8EB69B.png y verde oscuro greenbean-235347.png. El propietario autorizó su uso; no son recursos de dominio público.
 
-SHA-256 del original y la copia: `C6E1E17D7C5723D4FDDE8DE86DD1895D8A59C64E3CED3F26024AD8B17152E28C`. Este recurso de marca se usa con autorización del propietario; no se presenta como material de dominio público. La atribución aparece en el pie de Ajustes y de la bienvenida, en español e inglés, sin enlaces externos.
+Se muestran como imágenes PNG locales, sin fondo, borde ni color aplicado. El encuadre CSS equivale al viewBox 372 288 510 672 de la cabecera de GreenBean: elimina únicamente el lienzo transparente exterior y conserva la semilla completa. El verde claro se usa en fondos oscuros y el oscuro en los temas claros.
+
+El crédito «Creada por GreenBean» aparece en el pie común de todas las secciones y en la bienvenida, junto al aviso de almacenamiento cuando corresponde. No necesita descargar imágenes ni consultar servicios externos.
+
+| Copia local | SHA-256 (igual al original) |
+| --- | --- |
+| public/images/greenbean-brand.png | c6e1e17d7c5723d4fdde8de86dd1895d8a59c64e3ced3f26024ad8b17152e28c |
+| public/images/greenbean-brand-on-light.png | fc159edae5c79849040f9110fbeaf53a9fe077c8ea4050612280211677cd75f2 |
 
 ## Fotografías
 
