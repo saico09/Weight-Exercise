@@ -1,5 +1,13 @@
 # Fotografías, fuentes y licencias
 
+## Marca GreenBean
+
+`public/images/greenbean-brand.png` es una copia íntegra del isotipo oficial verde claro `greenbean-8EB69B.png`, aportado por el propietario y utilizado por su solicitud de incorporar «Creada por GreenBean». Procedencia: repositorio local `StaticContentBucket`, ruta `static/content/GreenBean/General/Brand/`; su `README.md` identifica este original como el isotipo de Dark Mode. Se conserva el PNG transparente de 1254 × 1254 px sin modificar, y solo se encuadra mediante CSS sobre una base oscura en ambos modos. No se consulta ningún servidor para mostrarlo.
+
+SHA-256 del original y la copia: `C6E1E17D7C5723D4FDDE8DE86DD1895D8A59C64E3CED3F26024AD8B17152E28C`. Este recurso de marca se usa con autorización del propietario; no se presenta como material de dominio público. La atribución aparece en el pie de Ajustes y de la bienvenida, en español e inglés, sin enlaces externos.
+
+## Fotografías
+
 Las fotografías se incluyen como parte del diseño de la aplicación y se guardan localmente para que la experiencia no dependa de un servidor de imágenes.
 
 | Archivo | Autor | Fuente |

@@ -70,7 +70,8 @@ export const makeCode = () => randomInt(0, 1_000_000).toString().padStart(6, '0'
 export const keyedHash = (secret, ...values) => createHmac('sha256', secret).update(JSON.stringify(values)).digest('hex');
 export function safeEqual(left, right) {
   if (typeof left !== 'string' || typeof right !== 'string' || left.length !== right.length) return false;
-  return timingSafeEqual(Buffer.from(left), Buffer.from(right));
+  const leftBytes = Buffer.from(left), rightBytes = Buffer.from(right);
+  return leftBytes.length === rightBytes.length && timingSafeEqual(leftBytes, rightBytes);
 }
 export function sessionToken(request) {
   const part = request.headers.cookie?.split(';').find(p => p.trim().startsWith('we_session='));

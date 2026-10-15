@@ -9,18 +9,22 @@ export function signedChartValue(value: number, locale: string): string {
   return `${rounded > 0 ? '+' : rounded < 0 ? '−' : ''}${Math.abs(rounded).toLocaleString(locale, { maximumFractionDigits: 1 })}`;
 }
 /** Columns measure signed change from an explicit reference, never cropped absolute weight. */
-export function weightChartDomain(values: number[], goal: number, style: WeightChartStyle, reference?: number) {
+export function weightChartDomain(values: number[], goal: number, style: WeightChartStyle, reference?: number, unitScale = 1) {
   const finite = values.filter(Number.isFinite);
   const low = finite.length ? Math.min(...finite) : 0, high = finite.length ? Math.max(...finite) : 1;
   const spread = high - low;
-  const showGoal = Number.isFinite(goal) && Math.abs(goal - (finite.at(-1) ?? 0)) < Math.max(spread * 1.7, 3);
+  const scale = Number.isFinite(unitScale) && unitScale > 0 ? unitScale : 1;
   if (style === 'bars') {
     const baseline = Number.isFinite(reference) ? reference! : finite[0] ?? 0;
-    const bottom = Math.min(low, baseline, showGoal ? goal : Infinity), top = Math.max(high, baseline, showGoal ? goal : -Infinity);
-    const padding = Math.max(.1, (top - bottom) * .16);
-    return { min: bottom - padding, max: top + padding, showGoal };
+    const bottom = Math.min(low, baseline), top = Math.max(high, baseline);
+    const padding = Math.max(.1 * scale, (top - bottom) * .16);
+    const min = bottom - padding, max = top + padding;
+    return { min, max, showGoal: finite.length > 0 && Number.isFinite(goal) && goal >= min && goal <= max };
   }
-  return { min: Math.min(low, showGoal ? goal : Infinity) - Math.max(.5, spread * .2), max: Math.max(high, showGoal ? goal : -Infinity) + Math.max(.5, spread * .2), showGoal };
+  // A distant goal stays in the fixed legend; it must never flatten recorded changes.
+  const padding = Math.max(.5 * scale, spread * .2);
+  const min = low - padding, max = high + padding;
+  return { min, max, showGoal: finite.length > 0 && Number.isFinite(goal) && goal >= min && goal <= max };
 }
 
 /** Dates are calendar ordinals so daylight-saving changes never distort spacing. */

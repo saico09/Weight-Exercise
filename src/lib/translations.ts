@@ -10,6 +10,8 @@ import { calendarTranslations } from './calendar-translations';
 import { editionEnglish } from './editionTranslations';
 import { cloudEnglish } from './cloudTranslations';
 import { motivationReportEnglish } from './motivationReportTranslations';
+import { feedbackEnglish } from './feedbackTranslations';
+import { creatorEnglish } from './creatorTranslations';
 import { proExperienceEnglish } from './proExperienceTranslations';
 import { historyProEnglish } from './historyProTranslations';
 import { emailSummaryEnglish } from './emailSummaryTranslations';
@@ -25,6 +27,8 @@ export const english: Record<string, string> = {
   ...editionEnglish,
   ...cloudEnglish,
   ...motivationReportEnglish,
+  ...feedbackEnglish,
+  ...creatorEnglish,
   ...proExperienceEnglish,
   ...historyProEnglish,
   ...emailSummaryEnglish,

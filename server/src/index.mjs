@@ -4,6 +4,7 @@ import pg from 'pg';
 import { createMailer } from './mailer.mjs';
 import { createSummaryService } from './email-summary.mjs';
 import { createLicenseService, loadLicenseConfig } from './pro-license.mjs';
+import { createFeedbackService, feedbackRecipient } from './feedback.mjs';
 import { ApiError, input, object, email, username, validateSnapshot, tokenHash, makeToken, makeCode, keyedHash, safeEqual, sessionToken, sessionCookie, expiredCookie } from './security.mjs';
 
 // This first deployment is intentionally local. Internet deployment requires HTTPS,
@@ -17,6 +18,7 @@ const pool = new pg.Pool({ max: 3, idleTimeoutMillis: 10000, connectionTimeoutMi
 pool.on('error', () => console.error('Database connection unavailable.'));
 const mail = createMailer();
 const licensing = createLicenseService({ pool, transaction, config: loadLicenseConfig() });
+const feedback = createFeedbackService({ pool, transaction, mailer: mail, secret, recipient: feedbackRecipient(), limit });
 const summaries = createSummaryService({ pool, transaction, mailer: mail, secret, appUrl: process.env.PUBLIC_APP_URL || 'http://127.0.0.1:5173', canUsePro: licensing.hasEntitlement });
 const userView = row => ({ id: row.id, email: row.email, username: row.username });
 const hash = (...values) => keyedHash(secret, ...values);
@@ -106,9 +108,10 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && path === '/api/health') {
       await pool.query('SELECT 1'); return json(res, 200, { ok: true, localDevelopment: true, edition: 'pro-preview', mailMode: mail.mode });
     }
-    // A signed, narrowly scoped unsubscribe token is the only cookie-free write.
+    // A signed, narrowly scoped unsubscribe token authorizes this cookie-free write.
     // GET confirms intent; email link scanners cannot unsubscribe just by opening it.
     if (path === '/api/email-summary/unsubscribe' && ['GET','POST'].includes(req.method)) {
+      await limit(`unsubscribe:${req.socket.remoteAddress || 'unknown'}`, 60, 60);
       let token = requestUrl.searchParams.get('token');
       if (req.method === 'POST') {
         let content = ''; for await (const chunk of req) { content += chunk; if (content.length > 4096) throw new ApiError(413, 'invalid_input', 'Solicitud demasiado grande.'); }
@@ -124,6 +127,11 @@ const server = http.createServer(async (req, res) => {
     // The local Vite proxy is the single caller. Never trust a client-supplied X-Forwarded-For.
     const ip = req.socket.remoteAddress || 'unknown';
     await limit(`all:${ip}`, 400, 60);
+    if (req.method === 'GET' && path === '/api/feedback/challenge') return json(res, 200, await feedback.challenge(ip));
+    if (req.method === 'POST' && path === '/api/feedback') {
+      const result = await feedback.send(ip, await body(req, 12000));
+      return json(res, result.status, result.body);
+    }
     if (req.method === 'POST' && path === '/api/auth/request-code') {
       const data = await body(req); const address = email(data.email);
       await limit(`send-ip:${ip}`, 30, 900); await limit(`send-email:${address}`, 5, 900); await limit(`send-cooldown:${address}`, 1, 45);
@@ -276,6 +284,7 @@ const cleanup = setInterval(async () => {
     await pool.query('DELETE FROM sessions WHERE expires_at < now()');
     await pool.query('DELETE FROM rate_limits WHERE expires_at < now()');
     if (licensing.publicConfig().configured) await pool.query('DELETE FROM pro_license_challenges WHERE expires_at < now()');
+    await feedback.cleanup();
   } catch { console.error('Deferred auth cleanup unavailable.'); }
 }, 60000);
 cleanup.unref();

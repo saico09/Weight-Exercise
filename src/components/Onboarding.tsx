@@ -5,6 +5,7 @@ import { ageFromBirthDate, dateKey, fromKg, toKg } from '../lib/model';
 import { useI18n } from '../lib/i18n';
 import { Brand, HeightSwitch, LanguageSwitch, UnitSwitch } from './UI';
 import RulerPicker from './RulerPicker';
+import CreatorCredit from './CreatorCredit';
 import BirthDatePicker, { defaultBirthDate } from './BirthDatePicker';
 import AccentPicker from './AccentPicker';
 import ThemeShowcase from './ThemeShowcase';
@@ -129,7 +130,7 @@ export default function Onboarding({ settings, onTheme, onLanguage, onAccentColo
         <span className="private-note"><ShieldCheck size={15} /> {t('Tus datos se quedan en este dispositivo.')}</span>
       </form>
     </main>}
-    <footer className="onboarding-bottom"><span>{t('HECHO PARA TU PROPIO RITMO.')}</span><span>{t('Un día a la vez')} <span className="dot" /></span></footer>
+    <footer className="onboarding-bottom"><CreatorCredit /><span>{t('Un día a la vez')} <span className="dot" /></span></footer>
   </div>;
 }
 

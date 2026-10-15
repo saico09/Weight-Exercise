@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { chartDay, chartPeriod, clampChartWindow, nextChartStyle, sampleChartPoints, signedChartValue, weightChartDomain, zoomChartWindow } from './chartUtils';
-import { demoData, shiftDate } from '../lib/model';
+import { demoData, fromKg, shiftDate } from '../lib/model';
 
 describe('calendar chart periods', () => {
   const today = '2026-10-14';
@@ -64,6 +64,28 @@ describe('dense chart downsampling', () => {
 });
 
 describe('truthful chart styles', () => {
+  it('never changes the plotted domain to pull in a near or distant goal', () => {
+    for (const style of ['area', 'line', 'bars'] as const) {
+      const nearby = weightChartDomain([79.8, 80.2], 80, style, 80);
+      const distant = weightChartDomain([79.8, 80.2], 60, style, 80);
+      expect(nearby.showGoal).toBe(true);
+      expect(distant.showGoal).toBe(false);
+      expect({ min: nearby.min, max: nearby.max }).toEqual({ min: distant.min, max: distant.max });
+    }
+  });
+  it('preserves goal visibility and vertical position when switching from kg to lb', () => {
+    for (const style of ['area', 'line', 'bars'] as const) {
+      const kg = weightChartDomain([76], 76.05, style, 76);
+      const lb = weightChartDomain([fromKg(76, 'lb')], fromKg(76.05, 'lb'), style, fromKg(76, 'lb'), fromKg(1, 'lb'));
+      expect(lb.showGoal).toBe(kg.showGoal);
+      expect((lb.max - fromKg(76.05, 'lb')) / (lb.max - lb.min)).toBeCloseTo((kg.max - 76.05) / (kg.max - kg.min));
+    }
+  });
+  it('keeps one-point domains finite and hides a goal marker without records', () => {
+    expect(weightChartDomain([], 0, 'area').showGoal).toBe(false);
+    const single = weightChartDomain([76], 76, 'line');
+    expect(single).toEqual({ min: 75.5, max: 76.5, showGoal: true });
+  });
   it('never suggests a positive or negative difference when the displayed tick rounds to zero', () => {
     expect(signedChartValue(-.03, 'en-US')).toBe('0');
     expect(signedChartValue(.03, 'en-US')).toBe('0');

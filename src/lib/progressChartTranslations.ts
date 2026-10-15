@@ -6,6 +6,7 @@ export const progressChartEnglish: Record<string, string> = {
   'Tu constancia brilla': 'Your dedication shines',
   'Eres el auténtico pro': 'You are the true pro',
   'Variación': 'Change',
+  'Meta: {weight} {unit}': 'Goal: {weight} {unit}',
   'Variación desde {weight} {unit}': 'Change from {weight} {unit}',
   'Variación de peso respecto de la referencia': 'Weight change from the reference',
   'Ver meta en 2D': 'View goal in 2D',

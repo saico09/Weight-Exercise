@@ -32,7 +32,7 @@ export function WeightChart({ records, unit, goal, periodBounds, hasHistory = fa
   const window = view ? clampChartWindow(view, bounds) : bounds;
   const viewRef = useRef(window);
   viewRef.current = window;
-  const W = chartWidth, H = chartWidth < 450 ? 220 : 245, left = 38, right = 13, top = 21, bottom = 33;
+  const W = chartWidth, H = chartWidth < 450 ? 220 : 245, left = 38, right = 30, top = 21, bottom = 33;
   const plotWidth = W - left - right;
   const span = window.end - window.start || 1;
   const total = bounds.end - bounds.start;
@@ -86,7 +86,7 @@ export function WeightChart({ records, unit, goal, periodBounds, hasHistory = fa
   // Keep the reference fixed while panning/zooming within the selected period.
   const referenceValue = points[0]?.value ?? 0;
   const domainPoints = columns ? (visible.length ? visible : points) : (linePoints.length ? linePoints : points);
-  const { min, max, showGoal } = weightChartDomain(domainPoints.map(point => point.value), goalValue, chartStyle, referenceValue);
+  const { min, max, showGoal } = weightChartDomain(domainPoints.map(point => point.value), goalValue, chartStyle, referenceValue, fromKg(1, unit));
   const x = (day: number) => left + (day - window.start) / span * plotWidth;
   const y = (value: number) => top + (max - value) / (max - min || 1) * (H - top - bottom);
   const rendered = [...(before ? [before] : []), ...sampleChartPoints(visible, Math.floor(plotWidth / 2)), ...(after ? [after] : [])];
@@ -166,8 +166,8 @@ export function WeightChart({ records, unit, goal, periodBounds, hasHistory = fa
 
   return <div className="weight-chart interactive-weight-chart" ref={container}>
     <div className="chart-range-line"><div className="chart-date-range" aria-live="polite">{rangeText}</div>{IS_PRO && <button type="button" className="chart-style-cycle" aria-label={t('Estilo: {style}. Cambiar a {next}.', { style: t(styleNames[chartStyle]), next: t(styleNames[nextChartStyle(chartStyle)]) })} onClick={() => { const next = nextChartStyle(chartStyle); setLocalStyle(next); onStyleChange?.(next); }}><Layers3 size={13} /><span>{t(styleNames[chartStyle])}</span></button>}</div>
+    <div className="chart-readout">{points.length > 0 && <div className="chart-selected-readout"><div className="chart-tooltip"><span className="dot" />{selected ? <>{dateLabel(selected.x, total > 365)} <strong>{displayWeight(selected.record.weightKg, unit, 1, locale)} {unit}</strong></> : t('Sin registros en este intervalo')}</div><span className="chart-visible-count">{visible.length} {t(visible.length === 1 ? 'registro' : 'registros')}</span></div>}<div className="chart-goal-pill" aria-label={t('Meta: {weight} {unit}', { weight: displayWeight(goal, unit, 1, locale), unit })}><i aria-hidden="true" /><span><small>{t('Meta')}</small><strong>{displayWeight(goal, unit, 1, locale)} <small>{unit}</small></strong></span></div></div>
     {!points.length ? <div className="chart-empty"><span>{t(hasHistory ? 'Sin registros en este período' : 'Tu historia empieza con un punto.')}</span><p>{t(hasHistory ? 'Prueba un período más amplio o añade un registro.' : 'Guarda tu primer peso para ver tu evolución aquí.')}</p></div> : <>
-      <div className="chart-readout"><div className="chart-tooltip"><span className="dot" />{selected ? <>{dateLabel(selected.x, total > 365)} <strong>{displayWeight(selected.record.weightKg, unit, 1, locale)} {unit}</strong></> : t('Sin registros en este intervalo')}</div><span className="chart-visible-count">{visible.length} {t(visible.length === 1 ? 'registro' : 'registros')}</span></div>
       {columns && <div className="chart-reference-caption"><span>{t('Variación desde {weight} {unit}', { weight: referenceValue.toLocaleString(locale, { maximumFractionDigits: 1 }), unit })}<small>{dateLabel(first, total > 365)}</small></span><strong>{selected ? `${deltaLabel(selected.value - referenceValue)} ${unit}` : '—'}</strong></div>}
       <svg ref={surface} viewBox={`0 0 ${W} ${H}`} className={`chart-gesture-surface ${isZoomed ? 'is-zoomed' : ''}`} role="group" tabIndex={0} aria-label={t('Gráfico interactivo de peso')} aria-describedby={`${id}-instructions`} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerEnd} onPointerCancel={pointerEnd} onLostPointerCapture={pointerCaptureLost} onKeyDown={event => {
         const index = selected ? points.findIndex(point => point.record.id === selected.record.id) : 0;
@@ -183,7 +183,7 @@ export function WeightChart({ records, unit, goal, periodBounds, hasHistory = fa
         <defs><linearGradient id={id} x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="var(--accent)" stopOpacity=".23" /><stop offset="100%" stopColor="var(--accent)" stopOpacity="0" /></linearGradient><clipPath id={`${id}-clip`}><rect x={left - 7} y={top - 9} width={plotWidth + 14} height={H - top - bottom + 18} /></clipPath></defs>
         {[0, 1, 2, 3].map(tick => { const value = min + (max - min) * tick / 3; return <g key={tick} aria-hidden="true"><line className="chart-grid" x1={left} x2={W - right} y1={y(value)} y2={y(value)} /><text x={0} y={y(value) + 4} className="chart-label">{columns ? deltaLabel(value - referenceValue) : value.toLocaleString(locale, { maximumFractionDigits: 1 })}</text></g>; })}
         {columns && <g aria-hidden="true"><line className="chart-reference-line" x1={left} x2={W - right} y1={y(referenceValue)} y2={y(referenceValue)} /><text x={W - right} y={y(referenceValue) - 6} textAnchor="end" className="chart-label chart-reference-label">0 {unit}</text></g>}
-        {showGoal && <g aria-hidden="true"><line x1={left} x2={W - right} y1={y(goalValue)} y2={y(goalValue)} stroke="var(--chart-accent, var(--accent))" strokeOpacity=".35" strokeDasharray="4 6" /><text x={W - right} y={y(goalValue) - 8} textAnchor="end" className="chart-label">{t('META')}</text></g>}
+        {showGoal && <line className="chart-goal-line" aria-hidden="true" x1={left} x2={W - right} y1={y(goalValue)} y2={y(goalValue)} />}
         <g clipPath={`url(#${id}-clip)`} aria-hidden="true">
           {columns ? renderedBars.map(point => { const bx = x(point.x) - barWidth / 2, by = y(point.value), baseline = y(referenceValue), fill = 'var(--chart-accent, var(--accent))'; return <g key={point.record.id} className="chart-weight-column"><rect x={bx} y={Math.min(by, baseline)} width={barWidth} height={Math.abs(baseline - by)} rx={Math.min(3, barWidth / 3)} fill={fill} opacity={point.record.id === selected?.record.id ? .95 : .6} />{Math.abs(point.value - referenceValue) < .00001 && <line x1={bx} x2={bx + barWidth} y1={baseline} y2={baseline} stroke={fill} strokeWidth="2" />}</g>; }) : <>
             {chartStyle === 'area' && rendered.length > 1 && <path d={`${line} L${x(rendered[rendered.length - 1].x)},${H - bottom} L${x(rendered[0].x)},${H - bottom} Z`} fill={`url(#${id})`} />}
@@ -192,6 +192,7 @@ export function WeightChart({ records, unit, goal, periodBounds, hasHistory = fa
           </>}
           {selected && <><line x1={x(selected.x)} x2={x(selected.x)} y1={top} y2={H - bottom} stroke="var(--chart-accent, var(--accent))" strokeOpacity=".25" strokeDasharray="3 5" /><circle cx={x(selected.x)} cy={y(selected.value)} r="5" fill="var(--chart-accent, var(--accent))" stroke="var(--surface)" strokeWidth="2.5" /></>}
         </g>
+        {showGoal && <g className="chart-goal-marker" aria-hidden="true" transform={`translate(${W - right + 16} ${y(goalValue)})`}><path d="M0 -6 6 0 0 6 -6 0Z" /><circle r="1.5" /></g>}
         {[window.start, ...(span < 3 ? [] : W >= 400 ? [window.start + span / 3, window.start + span * 2 / 3] : [window.start + span / 2]), window.end].map((day, index, ticks) => <text key={index} aria-hidden="true" x={x(day)} y={H - 5} textAnchor={index === 0 ? 'start' : index === ticks.length - 1 ? 'end' : 'middle'} className="chart-label">{dateLabel(day, total > 365)}</text>)}
       </svg>
       <div className="chart-navigation"><span className="chart-gesture-hint"><MoveHorizontal size={14} />{t(isZoomed ? 'Desliza para explorar' : total > 3 ? 'Amplía para explorar' : 'Vista completa')}</span><div className="chart-zoom-controls" role="group" aria-label={t('Zoom del gráfico')}><button type="button" disabled={!isZoomed} onClick={() => zoom(1 / .6)} aria-label={t('Alejar gráfico')}><Minus size={16} /></button><button type="button" disabled={span <= Math.min(3, total) + .001} onClick={() => zoom(.6)} aria-label={t('Acercar gráfico')}><Plus size={16} /></button><button type="button" disabled={!isZoomed} onClick={() => { setView(null); viewRef.current = bounds; }} aria-label={t('Ver todo el período')}><Maximize2 size={14} /></button></div></div>

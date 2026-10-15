@@ -32,6 +32,11 @@ test('secure random OTP/session and domain-separated hashes', () => {
   assert.notEqual(keyedHash('secret', 'login', '123456'), keyedHash('secret', 'change', '123456'));
   assert.equal(safeEqual('abc', 'abc'), true); assert.equal(safeEqual('abc', 'ab'), false);
 });
+test('constant-time string comparison rejects differing UTF-8 lengths without throwing', () => {
+  assert.equal(safeEqual('é', 'a'), false);
+  assert.equal(safeEqual('é', 'é'), true);
+  assert.equal(safeEqual(null, ''), false);
+});
 test('step targets and goal display round-trip without accepting unsafe values', () => {
   const data = sample(); data.settings.stepGoal = 7000; data.settings.goalChartStyle = 'depth';
   assert.equal(validateSnapshot(data).settings.stepGoal, 7000);

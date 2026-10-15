@@ -195,3 +195,13 @@ Los scripts usan Node directamente para admitir rutas con `&`. `npm run dev` y `
 Platino añade pulido de facetas y destellos pausados en la copa, la meta, la navegación y el selector de tema. El movimiento reducido conserva una presentación estática. En Inicio, la vitrina completa y la celebración de Platino aparece «Eres el auténtico pro»: es un reconocimiento por los logros y no cambia la edición de la app.
 
 Cada logro nuevo recibe una felicitación explícita. Si se consiguen varios juntos, una sola ventana los enumera a todos; tocar un logro conseguido vuelve a felicitar al usuario. Oro y Platino mantienen sus celebraciones especiales.
+
+## Detalles de la versión 0.8.5
+
+El gráfico de peso muestra el objetivo numérico fuera del trazado. Un marcador distinguible señala su nivel cuando está dentro de la escala; las metas lejanas no comprimen la variación de los registros. El peso objetivo de «Tu próxima meta» también gana presencia. Los controles de zoom, períodos y unidades se conservan.
+
+Ambas ediciones incorporan **Enviar sugerencias**, con correo de respuesta opcional, comprobación de un solo uso, límites de envío y detección de duplicados en el servidor. No adjunta registros ni datos de salud. El envío funciona en la vista local; el APK necesita configurar el servidor HTTPS antes de publicarlo. Consulta [sugerencias y antispam](docs/FEEDBACK.md).
+
+Se restringe la compartición de archivos Android a las carpetas de exportaciones, se bloquean conexiones HTTP y las compilaciones incluyen una política de contenido. [Alcance y configuración de seguridad](docs/local-security.md).
+
+La bienvenida y Ajustes incluyen «Creada por GreenBean», con el isotipo oficial local autorizado por su propietario. La procedencia se documenta en [ASSETS.md](ASSETS.md).
