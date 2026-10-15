@@ -1,6 +1,4 @@
-import type { AppData, Language } from './model';
-import { nextRecapDate, progressRecap } from './recap';
-import { IS_PRO } from './edition';
+import type { Language } from './model';
 import { translate } from './i18n';
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications, type Weekday } from '@capacitor/local-notifications';
@@ -11,7 +9,8 @@ export type NotificationResult = { enabled: boolean; message: string };
 
 const REMINDER_ID_BASE = 810100;
 const TEST_ID = REMINDER_ID_BASE + 7;
-const RECAP_ID = 810200;
+// Remove any legacy recap when resetting; Basic has no recap scheduler.
+const LEGACY_RECAP_ID = 810200;
 const CHANNEL_ID = 'weight-exercise-daily';
 const OWN_IDS = Array.from({ length: 8 }, (_, index) => REMINDER_ID_BASE + index);
 const WEB_LIMITATION = 'Los recordatorios programados están disponibles en la app para teléfono. La vista de PC no puede avisarte con la app cerrada.';
@@ -68,35 +67,7 @@ async function cancelOwnedNotifications(): Promise<void> {
 
 export function cancelNotifications(): Promise<void> {
   return enqueue(async () => {
-    if (Capacitor.isNativePlatform()) await LocalNotifications.cancel({ notifications: [...OWN_IDS, RECAP_ID].map(id => ({ id })) });
-  });
-}
-
-/** Explicit enable may request permission. Refreshing stored data never does. */
-export function configureRecap(data: AppData, requestPermission = false): Promise<NotificationResult> {
-  const snapshot = structuredClone(data);
-  return enqueue(async () => {
-    const t = (source: string) => translate(source, snapshot.settings.language);
-    if (!Capacitor.isNativePlatform()) return { enabled: false, message: translate(WEB_LIMITATION, snapshot.settings.language) };
-    if (IS_PRO && snapshot.settings.recap.enabled && !/^([01]\d|2[0-3]):[0-5]\d$/.test(snapshot.settings.recap.time)) throw new Error(t('Elige una hora válida para tu recuento.'));
-    await LocalNotifications.cancel({ notifications: [{ id: RECAP_ID }] });
-    if (!IS_PRO || !snapshot.settings.recap.enabled) return { enabled: false, message: t('Recuentos desactivados.') };
-    const granted = requestPermission ? await requestNativePermission() : await getNotificationPermission() === 'granted';
-    if (!granted) return { enabled: false, message: translate(PERMISSION_DENIED, snapshot.settings.language) };
-    const body = progressRecap(snapshot);
-    if (!body) return { enabled: true, message: t('El recuento se programará cuando tengas dos registros en el período.') };
-    try {
-      await ensureChannel(snapshot.settings.language);
-      await LocalNotifications.schedule({ notifications: [{ id: RECAP_ID, title: snapshot.settings.language === 'en' ? 'Your progress · Pro' : 'Tu evolución · Pro', body,
-        channelId: CHANNEL_ID, isExactNotification: false,
-        schedule: { at: nextRecapDate(snapshot.settings.recap.period, snapshot.settings.recap.time) },
-        extra: { owner: 'weight-exercise', screen: 'stats' },
-      }] });
-      return { enabled: true, message: t('Tu próximo recuento está programado.') };
-    } catch {
-      await LocalNotifications.cancel({ notifications: [{ id: RECAP_ID }] });
-      return { enabled: false, message: t('No pudimos programar los recordatorios. Revisa los permisos del dispositivo e inténtalo otra vez.') };
-    }
+    if (Capacitor.isNativePlatform()) await LocalNotifications.cancel({ notifications: [...OWN_IDS, LEGACY_RECAP_ID].map(id => ({ id })) });
   });
 }
 

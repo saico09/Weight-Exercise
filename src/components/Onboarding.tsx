@@ -6,20 +6,17 @@ import { useI18n } from '../lib/i18n';
 import { Brand, HeightSwitch, LanguageSwitch, UnitSwitch } from './UI';
 import RulerPicker from './RulerPicker';
 import BirthDatePicker, { defaultBirthDate } from './BirthDatePicker';
-import AccentPicker from './AccentPicker';
-import { IS_PRO } from '../lib/edition';
 import './onboarding-controls.css';
 
 type OnboardingProps = {
   settings: Settings;
   onTheme: (theme: Theme) => void;
   onLanguage: (language: Language) => void;
-  onAccentColor: (color: string | null) => void;
   onFinish: (profile: Profile, settings: Settings) => void;
   onDemo: () => void;
 };
 
-export default function Onboarding({ settings, onTheme, onLanguage, onAccentColor, onFinish, onDemo }: OnboardingProps) {
+export default function Onboarding({ settings, onTheme, onLanguage, onFinish, onDemo }: OnboardingProps) {
   const { t } = useI18n();
   const [step, setStep] = useState(0);
   const [chosen, setChosen] = useState<Theme | null>(null);
@@ -86,7 +83,6 @@ export default function Onboarding({ settings, onTheme, onLanguage, onAccentColo
         <span className="eyebrow">{t('DA EL PRIMER PASO')}</span>
         <h1>{t('Tu progreso.')}<br /><span>{t('Tu energía.')}</span></h1>
         <p>{t('Elige el estilo que mejor te representa')}</p>
-        {IS_PRO && <div className="onboarding-accent"><AccentPicker theme={theme} value={config.accentColor} onChange={accentColor => { setConfig(current => ({ ...current, accentColor })); onAccentColor(accentColor); }} /></div>}
       </div>
       <div className={`theme-panels ${chosen ? `chosen-${chosen}` : ''}`}>
         <button className={`theme-panel dark-panel ${chosen === 'dark' ? 'chosen' : ''}`} onClick={() => choose('dark')} aria-pressed={chosen === 'dark'}>

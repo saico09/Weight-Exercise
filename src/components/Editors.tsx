@@ -6,6 +6,7 @@ import { useI18n } from '../lib/i18n';
 import BirthDatePicker from './BirthDatePicker';
 import { HabitChoice, HeightSwitch, Modal, UnitSwitch } from './UI';
 import Motivation from './Motivation';
+import { ProfilePhotoPicker } from './ProfileIdentity';
 import type { MotivationPreferences } from '../lib/motivation';
 
 export function RecordEditor({ data, record, daily, initialDate, onClose, onSave, onDelete, onMotivationChange }: { data: AppData; record?: DailyRecord; daily: boolean; initialDate?: string; onClose: () => void; onSave: (record: DailyRecord, initial: boolean) => void; onDelete: (id: string) => void; onMotivationChange: (value: MotivationPreferences) => void }) {
@@ -44,6 +45,8 @@ export function RecordEditor({ data, record, daily, initialDate, onClose, onSave
 export function ProfileEditor({ data, onClose, onSave }: { data: AppData; onClose: () => void; onSave: (profile: Profile) => void }) {
   const { t, locale } = useI18n();
   const profile = data.profile!;
+  const [photo, setPhoto] = useState<string | null>(profile.photo ?? null);
+  const [photoBusy, setPhotoBusy] = useState(false);
   const [weightUnit, setWeightUnit] = useState(data.settings.weightUnit);
   const [heightUnit, setHeightUnit] = useState(data.settings.heightUnit);
   const [goal, setGoal] = useState(String(Number(fromKg(profile.goalWeightKg, weightUnit).toFixed(2))));
@@ -56,13 +59,15 @@ export function ProfileEditor({ data, onClose, onSave }: { data: AppData; onClos
     e.preventDefault();
     const goalWeightKg = canonicalGoal, heightCm = canonicalHeight, years = birthDate ? ageFromBirthDate(birthDate) : profile.age;
     if (!goal || !height || !Number.isFinite(goalWeightKg) || !Number.isFinite(heightCm) || goalWeightKg < 10 || goalWeightKg > 650 || heightCm < 50 || heightCm > 300 || !Number.isInteger(years) || years < 5 || years > 120) return setError('Revisa los valores: peso 10–650 kg, altura 50–300 cm y edad 5–120 años.');
-    onSave({ ...profile, goalWeightKg, heightCm, age: years, ...(birthDate ? { birthDate } : {}) });
+    if (photoBusy) return;
+    onSave({ ...profile, photo: photo ?? undefined, goalWeightKg, heightCm, age: years, ...(birthDate ? { birthDate } : {}) });
   }}>
+    <ProfilePhotoPicker value={photo} onChange={setPhoto} onBusy={setPhotoBusy} />
     <div className="form-row"><label className="field">{t('Peso objetivo')}<input aria-label={t('Peso objetivo')} type="number" step="any" value={goal} onChange={e => { setGoal(e.target.value); setCanonicalGoal(toKg(Number(e.target.value), weightUnit)); }} required /></label><UnitSwitch value={weightUnit} onChange={u => { setGoal(String(Number(fromKg(canonicalGoal, u).toFixed(2)))); setWeightUnit(u); }} /></div>
     <div className="form-row"><label className="field">{t('Altura')} ({heightUnit === 'cm' ? 'cm' : t('pies decimales')})<input aria-label={t('Altura')} type="number" step="any" value={height} onChange={e => { setHeight(e.target.value); setCanonicalHeight(Number(e.target.value) * (heightUnit === 'cm' ? 1 : 30.48)); }} required /></label><HeightSwitch value={heightUnit} onChange={u => { setHeight(String(Number((canonicalHeight * (u === 'cm' ? 1 : 1 / 30.48)).toFixed(3)))); setHeightUnit(u); }} /></div>
     {heightUnit === 'ft' && <p className="input-hint">{t('Equivale a {height}. Usa pies en decimales.', { height: displayHeight(canonicalHeight, 'ft', locale) })}</p>}
     <div className="profile-birthday"><span className="field-label">{t('Fecha de nacimiento')}</span>{birthDate ? <><BirthDatePicker value={birthDate} onChange={setBirthDate} /><p className="input-hint">{t('{age} años', { age: ageFromBirthDate(birthDate) })}</p></> : <div className="legacy-age"><p>{t('Edad guardada: {age} años.', { age: profileAge(profile) })}</p><button type="button" className="text-link" onClick={() => { const today = new Date(); today.setFullYear(today.getFullYear() - profile.age); setBirthDate(dateKey(today)); }}><CalendarDays size={16} />{t('Añadir fecha de nacimiento')}</button></div>}</div>
     <p className="footnote">{t('Para cambiar tu peso actual, edita tu último registro. El punto de partida se elige en el historial.')}</p>
-    {error && <p className="error-message" role="alert">{t(error)}</p>}<button className="primary-button full-width" type="submit"><Save size={17} />{t('Guardar ajustes')}</button>
+    {error && <p className="error-message" role="alert">{t(error)}</p>}<button className="primary-button full-width" type="submit" disabled={photoBusy}><Save size={17} />{t('Guardar ajustes')}</button>
   </form></Modal>;
 }

@@ -1,145 +1,82 @@
-# Weight&Exercise · Basic v0.6
+# Weight&Exercise · Basic v0.7
 
-**Esta carpeta corresponde a la rama `basic`.** Su vista local usa el puerto **5174** y su APK lleva el identificador `cl.forma.weightexercise.basic`. La infraestructura de cuenta y respaldo se ejecuta desde la carpeta de la rama `pro`; Basic funciona completamente sin servidor.
+Esta carpeta corresponde a la rama **`basic`**. Su vista local usa el puerto **5174** y su APK tiene el identificador `cl.forma.weightexercise.basic`. Es una app Android gratuita de registro de peso, ejercicio y alimentación, con datos guardados en el propio dispositivo. No necesita cuenta ni servidor.
 
-App Android para registrar peso, ejercicio y alimentación, con interfaz adaptable a teléfono y PC. Ionic React, TypeScript y Capacitor. Los registros se guardan primero en el dispositivo; Pro incorpora un prototipo de respaldo manual con cuenta, probado en un servidor Docker local.
+## Novedades
 
-## Novedades de Basic v0.6
+- Los controles de Inicio mantienen su ubicación en pantallas pequeñas. Las tarjetas de estadísticas tienen dimensiones uniformes mientras están contraídas; al tocarlas se amplían al ancho de dos columnas y las siguientes se reacomodan.
+- Foto de perfil personalizable y copa actual junto a «Tú». La imagen se prepara en el dispositivo antes de guardarse.
+- Los logros de Oro y Platino desbloquean sus temas especiales en **Basic y Pro**, sin compra. Son recompensas por constancia, distintas de los temas comerciales de Pro.
+- Algunas opciones Pro se muestran como vistas informativas bloqueadas: informes, colores, estilos Aurora/Sand, recuentos y cuenta/pasos. Al tocarlas se explica que Pro es una app independiente y que estará disponible en Google Play. No hay compras, precios ni enlaces de tienda simulados.
 
-- Inicio adapta su frase al tema: **«Activa el beast mode»** en Dark y **«Tu mejor versión»** en Light, con traducción al inglés.
-- Las cuatro estadísticas esenciales incluyen un mini gráfico junto al valor, sin aumentar la altura habitual de la tarjeta. Peso actual y cambio total muestran su evolución desde el inicio elegido; mínimo y máximo muestran sus valores acumulados en cada fecha.
-- Tocar una tarjeta la amplía al ancho de dos columnas y reacomoda las siguientes. El gráfico crece y muestra fechas, rango y explicación; otro toque la contrae. También funciona con teclado y respeta la preferencia de movimiento reducido. Sin historial suficiente se muestra un punto o un estado vacío, sin inventar mediciones.
+## Una separación real de ediciones
 
-Basic conserva sus dos temas y estadísticas esenciales. Los temas adicionales, promedios semanales, informes y cuenta siguen siendo funciones Pro.
+Basic y Pro se desarrollan en ramas y carpetas independientes. Basic **no incluye** el código de cuenta/respaldo, servidor, correo, informes PDF/Excel, recuentos de progreso, Health Connect, gráficos 3D ni selector de colores personalizados. Tampoco incluye sus dependencias nativas o de exportación. Cambiar una preferencia o un indicador de edición no activa esas funciones: los botones solo abren una descripción de la app Pro.
 
-## Basic y Pro
+`npm run build` comprueba esta separación antes y después de compilar. `scripts/check-basic-boundary.mjs` rechaza módulos, dependencias, permisos y marcadores de ejecución Pro en el código y en el resultado web. Es una defensa contra empaquetar accidentalmente funciones de pago; no pretende impedir que alguien modifique por completo un APK.
 
-Las ediciones se mantienen en las ramas **`basic`** y **`pro`**, con dos carpetas de trabajo independientes para ejecutarlas simultáneamente. `src/lib/edition.ts` define la edición de cada rama. Esta separación es para desarrollo y revisión: todavía no hay compras, cobros ni integración con Google Play Billing.
+Las preferencias antiguas de color personalizado y recuentos se ignoran al cargar datos Basic. Los recordatorios diarios y la personalización del motivo siguen funcionando con normalidad.
 
-| Funcionalidad | Basic gratuita | Pro |
-| --- | --- | --- |
-| Registros e historial completo, sin límite de días | Sí | Sí |
-| Editar registros, hábitos y punto de partida | Sí | Sí |
-| Temas Dark y Light; español e inglés; kg/lb y cm/pies | Sí | Sí |
-| Gráfico de peso, meta, IMC y estadísticas esenciales | Sí | Sí |
-| Mini gráficos y tarjetas de estadísticas expandibles | Sí | Sí |
-| Logros, copas y celebraciones | Sí | Sí |
-| Motivación con foto y mensaje personalizables | Sí | Sí |
-| Recordatorio para registrar el peso | Sí | Sí |
-| Colores personalizados | — | Sí |
-| Promedios y comparación entre semanas | — | Sí |
-| Informes PDF según tema y color | — | Sí |
-| Notificaciones de recuento semanal o mensual | — | Sí |
-| Cuenta por código de correo y respaldo manual | — | Prueba local en PC |
+## Incluido en Basic
 
-El botón **Necesito Motivación** aparece en Inicio y en el editor diario. Abre un gatito con «Hazlo por él»; permite reemplazar la foto y el mensaje. Las fotos se redimensionan y se eliminan sus metadatos en el dispositivo antes de guardarlas. La imagen preparada ocupa como máximo unos 183 KiB.
+- Registros e historial sin límite de días; edición de peso, ejercicio, alimentación y punto de partida.
+- Dark y Light, más los estilos Oro/Platino al conseguir sus copas.
+- Español e inglés; kg/lb y cm/pies.
+- Gráfico de peso, avance hacia la meta, IMC y cuatro estadísticas esenciales con mini gráficos y expansión.
+- Logros, copas y felicitaciones al desbloquear hitos nuevos.
+- Perfil con foto y motivación con imagen y mensaje personalizables.
+- Recordatorio para registrar el peso en Android.
 
-## Abrir ambas versiones en tu PC
+Los días sin registro no se cuentan como descanso. Los gráficos no inventan mediciones ni sustituyen las ausencias por cero.
 
-Requisitos: Node.js 22 o superior. Ejecuta `npm install` en cada carpeta de trabajo. Para la nube local, instala e inicia Docker Desktop con el motor Linux.
+## Abrir la app en el PC
 
-Desde la carpeta de la rama `pro`, indicando la carpeta real de la rama `basic`:
+Requisito: Node.js 22 o superior.
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\start-both.ps1 -BasicPath 'C:\ruta\WeightExercise-Basic'
-```
-
-| Servicio | Dirección local |
-| --- | --- |
-| Pro | http://127.0.0.1:5173 |
-| Basic | http://127.0.0.1:5174 |
-| Bandeja de pruebas, cuando Pro usa Mailpit | http://127.0.0.1:8025 |
-| Estado de la API | http://127.0.0.1:3001/api/health |
-
-También puedes iniciar cada interfaz desde su propia carpeta:
-
-```powershell
-# En la carpeta de la rama pro
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\start-preview.ps1 -Port 5173
-
-# En la carpeta de la rama basic
+npm install
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\start-preview.ps1 -Port 5174
 ```
 
-`INICIAR-APP.cmd` inicia la vista de la carpeta actual. El iniciador reutiliza una vista existente de Weight&Exercise en el puerto elegido y no detiene procesos ajenos. `-NoBrowser` evita abrir el navegador. Los diagnósticos quedan en `.preview-server.log` y `.preview-errors.log` de cada carpeta.
+Abre [Basic en este PC](http://127.0.0.1:5174/). También puedes ejecutar `INICIAR-APP.cmd`. El iniciador reutiliza una vista existente del proyecto y conserva los procesos ajenos; `-NoBrowser` evita abrir el navegador. Los diagnósticos quedan en `.preview-server.log` y `.preview-errors.log`.
 
-**Mantén la misma dirección para tus pruebas:** `localhost`, `127.0.0.1` y distintos puertos tienen almacenamientos separados. Basic y Pro no mezclan sus historiales locales.
+Para abrir ambas ediciones usa `scripts/start-both.ps1` **desde la rama Pro**, indicando la carpeta de Basic. El servidor de cuenta y respaldo se administra exclusivamente desde Pro; esta rama no contiene infraestructura Docker.
 
-## Cuenta y respaldo local de Pro
-
-Para iniciar la infraestructura desde la rama `pro`:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\start-local-cloud.ps1
-```
-
-El script de Pro crea secretos locales en `.env.local`, excluido de Git, y arranca PostgreSQL, la API y Mailpit. Con el modo `mailpit`, los mensajes quedan en la bandeja de pruebas de este PC; con el modo `real`, Pro usa SMTP autenticado con TLS. Consulta la documentación de la rama `pro` para su configuración vigente. Basic no necesita ni utiliza estos servicios. PostgreSQL no publica un puerto al host. API y Mailpit escuchan únicamente en `127.0.0.1`.
-
-En Pro puedes crear una cuenta desde la bienvenida o Ajustes, elegir nombre de usuario, iniciar sesión con código, cambiar el correo y eliminar la cuenta. Un código por correo es acceso sin contraseña, **no autenticación de dos factores**.
-
-El respaldo es manual: **Respaldar ahora** reemplaza la copia de esa cuenta; **Restaurar respaldo** reemplaza los datos locales después de confirmar. Iniciar sesión no sube ni mezcla registros. Cerrar sesión conserva los datos del dispositivo; eliminar la cuenta borra su copia del servidor, pero también conserva los datos locales. El reinicio de la app borra su información local y es una acción distinta.
-
-El prototipo está preparado para evaluar el consumo antes de usar Lightsail. PostgreSQL tiene un límite de 256 MiB, la API 192 MiB y Mailpit 64 MiB: son límites de contenedor, no mediciones ni una garantía de capacidad bajo carga. La base usa buffers pequeños, pocas conexiones y registros de diagnóstico acotados. Mailpit es solo para desarrollo. No se ha desplegado ni modificado ningún recurso de AWS.
-
-Para detener la infraestructura conservando los datos:
-
-```powershell
-docker compose --env-file .env.local stop
-```
-
-El volumen Docker conserva la base al reiniciar servicios. No uses `down -v` si deseas conservarla. Un volumen local no sustituye un respaldo externo; la estrategia de copias y restauración debe validarse antes de producción.
+Mantén la misma dirección en tus pruebas: `localhost`, `127.0.0.1` y distintos puertos tienen almacenamientos separados. Basic y Pro tampoco mezclan sus historiales.
 
 ## Android instalable
 
-Los APK de prueba se generan localmente en:
-
-- `output/WeightExercise-Pro-debug.apk`
-- `output/WeightExercise-Basic-debug.apk`
-
-Pro conserva `cl.forma.weightexercise`; Basic utiliza `cl.forma.weightexercise.basic`. Pueden instalarse juntas para comparar las ediciones y mantienen datos separados. Pro conserva la identidad anterior para actualizarla con la misma firma de desarrollo. No desinstales la app si deseas conservar sus datos locales.
-
-Copia el APK al teléfono, ábrelo desde el administrador de archivos y permite la instalación desde ese administrador si Android lo solicita. Los APK incluyen las imágenes y fuentes necesarias para funcionar sin la PC.
-
-**La cuenta y el respaldo están deshabilitados en estos APK** hasta disponer de un backend de producción por HTTPS. En el PC se pueden probar con Docker. La motivación, los gráficos y el resto de funciones locales siguen disponibles; Pro prepara informes para guardar o compartir mediante el selector nativo de Android. La entrega de notificaciones y el selector de compartir requieren validación adicional en un teléfono físico.
-
-El proyecto requiere JDK 21 y Android SDK 36; admite Android 7.0 (API 24) o superior. Para instalar las herramientas oficiales gratuitas tras aceptar su licencia:
+El proyecto usa Ionic React, TypeScript y Capacitor. Requiere JDK 21 y Android SDK 36; admite Android 7.0 (API 24) o superior. Para preparar las herramientas oficiales gratuitas, tras leer y aceptar la [licencia del SDK](https://developer.android.com/studio/terms):
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\setup-android-sdk.ps1 -AcceptSdkLicense
-```
-
-Lee previamente la [licencia del Android SDK](https://developer.android.com/studio/terms). El script instala el SDK dentro de `.tools/android-sdk`; también puedes usar Android Studio. Para compilar desde la rama deseada:
-
-```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-android.ps1
 ```
 
-El script compila la web, sincroniza Capacitor y ejecuta Gradle. Genera `android/app/build/outputs/apk/debug/app-debug.apk` y la copia local indicada al terminar. Los nombres Pro/Basic anteriores identifican las copias de entrega de cada edición. Son compilaciones firmadas para desarrollo; no son versiones publicadas en Google Play. La distribución prevista es solo **Google Play**; firma de publicación, ficha de tienda y compras quedan como trabajo posterior.
+El script compila la web, sincroniza los plugins de Basic y genera `android/app/build/outputs/apk/debug/app-debug.apk`, con una copia en `output/WeightExercise-debug.apk`. La entrega se identifica como `WeightExercise-Basic-debug.apk`. Es una compilación firmada para desarrollo, todavía sin publicar en Google Play.
 
-## Datos, recordatorios e informes
+Copia el APK al teléfono y ábrelo desde su administrador de archivos. Permite la instalación desde ese administrador si Android lo solicita. Las fotos y fuentes incluidas funcionan sin la PC. Basic y Pro pueden instalarse juntas y mantienen datos independientes. Para conservar tu historial, actualiza con la misma firma sin desinstalar.
 
-En Android, [Capacitor Preferences](https://capacitorjs.com/docs/apis/preferences) guarda los datos en las preferencias privadas de la app; en navegador se usa el almacenamiento del sitio. La configuración nativa desactiva el respaldo y la transferencia automática de Android. Borrar datos del sitio, desinstalar o borrar los datos de la app puede eliminar los registros.
+## Datos y recordatorios
 
-Los recordatorios solicitan permiso al activarlos. Basic ofrece el aviso de registro diario; Pro añade un recuento semanal o mensual que compara registros con sus fechas, peso y hábitos. Los textos se actualizan con la información disponible cuando se programa el aviso; no existe un servicio de seguimiento en segundo plano que invente nuevas mediciones. Android puede retrasarlos por ahorro de batería. La vista web no garantiza avisos si el navegador está cerrado.
+En Android, Capacitor Preferences guarda los datos en las preferencias privadas de la app; el navegador usa almacenamiento del sitio. El respaldo y la transferencia automática de Android están desactivados. Borrar datos, desinstalar o limpiar el almacenamiento del sitio puede eliminar los registros: Basic no tiene respaldo en la nube.
 
-Los informes Pro se generan localmente desde Estadísticas, con un rango de fechas elegido. Incluyen resumen, curva de peso, hábitos y tabla de registros. Respetan el idioma, la unidad, el tema y el color actual. Para regenerar muestras con datos ficticios:
+Las fotos de perfil y motivación se redimensionan y se vuelven a codificar localmente, descartando los metadatos originales. Elegirlas no envía el archivo a un servidor.
 
-```powershell
-node scripts/preview-reports.mjs
-```
+El permiso de notificaciones se pide al activar el recordatorio. Los avisos programados funcionan en Android y pueden retrasarse por ahorro de batería. La vista web solo permite una prueba explícita del navegador; no garantiza avisos con la app cerrada. Basic no programa recuentos semanales o mensuales.
 
-El IMC es una referencia, no un diagnóstico. Se muestran categorías adultas desde los 20 años; la app no calcula percentiles para menores. [Referencia del CDC](https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html).
+El IMC es una referencia, no un diagnóstico. Se muestran categorías adultas desde los 20 años; no se calculan percentiles para menores. [Referencia del CDC](https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html).
 
 ## Desarrollo
 
 ```powershell
-npm run dev       # Vista de desarrollo
-npm run build     # TypeScript y compilación web
+npm run dev       # Vista de desarrollo en 5174
+npm run build     # Verificación de edición, TypeScript y compilación web
 npm run preview   # Servir dist/
-npm test          # Pruebas de la app
+npm test          # Pruebas de las funciones Basic
 npm run android   # Compilar, sincronizar y abrir Android Studio
 ```
 
-Los scripts usan Node directamente para admitir rutas con `&`. `npm run dev` y `npm run preview` escuchan en la red local; los iniciadores de Windows escuchan solo en `127.0.0.1`.
+Los comandos usan Node directamente para admitir rutas con `&`. `npm run dev` y `npm run preview` escuchan en la red local; los iniciadores de Windows escuchan solo en `127.0.0.1`.
 
-[Ideas y prioridades de Pro](docs/PRO-ROADMAP.md) · [Fotografías y licencias](ASSETS.md)
+[Fotografías y licencias](ASSETS.md) · [Ideas de la edición Pro](docs/PRO-ROADMAP.md)

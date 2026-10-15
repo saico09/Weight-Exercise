@@ -1,0 +1,48 @@
+/* Earned palettes are available in both editions; all assets and typefaces are local. */
+ion-app[data-theme=gold] { --bg:#19160f; --surface:#242017; --surface-raised:#302a1e; --surface-soft:#201c14; --text:#fff5df; --muted:#b7a78b; --faint:#93866d; --border:#49402e; --track:#443a28; --body-font:'DM Sans',sans-serif; --heading-font:'Barlow Condensed',sans-serif; --radius:14px; --shadow:0 12px 36px #08060020; }
+[data-theme=gold] .app-root { background:radial-gradient(ellipse at 90% 0%,#b98b3220,transparent 48%),var(--bg); }
+[data-theme=gold] .section-heading h1 { font-size:clamp(34px,4vw,47px); font-weight:600; letter-spacing:.25px; text-transform:none; }
+[data-theme=gold] .card h2 { font-size:23px; font-weight:600; letter-spacing:.3px; }
+[data-theme=gold] .card { border-top-color:#79613980; }
+[data-theme=gold] .bottom-nav { border-radius:16px; background:#272117ef; box-shadow:0 8px 30px #08060035; }
+[data-theme=gold] .big-weight { font-size:52px; letter-spacing:-1.5px; }
+[data-theme=gold] .eyebrow { letter-spacing:2.5px; }
+[data-theme=gold] .brand-mark { color:var(--accent-ink); }
+ion-app[data-theme=platinum] { --bg:#edf0f4; --surface:#fafbfdeb; --surface-raised:#ffffff; --surface-soft:#e3e9f1; --text:#293443; --muted:#657489; --faint:#7b899c; --border:#cbd4df; --track:#d5deea; --body-font:'Manrope',sans-serif; --heading-font:'Manrope',sans-serif; --radius:24px; --shadow:0 12px 36px #23334809; }
+[data-theme=platinum] .app-root { background:radial-gradient(ellipse at 88% 0%,#ffffffcc,transparent 48%),linear-gradient(135deg,#e9edf3,#f3f5f8 75%); }
+[data-theme=platinum] .section-heading h1 { font-size:clamp(28px,4vw,38px); font-weight:500; letter-spacing:-1.5px; text-transform:none; }
+[data-theme=platinum] .card h2 { font-size:19px; font-weight:500; letter-spacing:-.55px; }
+[data-theme=platinum] .card { border-top-color:#ffffff; }
+[data-theme=platinum] .bottom-nav { border-radius:24px; background:#f8fafdf2; box-shadow:0 8px 30px #23334812; }
+[data-theme=platinum] .big-weight { font-size:51px; letter-spacing:-2px; }
+[data-theme=platinum] .brand-mark { color:var(--accent-ink); }
+[data-theme=platinum] .soft-icon.cyan { color:#4c6d88; background:#739bb51a; }
+[data-theme=platinum] .streak { color:#8a6930; }
+.reward-themes { margin-top:23px; padding-top:20px; border-top:1px solid var(--border); }
+.reward-themes-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.reward-themes-heading h3 { font:600 12px/1.4 var(--body-font); color:var(--text); }
+.reward-themes-heading > svg { color:var(--accent-ink); }
+.reward-themes > p { font-size:10px; line-height:1.65; color:var(--muted); margin-top:6px; max-width:42ch; }
+.reward-themes-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:14px; }
+.reward-theme { min-width:0; padding:8px; text-align:left; border:1px solid var(--border); border-radius:14px; display:flex; flex-direction:column; gap:7px; transition:border-color .2s,background .2s; }
+.reward-theme[aria-disabled=true] { cursor:default; }
+.reward-theme.selected { border-color:var(--accent-ink); background:var(--accent-soft); }
+.reward-theme:not([aria-disabled=true]):hover { border-color:var(--accent-ink); }
+.reward-theme-preview { min-height:106px; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:9px; position:relative; isolation:isolate; }
+.reward-theme-gold .reward-theme-preview { color:#efd080; background:linear-gradient(120deg,#19160f,#3a2f1a 50%,#211c13); border:1px solid #695734; }
+.reward-theme-platinum .reward-theme-preview { color:#536a83; background:linear-gradient(120deg,#d3dce8,#ffffff 48%,#cbd6e4); border:1px solid #bac7d8; }
+.reward-metal-medal { width:46px; height:46px; border:1px solid currentColor; border-radius:50%; display:grid; place-items:center; box-shadow:inset 0 0 0 4px #ffffff07; }
+.reward-theme-platinum .reward-metal-medal { background:#ffffff65; }
+.reward-theme-edition { font:600 6.5px/1.3 'DM Sans',sans-serif; letter-spacing:1.8px; }
+.reward-theme-preview-line { position:absolute; width:130%; height:1px; top:24%; left:-15%; transform:rotate(-35deg); background:linear-gradient(90deg,transparent,currentColor,transparent); opacity:.18; z-index:-1; }
+.reward-theme-title { display:flex; align-items:center; justify-content:space-between; gap:6px; margin-top:2px; color:var(--text); }
+.reward-theme-title strong { font-size:12px; font-weight:600; }
+.reward-theme-title svg { color:var(--muted); }
+.reward-theme.selected .reward-theme-title svg { color:var(--accent-ink); }
+.reward-theme-ready { width:5px; height:5px; border-radius:50%; background:var(--accent-ink); }
+.reward-theme-status { font-size:9px; color:var(--muted); line-height:1.5; min-height:2.9em; }
+.reward-theme-progress { display:block; overflow:hidden; height:3px; background:var(--track); border-radius:2px; margin-top:auto; }
+.reward-theme-progress > span { height:100%; width:100%; display:block; background:var(--accent-ink); border-radius:2px; transform-origin:left center; }
+.reward-theme-count { font-size:8px; color:var(--muted); line-height:1.4; }
+@media(max-width:370px) { .reward-themes-grid { gap:8px; } .reward-theme { padding:7px; } .reward-theme-preview { min-height:94px; } .reward-theme-edition { font-size:6px; letter-spacing:1.1px; } [data-theme=gold] .section-heading h1,[data-theme=platinum] .section-heading h1 { overflow-wrap:break-word; } }
+@media(prefers-reduced-motion:reduce) { .reward-theme { transition:none; } }

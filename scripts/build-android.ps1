@@ -41,11 +41,13 @@ try {
 
     $env:JAVA_HOME = $javaHome
     $env:ANDROID_HOME = $sdkRoot
+    Invoke-Checked -Executable $nodeCommand.Source -Arguments @('scripts/check-basic-boundary.mjs')
     if (-not $SkipWebBuild) {
         Invoke-Checked -Executable $nodeCommand.Source -Arguments @('node_modules/typescript/bin/tsc', '-b')
         Invoke-Checked -Executable $nodeCommand.Source -Arguments @('node_modules/vite/bin/vite.js', 'build')
     }
     if (-not (Test-Path -LiteralPath 'dist/index.html')) { throw 'No existe dist/index.html. Compila primero la app web.' }
+    Invoke-Checked -Executable $nodeCommand.Source -Arguments @('scripts/check-basic-boundary.mjs', '--bundle')
     Invoke-Checked -Executable $nodeCommand.Source -Arguments @('node_modules/@capacitor/cli/bin/capacitor', 'sync', 'android')
     Invoke-Checked -Executable (Join-Path $javaHome 'bin/java.exe') -Arguments @(
         '-classpath', 'android/gradle/wrapper/gradle-wrapper.jar',

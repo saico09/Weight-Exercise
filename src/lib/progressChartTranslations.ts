@@ -3,6 +3,8 @@ export const progressChartEnglish: Record<string, string> = {
   'Tu mejor versión': 'Your best self',
   'Cada paso cuenta': 'Every step counts',
   'Ve a tu ritmo': 'Go at your own pace',
+  'Tu constancia brilla': 'Your dedication shines',
+  'Cada paso deja huella': 'Every step makes a mark',
   'Variación': 'Change',
   'Variación desde {weight} {unit}': 'Change from {weight} {unit}',
   'Variación de peso respecto de la referencia': 'Weight change from the reference',

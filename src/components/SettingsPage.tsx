@@ -2,19 +2,18 @@ import { useState } from 'react';
 import { Bell, Check, ChevronRight, Moon, ShieldCheck, Sparkles, Sun, Trash2 } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import type { AppData, Settings } from '../lib/model';
-import { configureNotifications, configureRecap, testNotification } from '../lib/notifications';
-import { progressRecap } from '../lib/recap';
-import { IS_PRO, EDITION, APP_VERSION } from '../lib/edition';
+import { configureNotifications, testNotification } from '../lib/notifications';
+import { EDITION, APP_VERSION } from '../lib/edition';
 import { useI18n } from '../lib/i18n';
 import { HeightSwitch, LanguageSwitch, SectionHeading, UnitSwitch } from './UI';
-import AccentPicker from './AccentPicker';
+import ProTeaser from './ProTeaser';
+import RewardThemes from './RewardThemes';
 
 export default function SettingsPage({ data, demo, onSettings, onReset, notify }: { data: AppData; demo: boolean; onSettings: (settings: Partial<Settings>) => void; onReset: () => void; notify: (message: string) => void }) {
   const { t, language, locale } = useI18n();
   const [reminder, setReminder] = useState(data.settings.notifications);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
-  const [recap, setRecap] = useState(data.settings.recap);
   const native = Capacitor.isNativePlatform();
   const applyReminder = async (enabled: boolean) => {
     if (demo) { setMessage(t('Estás explorando la demo. Configura tus recordatorios cuando comiences tu propio camino.')); return; }
@@ -36,7 +35,8 @@ export default function SettingsPage({ data, demo, onSettings, onReset, notify }
           <div className="theme-mini"><div className="mini-line" /><span>{theme === 'dark' ? 'Beast mode' : t('Minimalista')}</span><div className="mini-chart"><svg viewBox="0 0 160 44" aria-hidden="true"><path d="M0 3 18 11 35 8 52 20 70 17 87 29 104 26 122 34 140 32 160 42" fill="none" stroke="currentColor" strokeWidth="2.5" /></svg></div></div>
           <div className="settings-theme-label"><span>{theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}{theme === 'dark' ? 'Dark' : 'Light'}</span><i>{data.settings.theme === theme && <Check size={13} />}</i></div><span className="theme-description">{t(theme === 'dark' ? 'Intenso. Enfocado. Premium.' : 'Ligero. Sereno. Muy tú.')}</span>
         </button>)}</div>
-        {IS_PRO && <div className="settings-accent"><span>{t('Color principal')}</span><AccentPicker theme={data.settings.theme} value={data.settings.accentColor} onChange={accentColor => onSettings({ accentColor })} /></div>}
+        <RewardThemes data={data} onSelect={theme => onSettings({ theme })} />
+        <ProTeaser feature="style" compact />
         <div className="settings-language"><span>{t('Idioma')}</span><LanguageSwitch value={language} onChange={next => { onSettings({ language: next }); setMessage(''); }} /></div>
       </section>
       <section className="card notification-card">
@@ -59,20 +59,14 @@ export default function SettingsPage({ data, demo, onSettings, onReset, notify }
         }}>{t('Enviar una prueba')}<ChevronRight size={15} /></button>
         {message && <p className="notice" role="status">{message}</p>}
         <p className="footnote">{t('El permiso se pide al activar. Si lo rechazaste, puedes habilitarlo en los ajustes de tu dispositivo.')}</p>
-        {IS_PRO && <div className="recap-settings"><div className="card-head"><h3>{t('Tu evolución en un aviso')}</h3><span className="edition-badge">PRO</span></div>
-          <div className="segmented">{(['weekly', 'monthly'] as const).map(period => <button key={period} className={recap.period === period ? 'active' : ''} onClick={() => setRecap(value => ({ ...value, period }))}>{t(period === 'weekly' ? 'Semanal' : 'Mensual')}</button>)}</div>
-          <label className="field">{t('Hora del recuento')}<input type="time" value={recap.time} onChange={e => setRecap(value => ({ ...value, time: e.target.value }))} /></label>
-          <p className="notice">{progressRecap({ ...data, settings: { ...data.settings, recap } }) || t('El recuento se programará cuando tengas dos registros en el período.')}</p>
-          <p className="footnote">{t('Los domingos o el primer día del mes. Se prepara el próximo aviso con tus últimos datos y se actualiza al abrir la app o registrar un cambio.')}</p>
-          <button className="secondary-button full-width" disabled={busy || demo || !recap.time} onClick={async () => { setBusy(true); try { const next = { ...recap, enabled: true }; const result = await configureRecap({ ...data, settings: { ...data.settings, recap: next } }, true); onSettings({ recap: { ...next, enabled: result.enabled } }); setMessage(t(result.message)); } catch { setMessage(t('No pudimos configurar los recordatorios.')); } finally { setBusy(false); } }}>{t(data.settings.recap.enabled ? 'Guardar recuento' : 'Activar recuentos')}</button>
-          {data.settings.recap.enabled && <button className="text-link centered" disabled={busy} onClick={async () => { setBusy(true); try { const next = { ...recap, enabled: false }; await configureRecap({ ...data, settings: { ...data.settings, recap: next } }); onSettings({ recap: next }); } catch { setMessage(t('No pudimos configurar los recordatorios.')); } finally { setBusy(false); } }}>{t('Desactivar recuentos')}</button>}
-        </div>}
+        <ProTeaser feature="recaps" compact />
       </section>
       <section className="card units-card">
         <div className="card-head"><div><span className="eyebrow">{t('03 / TUS MEDIDAS')}</span><h2>{t('Como te acomode.')}</h2></div></div>
         <div className="list-row"><div><strong>{t('Peso')}</strong><span>{t('Kilogramos o libras')}</span></div><UnitSwitch value={data.settings.weightUnit} onChange={weightUnit => onSettings({ weightUnit })} /></div>
         <div className="list-row"><div><strong>{t('Altura')}</strong><span>{t('Centímetros o pies y pulgadas')}</span></div><HeightSwitch value={data.settings.heightUnit} onChange={heightUnit => onSettings({ heightUnit })} /></div>
       </section>
-      <section className="card privacy-card"><div className="soft-icon"><ShieldCheck size={22} /></div><h3>{t('Tu historia se queda contigo.')}</h3><p>{t(IS_PRO ? 'Tus datos se guardan en este dispositivo. El respaldo con tu cuenta es opcional y se actualiza cuando tú lo pides.' : 'Los registros se guardan solo en este dispositivo, sin cuenta ni respaldo en la nube. Si borras los datos de la app o la desinstalas, se perderán.')}</p><button className="reset-button" onClick={onReset}><Trash2 size={17} /><span>{t(demo ? 'Reiniciar la demo' : 'Empezar de cero')}</span><ChevronRight size={17} /></button><span className="app-version">WEIGHT&EXERCISE · {EDITION.toUpperCase()} · V{APP_VERSION}</span></section>
+      <ProTeaser feature="connected" />
+      <section className="card privacy-card"><div className="soft-icon"><ShieldCheck size={22} /></div><h3>{t('Tu historia se queda contigo.')}</h3><p>{t('Los registros se guardan solo en este dispositivo, sin cuenta ni respaldo en la nube. Si borras los datos de la app o la desinstalas, se perderán.')}</p><button className="reset-button" onClick={onReset}><Trash2 size={17} /><span>{t(demo ? 'Reiniciar la demo' : 'Empezar de cero')}</span><ChevronRight size={17} /></button><span className="app-version">WEIGHT&EXERCISE · {EDITION.toUpperCase()} · V{APP_VERSION}</span></section>
     </div></>;
 }

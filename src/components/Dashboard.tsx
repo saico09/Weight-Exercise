@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { ArrowDownRight, ArrowUpRight, Check, ChevronRight, Dumbbell, Flame, Leaf, Minus, Plus, Target, TrendingUp } from 'lucide-react';
 import type { AppData } from '../lib/model';
 import { dateKey, displayWeight, getStats, shiftDate } from '../lib/model';
@@ -9,6 +9,7 @@ import { SectionHeading, SmallLink } from './UI';
 import Motivation from './Motivation';
 import type { MotivationPreferences } from '../lib/motivation';
 import './charts-dashboard.css';
+import './responsive-layout.css';
 
 export default function Dashboard({ data, onDaily, onProfile, onHistory, onEditDay, onMotivationChange }: { data: AppData; onDaily: () => void; onProfile: () => void; onHistory: () => void; onEditDay: (date: string) => void; onMotivationChange: (value: MotivationPreferences) => void }) {
   const { t, locale } = useI18n();
@@ -26,13 +27,14 @@ export default function Dashboard({ data, onDaily, onProfile, onHistory, onEditD
   const weekHealthy = weekRecords.filter(record => record.healthy).length;
   const ratio = stats.totalDays ? stats.exerciseDays / stats.totalDays * 100 : 0;
   const healthyRatio = stats.totalDays ? stats.healthyDays / stats.totalDays * 100 : 0;
+  const headlines = { dark: 'Activa el beast mode', light: 'Tu mejor versión', gold: 'Tu constancia brilla', platinum: 'Cada paso deja huella' };
 
   return <>
-    <SectionHeading eyebrow={t('CADA DÍA CUENTA')} title={t(data.settings.theme === 'dark' ? 'Activa el beast mode' : 'Tu mejor versión')} action={<div className="dashboard-actions"><button className={`primary-button ${todayRecord ? 'recorded-button' : ''}`} onClick={onDaily}>{todayRecord ? <Check size={18} /> : <Plus size={18} />}{t(todayRecord ? 'Hoy ya cuenta' : 'Registrar mi día')}<ChevronRight size={17} /></button><Motivation value={data.settings.motivation} onChange={onMotivationChange} /></div>} />
+    <div className="dashboard-heading"><SectionHeading eyebrow={t('CADA DÍA CUENTA')} title={t(headlines[data.settings.theme])} action={<div className="dashboard-actions"><button className={`primary-button ${todayRecord ? 'recorded-button' : ''}`} onClick={onDaily}>{todayRecord ? <Check size={18} /> : <Plus size={18} />}<span>{t(todayRecord ? 'Hoy ya cuenta' : 'Registrar mi día')}</span><ChevronRight size={17} /></button><Motivation value={data.settings.motivation} onChange={onMotivationChange} /></div>} /></div>
     <div className="dashboard-grid">
       <section className="card weight-card">
         <div className="card-head"><span className="card-title"><TrendingUp size={18} />{t('Tu evolución')}</span><span className="pill subtle"><span className="dot" />{chart.records.length} {t(chart.records.length === 1 ? 'registro' : 'registros')}</span></div>
-        <div className="weight-overview"><div><span className="muted small">{t('PESO ACTUAL')}</span><div className="big-weight">{weight(stats.currentWeight)}<span>{unit}</span></div></div><div className="weight-change"><span className="change-pill">{stats.change <= 0 ? <ArrowDownRight size={17} /> : <ArrowUpRight size={17} />}{stats.change > 0 ? '+' : ''}{weight(stats.change)} {unit}</span><span>{t('desde tu inicio')}</span></div></div>
+        <div className="weight-overview"><div><span className="muted small">{t('PESO ACTUAL')}</span><div className="big-weight" style={{ '--weight-number-width': Math.max(3, weight(stats.currentWeight).length) * .62 } as CSSProperties}><strong className="big-weight-number">{weight(stats.currentWeight)}</strong><span>{unit}</span></div></div><div className="weight-change"><span className="change-pill">{stats.change <= 0 ? <ArrowDownRight size={17} /> : <ArrowUpRight size={17} />}{stats.change > 0 ? '+' : ''}{weight(stats.change)} {unit}</span><span>{t('desde tu inicio')}</span></div></div>
         <div className="chart-toolbar"><div className="chart-legend"><span className="dot" />{t('Peso registrado')}</div><div className="segmented small-segmented">{[[7, '7D'], [30, '1M'], [90, '3M'], [0, 'Todo']].map(([value, label]) => <button key={value} className={period === value ? 'active' : ''} onClick={() => setPeriod(Number(value))} aria-pressed={period === value}>{t(String(label))}</button>)}</div></div>
         <WeightChart key={`${period}:${today}`} records={chart.records} periodBounds={chart.bounds} hasHistory={data.records.length > 0} unit={unit} goal={stats.goalWeight} />
         <div className="chart-footer"><span><span className="dot" />{t('Tu constancia deja huella.')}</span><SmallLink onClick={onHistory}>{t('Ver historial')}</SmallLink></div>

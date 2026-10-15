@@ -3,7 +3,7 @@ import { defaultData, getStats, shiftDate, type AppData, type DailyRecord } from
 import { compactMetricPoints, metricGeometry, metricSeries } from './metricSeries';
 
 const now = new Date(2026, 9, 15, 12);
-const today = '2026-10-15';
+
 function record(date: string, weightKg: number, exercise = true): DailyRecord {
   return { id: date, date, weightKg, exercise, healthy: false, note: '' };
 }
@@ -16,7 +16,7 @@ describe('statistic mini charts', () => {
     const data = sample([record('2026-09-30', 200), record('2026-10-02', 89), record('2026-10-03', 92), record('2026-10-14', 88), record('2026-10-16', 150)]);
     data.initialRecordId = '2026-10-02';
     const stats = getStats(data, now);
-    const charts = metricSeries(stats, today);
+    const charts = metricSeries(stats);
     expect(charts.current.points.map(point => point.value)).toEqual([89, 92, 88]);
     expect(charts.current.points.at(-1)?.value).toBe(stats.currentWeight);
     expect(charts.change.points.at(-1)?.value).toBe(stats.change);
@@ -26,44 +26,12 @@ describe('statistic mini charts', () => {
     expect(charts.max.points.at(-1)?.value).toBe(stats.maxWeight);
   });
 
-  it('uses the same rolling 7-day means and retains missing weeks as missing', () => {
-    const data = sample([record('2026-10-01', 99), record('2026-10-02', 90), record('2026-10-08', 88), record('2026-10-09', 87), record('2026-10-15', 85)]);
-    const stats = getStats(data, now);
-    const charts = metricSeries(stats, today);
-    expect(charts.weeklyWeight.points.map(point => point.value)).toEqual([87, 85]);
-    expect(charts.weeklyWeight.reference).toBe(stats.weeklyAverageWeight);
-    expect(charts.weeklyLoss.points.map(point => point.value)).toEqual([89, 86]);
-    expect(charts.weeklyLoss.points[0].value - charts.weeklyLoss.points[1].value).toBe(stats.weeklyLoss);
-    expect(metricSeries(getStats(sample([record(today, 85)]), now), today).weeklyLoss.points).toEqual([]);
-  });
-
-  it('uses actual exercise weeks, including explicit zero but never inserts absent weeks', () => {
-    const stats = getStats(sample([record('2026-10-01', 90, false), record('2026-10-15', 85)]), now);
-    const chart = metricSeries(stats, today).exercise;
-    expect(chart.points.map(point => point.value)).toEqual([0, 1]);
-    expect(chart.points.map(point => point.date)).toEqual(stats.weeks.map(week => week.startDate));
-    expect(chart.reference).toBe(stats.weeklyExerciseAverage);
-    expect(chart.points).toHaveLength(2);
-  });
-
-  it('ends streak history at the current streak, respects gaps and expiry without creating records', () => {
-    const data = sample([record('2026-10-10', 89), record('2026-10-11', 88), record('2026-10-14', 87)]);
-    expect(metricSeries(getStats(data, now), today).streak.points.map(point => point.value)).toEqual([1, 2, 1]);
-    data.records.pop();
-    const charts = metricSeries(getStats(data, now), today);
-    expect(charts.streak.points.at(-1)).toEqual({ date: today, value: 0 });
-    expect(data.records).toHaveLength(2);
-  });
-
-  it('shows one honest starting point and empty weekly charts before recording', () => {
-    const charts = metricSeries(getStats(sample([]), now), today);
+  it('shows one honest starting point before recording', () => {
+    const charts = metricSeries(getStats(sample([]), now));
     expect(charts.current.points).toEqual([{ date: '2026-10-01', value: 90 }]);
-    expect(charts.weeklyWeight.points).toEqual([]);
-    expect(charts.exercise.points).toEqual([]);
-    expect(charts.streak.points).toEqual([]);
     expect(metricGeometry(charts.current)?.points[0].x).toBe(50);
     expect(Number.isFinite(metricGeometry(charts.current)!.points[0].y)).toBe(true);
-    expect(metricGeometry(charts.weeklyWeight)).toBeNull();
+    expect(metricGeometry({ ...charts.current, points: [] })).toBeNull();
   });
 
   it('keeps endpoints and local extrema when a long history is reduced for rendering', () => {

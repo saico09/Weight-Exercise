@@ -1,4 +1,4 @@
-import { createContext, useContext, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, useContext, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Minus, Plus } from 'lucide-react';
 import { displayWeight, type WeightUnit } from '../lib/model';
 import { metricGeometry, type MetricSeries } from '../lib/metricSeries';
@@ -64,10 +64,10 @@ export function Metric({ id, label, value, unit, note, icon, accent = false, ser
   const geometry = metricGeometry(series);
   const format = (number: number) => series.valueKind === 'weight' ? `${displayWeight(number, weightUnit, 1, locale)} ${weightUnit}` : `${number.toLocaleString(locale, { maximumFractionDigits: 1 })} ${t(number === 1 ? 'día' : 'días')}`;
   const formatDate = (date: string) => new Date(`${date}T12:00:00`).toLocaleDateString(locale, { day: 'numeric', month: 'short' });
-  return <button type="button" className={`card metric-card interactive-metric ${accent ? 'metric-accent' : ''} ${open ? 'is-expanded' : ''}`} onClick={() => toggle(id)} aria-expanded={open} aria-label={`${t(label)}: ${value}${unit ? ` ${t(unit)}` : ''}. ${t(open ? 'Contraer gráfico' : 'Ampliar gráfico')}`}>
+  return <button type="button" className={`card metric-card interactive-metric ${accent ? 'metric-accent' : ''} ${open ? 'is-expanded' : ''}`} onClick={() => toggle(id)} aria-expanded={open} aria-describedby={`${id}-metric-note`} aria-label={`${t(label)}: ${value}${unit ? ` ${t(unit)}` : ''}. ${t(open ? 'Contraer gráfico' : 'Ampliar gráfico')}`}>
     <span className="card-head"><span className="muted">{t(label)}</span><span className="metric-card-icons"><span className="metric-category-icon">{icon}</span>{open ? <Minus size={12} /> : <Plus size={12} />}</span></span>
-    <span className="metric-reading"><strong className="metric-value">{value}{unit && <small>{t(unit)}</small>}</strong><span className="metric-chart-wrap"><Sparkline series={series} /></span></span>
-    <span className="metric-note muted">{t(note)}</span>
+    <span className="metric-reading"><strong className="metric-value" style={{ '--metric-number-width': Math.max(3, Array.from(value).length) * .62 } as CSSProperties}><span className="metric-number">{value}</span>{unit && <small>{t(unit)}</small>}</strong><span className="metric-chart-wrap"><Sparkline series={series} /></span></span>
+    <span id={`${id}-metric-note`} className="metric-note muted">{t(note)}</span>
     {open && <span className="metric-chart-detail">
       <span className="metric-chart-description">{t(series.description)}</span>
       {geometry ? <>

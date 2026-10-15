@@ -1,7 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { demoData } from './model';
-const edition = vi.hoisted(() => ({ IS_PRO: true }));
-vi.mock('./edition', () => edition);
 
 const native = vi.hoisted(() => ({
   isNativePlatform: vi.fn<() => boolean>(),
@@ -20,7 +17,6 @@ vi.mock('@capacitor/local-notifications', () => ({ LocalNotifications: local }))
 
 let reminders: typeof import('./notifications');
 beforeEach(async () => {
-  edition.IS_PRO = true;
   vi.resetModules();
   vi.clearAllMocks();
   vi.unstubAllGlobals();
@@ -110,6 +106,12 @@ describe('native reminders', () => {
     expect(local.requestPermissions).not.toHaveBeenCalled();
   });
 
+  it('clears legacy recap IDs on reset without containing a recap scheduler', async () => {
+    await reminders.cancelNotifications();
+    expect(local.cancel.mock.calls[0][0].notifications).toContainEqual({ id: 810200 });
+    expect(local.schedule).not.toHaveBeenCalled();
+  });
+
   it('cleans up partial scheduling failures and reports reminders as disabled', async () => {
     local.schedule.mockRejectedValueOnce(new Error('native failure'));
     const result = await reminders.configureNotifications({ enabled: true, time: '20:00', days: [1, 3] });
@@ -194,50 +196,5 @@ describe('PC preview reminders', () => {
     expect(await reminders.getNotificationPermission()).toBe('unsupported');
     expect((await reminders.testNotification()).enabled).toBe(false);
     expect(local.requestPermissions).not.toHaveBeenCalled();
-  });
-});
-
-
-describe('Pro progress recaps', () => {
-  it('refreshes an opted-in recap without asking for permission, and cancels only its own ID', async () => {
-    const data = demoData(); data.settings.recap.enabled = true;
-    local.checkPermissions.mockResolvedValue({ display: 'granted' });
-    await reminders.configureRecap(data);
-    expect(local.requestPermissions).not.toHaveBeenCalled();
-    expect(local.cancel).toHaveBeenCalledWith({ notifications: [{ id: 810200 }] });
-    expect(local.schedule).toHaveBeenCalledWith({ notifications: [expect.objectContaining({ id: 810200, body: expect.stringContaining('Bajaste'), schedule: { at: expect.any(Date) } })] });
-  });
-  it('never schedules recaps in Basic even when imported data has them enabled', async () => {
-    edition.IS_PRO = false;
-    const data = demoData(); data.settings.recap.enabled = true;
-    await reminders.configureRecap(data, true);
-    expect(local.requestPermissions).not.toHaveBeenCalled();
-    expect(local.schedule).not.toHaveBeenCalled();
-  });
-  it('does not request a revoked permission on background refresh', async () => {
-    const data = demoData(); data.settings.recap.enabled = true;
-    await reminders.configureRecap(data);
-    expect(local.requestPermissions).not.toHaveBeenCalled();
-    expect(local.schedule).not.toHaveBeenCalled();
-  });
-  it('reset cancels the recap as well as daily reminders', async () => {
-    await reminders.cancelNotifications();
-    expect(local.cancel.mock.calls[0][0].notifications).toContainEqual({ id: 810200 });
-  });
-  it('reports a failed recap schedule as disabled and removes partial scheduling', async () => {
-    const data = demoData(); data.settings.recap.enabled = true;
-    local.checkPermissions.mockResolvedValue({ display: 'granted' });
-    local.schedule.mockRejectedValueOnce(new Error('native scheduling failure'));
-    const result = await reminders.configureRecap(data, true);
-    expect(result.enabled).toBe(false);
-    expect(local.cancel).toHaveBeenCalledTimes(2);
-    expect(local.cancel.mock.calls.at(-1)?.[0]).toEqual({ notifications: [{ id: 810200 }] });
-  });
-  it('rejects an invalid recap time before changing an existing schedule or requesting permission', async () => {
-    const data = demoData(); data.settings.recap.enabled = true; data.settings.recap.time = '';
-    await expect(reminders.configureRecap(data, true)).rejects.toThrow(/hora válida/);
-    expect(local.cancel).not.toHaveBeenCalled();
-    expect(local.requestPermissions).not.toHaveBeenCalled();
-    expect(local.schedule).not.toHaveBeenCalled();
   });
 });

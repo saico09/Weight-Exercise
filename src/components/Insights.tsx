@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   ArrowDownRight, ArrowRight, ArrowUpRight, CalendarDays, ChevronRight,
-  Dumbbell, Flag, Flame, Leaf, Pencil, Plus, Scale, Trophy, ListFilter, X,
+  Dumbbell, Flag, Leaf, Pencil, Plus, Scale, Trophy, ListFilter, X,
 } from 'lucide-react';
 import type { AppData, DailyRecord, HeightUnit } from '../lib/model';
 import {
@@ -12,10 +12,9 @@ import { HeightSwitch, SectionHeading } from './UI';
 import { HistoryCalendar } from './HistoryCalendar';
 import { matchesHistoryDate, type HistoryDateFilter } from '../lib/calendar';
 import { useI18n } from '../lib/i18n';
-import { IS_PRO } from '../lib/edition';
 import { metricSeries } from '../lib/metricSeries';
 import { Metric, MetricGrid } from './MetricCards';
-import ReportExport from './ReportExport';
+import ProTeaser from './ProTeaser';
 import './insights.css';
 
 export interface InsightsProps {
@@ -39,10 +38,8 @@ export function StatsPage({ data, onProfile, onAchievements }: InsightsProps) {
   const unit = data.settings.weightUnit;
   const weight = (value: number) => displayWeight(value, unit, 1, locale);
   const change = stats.change === 0 ? weight(0) : `${stats.change > 0 ? '+' : '−'}${weight(Math.abs(stats.change))}`;
-  const weeklyLoss = stats.weeklyLoss;
   return <div className="stats-layout">
-    <div className="compact-section-heading"><h1 className="eyebrow">{t("Tu evolución")}</h1>{!IS_PRO && <span className="basic-stats-label">BASIC</span>}<button className="icon-button" onClick={onProfile} aria-label={t("Mi perfil y meta")}><Pencil size={19} /></button></div>
-    {IS_PRO && <ReportExport data={data} />}
+    <div className="compact-section-heading"><h1 className="eyebrow">{t("Tu evolución")}</h1><span className="basic-stats-label">BASIC</span><button className="icon-button" onClick={onProfile} aria-label={t("Mi perfil y meta")}><Pencil size={19} /></button></div>
 
     <section className="insight-section" aria-labelledby="weight-stats-title">
       <div className="card-head"><h2 id="weight-stats-title">{t("Tu evolución")}</h2><span className="pill">{t("Desde el")} {dateLabel(stats.startDate)}</span></div>
@@ -54,18 +51,7 @@ export function StatsPage({ data, onProfile, onAchievements }: InsightsProps) {
       </MetricGrid>
     </section>
 
-    {IS_PRO && <section className="insight-section" aria-labelledby="weekly-stats-title">
-      <div className="card-head"><h2 id="weekly-stats-title">{t("Una semana a la vez")}</h2><span className="muted">{t("Últimos 7 días")}</span></div>
-      <MetricGrid>
-        <Metric id="weeklyWeight" series={series.weeklyWeight} weightUnit={unit} label={t("Peso promedio semanal")} value={stats.weeklyAverageWeight === null ? '—' : weight(stats.weeklyAverageWeight)} unit={stats.weeklyAverageWeight === null ? undefined : unit}
-          note={t('{count} registros en los últimos 7 días', { count: stats.weekRecords.length })} icon={<Scale size={18} />} />
-        <Metric id="weeklyLoss" series={series.weeklyLoss} weightUnit={unit} label={weeklyLoss !== null && weeklyLoss < 0 ? 'Aumento semanal' : 'Descenso semanal'} value={weeklyLoss === null ? '—' : weight(Math.abs(weeklyLoss))} unit={weeklyLoss === null ? undefined : unit}
-          note={weeklyLoss === null ? 'Necesitas registros en ambas semanas' : 'Cambio entre promedios de los últimos 7 días y los 7 anteriores'} icon={weeklyLoss !== null && weeklyLoss < 0 ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />} />
-        <Metric id="exercise" series={series.exercise} weightUnit={unit} label={t("Ejercicio por semana")} value={stats.weeklyExerciseAverage.toLocaleString(locale, { maximumFractionDigits: 1 })} unit="días"
-          note={t('Promedio en {count} semanas con registros', { count: stats.weeks.length })} icon={<Dumbbell size={18} />} />
-        <Metric id="streak" series={series.streak} weightUnit={unit} label={t("Racha de registros")} value={String(stats.streak)} unit={stats.streak === 1 ? 'día' : 'días'} note={t("Días consecutivos registrando hasta hoy o ayer")} icon={<Flame size={18} />} />
-      </MetricGrid>
-    </section>}
+    <ProTeaser feature="reports" />
 
     <div className="detail-grid">
       <section className="card" aria-labelledby="habit-stats-title">

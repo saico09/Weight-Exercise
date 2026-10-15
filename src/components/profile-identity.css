@@ -1,0 +1,19 @@
+.header-identity { display:flex; align-items:center; gap:3px; flex-shrink:0; }
+.profile-avatar { width:40px; height:40px; flex-shrink:0; padding:0; overflow:hidden; display:grid; place-items:center; border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:10px; font-weight:700; }
+.profile-avatar img, .profile-photo-preview img { width:100%; height:100%; object-fit:cover; display:block; }
+.profile-cup { width:30px; height:40px; padding:0; display:grid; place-items:center; background:transparent; border:0; }
+.profile-cup .achievement-trophy.small { width:30px; height:30px; }
+.profile-avatar:hover, .profile-avatar:focus-visible { border-color:var(--accent-ink); }
+.profile-photo-picker { display:grid; grid-template-columns:64px minmax(0,1fr); gap:15px; align-items:center; padding:0 0 22px; margin-bottom:12px; border-bottom:1px solid var(--border); }
+.profile-photo-preview { display:grid; place-items:center; width:64px; height:64px; border-radius:50%; overflow:hidden; background:var(--accent-soft); color:var(--accent-ink); border:1px solid var(--border); }
+.profile-photo-picker strong { display:block; font-size:14px; }
+.profile-photo-picker strong + span { display:block; margin:5px 0 10px; font-size:10px; color:var(--muted); }
+.profile-photo-actions { display:flex; align-items:center; gap:8px; }
+.profile-photo-actions .secondary-button { padding:9px 11px; min-height:36px; font-size:11px; }
+.profile-photo-input { position:absolute; width:1px; height:1px; opacity:0; overflow:hidden; clip-path:inset(50%); }
+.profile-photo-picker > .error-message { grid-column:1/-1; }
+@media (max-width:370px) { .profile-avatar { width:34px; height:34px; } .profile-cup { width:24px; height:34px; } .profile-cup .achievement-trophy.small { width:26px; height:26px; } }
+
+.reward-unlock-notice { padding:16px; border:1px solid var(--accent-ink); border-radius:12px; background:var(--accent-soft); color:var(--accent-ink); }
+.reward-unlock-notice strong { display:block; font-size:14px; margin:7px 0; }
+.reward-unlock-notice p { font-size:11px; line-height:1.6; color:var(--text); }

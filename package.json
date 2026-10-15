@@ -1,11 +1,11 @@
 {
   "name": "weight-exercise",
   "private": true,
-  "version": "0.6.0",
+  "version": "0.7.0",
   "type": "module",
   "scripts": {
     "dev": "node node_modules/vite/bin/vite.js --host 0.0.0.0",
-    "build": "node node_modules/typescript/bin/tsc -b && node node_modules/vite/bin/vite.js build",
+    "build": "node scripts/check-basic-boundary.mjs && node node_modules/typescript/bin/tsc -b && node node_modules/vite/bin/vite.js build && node scripts/check-basic-boundary.mjs --bundle",
     "preview": "node node_modules/vite/bin/vite.js preview --host 0.0.0.0",
     "test": "node node_modules/vitest/vitest.mjs run src",
     "android": "npm run build && node node_modules/@capacitor/cli/bin/capacitor sync android && node node_modules/@capacitor/cli/bin/capacitor open android"
@@ -13,15 +13,12 @@
   "dependencies": {
     "@capacitor/android": "^8.0.0",
     "@capacitor/core": "^8.0.0",
-    "@capacitor/filesystem": "^8.1.4",
     "@capacitor/local-notifications": "^8.0.0",
     "@capacitor/preferences": "^8.0.0",
-    "@capacitor/share": "^8.0.3",
     "@fontsource/barlow-condensed": "^5.2.0",
     "@fontsource/dm-sans": "^5.2.0",
     "@fontsource/manrope": "^5.2.0",
     "@ionic/react": "^8.0.0",
-    "jspdf": "^4.2.1",
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

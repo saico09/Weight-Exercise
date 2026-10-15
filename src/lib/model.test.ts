@@ -282,7 +282,7 @@ describe('persisted schema validation', () => {
     expect(validateData(legacy)?.settings.accentColor).toBeNull();
     expect(validateData(legacy)?.celebratedAchievementIds).toEqual([]);
     const result = validateData({ ...original, settings: { ...original.settings, accentColor: '#bb9bff' }, celebratedAchievementIds: ['records-iron', 'records-iron', 2, '<bad>'] });
-    expect(result?.settings.accentColor).toBe('#BB9BFF');
+    expect(result?.settings.accentColor).toBeNull();
     expect(result?.celebratedAchievementIds).toEqual(['records-iron']);
     expect(result?.records).toEqual(original.records);
     expect(validateData({ ...original, settings: { ...original.settings, accentColor: 'red' } })?.settings.accentColor).toBeNull();
