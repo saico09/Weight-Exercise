@@ -18,6 +18,7 @@ import { Metric, MetricGrid } from './MetricCards';
 import ReportExport from './ReportExport';
 import RecordComparison from './RecordComparison';
 import WorkbookExport from './WorkbookExport';
+import { EmailSummaryControl } from './EmailSummaryControl';
 import './insights.css';
 
 export interface InsightsProps {
@@ -180,6 +181,10 @@ export function HistoryPage({ data, onRecord, onNewRecord, demo = false }: Insig
       <button className={`round-action calendar-action ${dateFilter ? 'selected' : ''}`} aria-label={t('Filtrar por fecha')} onClick={() => setCalendarOpen(true)}><CalendarDays size={19} />{dateFilter && <i />}</button>
       <button className="round-action add-action" aria-label={t('Añadir registro')} onClick={onNewRecord}><Plus size={21} /></button>
     </div></div>
+    {IS_PRO && <div className="history-export-toolbar" role="group" aria-label={t('Excel y envíos por correo')}>
+      <WorkbookExport toolbar data={data} records={records} filteredRecords={records} label={t('Todo mi historial')} />
+      <EmailSummaryControl workbook demo={demo} />
+    </div>}
     {dateFilter && <button className="history-month-chip" onClick={() => setDateFilter(null)} aria-label={`${filterDateLabel} · ${t('Quitar filtro de fecha')}`}><CalendarDays size={13} /><span>{filterDateLabel}</span><X size={13} /></button>}
     {calendarOpen && <HistoryCalendar value={dateFilter} recordDates={data.records.map(record => record.date)} onClose={() => setCalendarOpen(false)} onApply={value => { setDateFilter(value); setCalendarOpen(false); }} />}
     {comparisonOpen && <RecordComparison data={data} selectedIds={selectedIds} onClose={() => setComparisonOpen(false)} />}

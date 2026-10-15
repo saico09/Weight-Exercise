@@ -1,4 +1,10 @@
 export const emailSummaryEnglish: Record<string, string> = {
+  'Descargar historial en Excel': 'Download history as Excel',
+  'Excel y envíos por correo': 'Excel and email delivery',
+  'Configurar envío periódico de Excel': 'Set up recurring Excel emails',
+  'Envío periódico': 'Recurring email',
+  'Tu Excel, por correo.': 'Your Excel, delivered.',
+  'Cada semana o cada mes, recibe tu historial completo en Excel junto a tu resumen. Es la misma programación que aparece en Estadísticas.': 'Receive your full history in Excel with your summary every week or month. This is the same schedule shown in Statistics.',
   'Los correos usan el respaldo de tu cuenta, no los datos de ejemplo. Solo se activan cuando tú lo confirmas.': 'Emails use your account backup, not the sample data. They are only enabled when you confirm.',
   'Sal de la demo e inicia sesión en Ajustes → Cuenta y respaldo para configurar los envíos con tus registros reales.': 'Leave the demo and sign in under Settings → Account and backup to configure delivery using your own records.',
   'Configurar resumen por correo': 'Configure email summaries', 'Correo': 'Email',

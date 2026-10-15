@@ -18,7 +18,7 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 function expectAvailableEntry(html: string, label = 'Configurar resumen por correo') {
-  const button = html.match(/<button[^>]*class="email-summary-toggle"[^>]*>/)?.[0];
+  const button = html.match(/<button[^>]*class="email-summary-toggle[^"]*"[^>]*>/)?.[0];
   expect(button).toBeDefined();
   expect(button).toContain(`aria-label="${label}"`);
   expect(button).toContain('aria-haspopup="dialog"');
@@ -26,6 +26,13 @@ function expectAvailableEntry(html: string, label = 'Configurar resumen por corr
 }
 
 describe('email summary entry in the Pro demo', () => {
+  it('exposes recurring Excel delivery as the same account-bound entry without enabling it', () => {
+    const html = renderToStaticMarkup(<EmailSummaryControl workbook demo />);
+    expectAvailableEntry(html, 'Configurar envío periódico de Excel');
+    expect(html).toContain('Envío periódico');
+    expect(html).not.toContain('email-summary-switch enabled');
+    expect(fetch).not.toHaveBeenCalled();
+  });
   it('keeps the entry available without an account so it can explain how to sign in', () => {
     expectAvailableEntry(renderToStaticMarkup(<EmailSummaryControl demo />));
     expect(fetch).not.toHaveBeenCalled();

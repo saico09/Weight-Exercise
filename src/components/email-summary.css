@@ -4,6 +4,7 @@
 .email-summary-switch.enabled { background: var(--accent-soft); border-color: var(--accent-ink); }
 .email-summary-switch.enabled i { background: var(--accent-ink); transform: translateX(10px); }
 .email-summary-empty { padding: 18px 0; text-align: center; }
+.email-summary-shared { font-size:12px; line-height:1.65; margin:0 0 16px; }
 .email-summary-empty p { color: var(--muted); font-size: 13px; line-height: 1.8; margin-top: 18px; }
 .email-summary-destination { display: flex; align-items: center; gap: 11px; margin: 15px 0; }
 .email-summary-destination > svg { color: var(--accent-ink); flex-shrink: 0; }

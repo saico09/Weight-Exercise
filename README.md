@@ -217,3 +217,7 @@ Desde el cuarto mes calendario, incluido, las filas del historial reducen su alt
 ## Exportaciones y correo Pro 0.8.8
 
 Excel funciona también al explorar la demo: permite exportar el mes, los registros filtrados o todo el historial de ejemplo. La configuración de correos se puede abrir desde la demo y explica que utiliza exclusivamente el respaldo real de la cuenta. Abrirla no sube datos ni activa envíos; estos requieren una cuenta, un respaldo y consentimiento explícito. Se conservan la verificación de licencia del servidor y el requisito de configurar una API HTTPS para el APK.
+
+## Historial e IMC 0.8.9
+
+El encabezado de IMC ocupa menos espacio en todos los temas. Historial añade una barra compacta para descargar Excel y configurar su envío semanal o mensual por correo. Esta programación es la misma de Estadísticas y envía el resumen junto al XLSX de todos los registros del último respaldo; los filtros de descarga no limitan el correo. Se conservan los atajos de descarga por mes y la activación requiere consentimiento.

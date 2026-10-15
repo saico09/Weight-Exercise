@@ -6,7 +6,7 @@ import { useCloudAccount } from './CloudAccount';
 import { Modal } from './UI';
 import './email-summary.css';
 
-export function EmailSummaryControl({ demo = false }: { demo?: boolean }) {
+export function EmailSummaryControl({ demo = false, workbook = false }: { demo?: boolean; workbook?: boolean }) {
   const { t, locale } = useI18n();
   const account = useCloudAccount();
   const [open, setOpen] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState('');
@@ -43,8 +43,9 @@ export function EmailSummaryControl({ demo = false }: { demo?: boolean }) {
     } finally { if (userId === currentUser.current && revision === requestRevision.current) setBusy(false); }
   };
   const dateLabel = (date: string) => new Date(date).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' });
-  return <><button type="button" className="email-summary-toggle" aria-label={t('Configurar resumen por correo')} aria-haspopup="dialog" onClick={() => { setOpen(true); setSaved(false); if (account.user) void load(); }}><span className={`email-summary-switch ${config?.enabled ? 'enabled' : ''}`} aria-hidden="true"><i /></span><span>{t('Correo')}</span></button>
-    {open && <Modal title={t('Tu progreso llega a ti.')} subtitle={t('Un resumen periódico y tu historial en Excel.')} onClose={() => { if (!busy) setOpen(false); }}>
+  return <><button type="button" className={`email-summary-toggle${workbook ? ' workbook-email-toggle' : ''}`} aria-label={t(workbook ? 'Configurar envío periódico de Excel' : 'Configurar resumen por correo')} aria-haspopup="dialog" onClick={() => { setOpen(true); setSaved(false); if (account.user) void load(); }}>{workbook && <CalendarClock size={16} aria-hidden="true" />}<span className={`email-summary-switch ${config?.enabled ? 'enabled' : ''}`} aria-hidden="true"><i /></span><span>{t(workbook ? 'Envío periódico' : 'Correo')}</span></button>
+    {open && <Modal title={t(workbook ? 'Tu Excel, por correo.' : 'Tu progreso llega a ti.')} subtitle={t('Un resumen periódico y tu historial en Excel.')} onClose={() => { if (!busy) setOpen(false); }}>
+      {workbook && <p className="muted email-summary-shared">{t('Cada semana o cada mes, recibe tu historial completo en Excel junto a tu resumen. Es la misma programación que aparece en Estadísticas.')}</p>}
       {demo && <p className="notice">{t('Los correos usan el respaldo de tu cuenta, no los datos de ejemplo. Solo se activan cuando tú lo confirmas.')}</p>}
       {CLOUD_NATIVE_UNAVAILABLE ? <p className="notice">{t(cloudErrorMessage(new CloudError('native_unconfigured')))}</p> : account.loading && !account.user ? <p className="muted" role="status">{t('Conectando…')}</p> : !account.user ? <div className="email-summary-empty"><span className="soft-icon"><Mail size={24} /></span><p>{t(account.unavailable ? cloudErrorMessage(new CloudError('unavailable')) : demo ? 'Sal de la demo e inicia sesión en Ajustes → Cuenta y respaldo para configurar los envíos con tus registros reales.' : 'Inicia sesión en Ajustes → Cuenta y respaldo para configurar los envíos.')}</p>{account.unavailable && <button type="button" className="secondary-button full-width" onClick={() => void account.refresh()}><RefreshCw size={16} />{t('Volver a intentar')}</button>}</div> : <>
         <div className="email-summary-destination"><Mail size={19} /><div><span>{t('Lo enviaremos a')}</span><strong>{account.user.email}</strong></div></div>
