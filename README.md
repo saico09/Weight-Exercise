@@ -205,3 +205,7 @@ Ambas ediciones incorporan **Enviar sugerencias**, con correo de respuesta opcio
 Se restringe la compartición de archivos Android a las carpetas de exportaciones, se bloquean conexiones HTTP y las compilaciones incluyen una política de contenido. [Alcance y configuración de seguridad](docs/local-security.md).
 
 La bienvenida y Ajustes incluyen «Creada por GreenBean», con el isotipo oficial local autorizado por su propietario. La procedencia se documenta en [ASSETS.md](ASSETS.md).
+
+## Ajuste de marca 0.8.6
+
+El crédito GreenBean se muestra en el pie común de todas las secciones. Usa la semilla completa de los PNG transparentes oficiales, con la variante clara u oscura según el fondo, sin caja ni recorte del símbolo. Se conserva también en la bienvenida y se elimina la repetición dentro de la tarjeta de Ajustes.

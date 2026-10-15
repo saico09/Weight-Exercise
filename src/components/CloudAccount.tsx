@@ -1,3 +1,4 @@
+import CreatorCredit from './CreatorCredit';
 import { MigrationEntry } from './ProMigration';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { ArrowRight, Check, Cloud, CloudDownload, CloudUpload, Crown, ExternalLink, KeyRound, LoaderCircle, LogOut, Mail, Pencil, RefreshCw, ShieldCheck, Trash2, UserRound } from 'lucide-react';
@@ -106,6 +107,7 @@ export function ProWelcome({ onContinue, data, onRestore, notify = () => {}, onL
     <div className="cloud-welcome-layout"><section className="cloud-welcome-story"><span className="eyebrow">{t('TU PRÓXIMO NIVEL')}</span><h1>{t('Acompañando tu progreso')}</h1><p>{t('Más maneras de entender tu progreso. Un espacio que se adapta a ti.')}</p><div className="cloud-welcome-orbit" aria-hidden="true"><div><Cloud size={42} /><span>W&E</span></div><i /><b /></div><ul><li><Cloud size={18} />{t('Respaldo privado de tu historia')}</li><li><Crown size={18} />{t('Informes y recuentos de progreso')}</li><li><ShieldCheck size={18} />{t('Tus registros también funcionan sin conexión')}</li></ul></section>
       <section className="card cloud-welcome-card">{user ? <><div className="cloud-welcome-success"><span className="soft-icon"><Check size={26} /></span><h2>{t('Bienvenido, {name}', { name: user.username })}</h2><p>{t('Tu cuenta está lista. Tú eliges cuándo respaldar o restaurar tu historia desde Ajustes.')}</p><button className="primary-button full-width" onClick={onContinue}>{t('Comenzar mi camino')}<ArrowRight size={17} /></button></div>{data && onRestore && <CloudAccountPanel data={data} onRestore={onRestore} notify={notify} />}</> : <><AccountAccess /><button className="text-link cloud-offline-link" onClick={onContinue}>{t(loading ? 'Continuar mientras conectamos' : 'Continuar sin cuenta')}<ArrowRight size={15} /></button><p className="footnote">{t('Puedes crear tu cuenta más adelante desde Ajustes.')}</p></>}{onMigration && <MigrationEntry compact onClick={onMigration} />}</section>
     </div>
+    <footer className="cloud-welcome-credit"><CreatorCredit /></footer>
   </main>;
 }
 

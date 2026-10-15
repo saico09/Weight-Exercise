@@ -13,7 +13,7 @@ import AccentPicker from './AccentPicker';
 import ThemeChoices from './ThemeChoices';
 import { StepsSettings } from './Steps';
 import Feedback from './Feedback';
-import CreatorCredit from './CreatorCredit';
+
 
 export default function SettingsPage({ data, demo, onSettings, onReset, notify, onMigration }: { onMigration: () => void; data: AppData; demo: boolean; onSettings: (settings: Partial<Settings>) => void; onReset: () => void; notify: (message: string) => void }) {
   const { t, language, locale } = useI18n();
@@ -80,6 +80,6 @@ export default function SettingsPage({ data, demo, onSettings, onReset, notify, 
       </section>
       <MigrationEntry onClick={onMigration} disabled={demo} />
       <Feedback />
-      <section className="card privacy-card"><div className="soft-icon"><ShieldCheck size={22} /></div><h3>{t('Tu historia se queda contigo.')}</h3><p>{t(IS_PRO ? 'Tus datos se guardan en este dispositivo. El respaldo con tu cuenta es opcional y se actualiza cuando tú lo pides.' : 'Los registros se guardan solo en este dispositivo, sin cuenta ni respaldo en la nube. Si borras los datos de la app o la desinstalas, se perderán.')}</p><button className="reset-button" onClick={onReset}><Trash2 size={17} /><span>{t(demo ? 'Reiniciar la demo' : 'Empezar de cero')}</span><ChevronRight size={17} /></button><div className="app-signature"><span className="app-version">WEIGHT&EXERCISE · {EDITION.toUpperCase()} · V{APP_VERSION}</span><CreatorCredit /></div></section>
+      <section className="card privacy-card"><div className="soft-icon"><ShieldCheck size={22} /></div><h3>{t('Tu historia se queda contigo.')}</h3><p>{t(IS_PRO ? 'Tus datos se guardan en este dispositivo. El respaldo con tu cuenta es opcional y se actualiza cuando tú lo pides.' : 'Los registros se guardan solo en este dispositivo, sin cuenta ni respaldo en la nube. Si borras los datos de la app o la desinstalas, se perderán.')}</p><button className="reset-button" onClick={onReset}><Trash2 size={17} /><span>{t(demo ? 'Reiniciar la demo' : 'Empezar de cero')}</span><ChevronRight size={17} /></button><span className="app-version">WEIGHT&EXERCISE · {EDITION.toUpperCase()} · V{APP_VERSION}</span></section>
     </div></>;
 }

@@ -2,49 +2,33 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  flex-shrink: 0;
   max-width: 100%;
-  color: var(--muted);
-  font-family: var(--body-font);
-  font-size: 11px;
-  font-weight: 400;
-  line-height: 1.4;
-  letter-spacing: 0;
-  text-transform: none;
+  color: var(--faint);
+  font: 400 8px/1.5 var(--body-font);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
 }
-.creator-credit strong { color: var(--text); font-weight: 600; }
+.creator-credit strong { color: inherit; font-weight: 500; }
 .creator-credit-mark {
   position: relative;
   display: inline-block;
-  flex: 0 0 22px;
-  width: 22px;
-  height: 22px;
+  flex: 0 0 10px;
+  width: 10px;
+  aspect-ratio: 510 / 672;
   overflow: hidden;
-  border-radius: 7px;
-  background: #12372e;
-  border: 1px solid #8eb69b35;
 }
+/* Same framing as GreenBean's original 372 288 510 672 viewBox.
+   The complete seed stays visible; the PNGs remain transparent and unmodified. */
 .creator-credit-mark img {
   position: absolute;
-  width: 45px;
-  height: 45px;
+  width: 245.882353%;
+  height: auto;
   max-width: none;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  left: -72.941176%;
+  top: -42.857143%;
 }
-.privacy-card .app-signature {
-  grid-column: 2 / -1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 9px 20px;
-  margin-top: 14px;
-}
-.privacy-card .app-signature .app-version { margin-top: 0; }
-.onboarding-bottom .creator-credit { font-size: 11px; letter-spacing: 0; }
-.onboarding-bottom:has(.creator-credit) { align-items: center; gap: 14px; }
-@media (max-width: 740px) {
-  .privacy-card .app-signature { grid-column: 1 / -1; }
-}
+.creator-credit-mark .creator-credit-on-light { display: none; }
+:is([data-theme=light], [data-theme=sand], [data-theme=platinum]) .creator-credit-on-dark { display: none; }
+:is([data-theme=light], [data-theme=sand], [data-theme=platinum]) .creator-credit-on-light { display: block; }
+.onboarding-bottom:has(.creator-credit) { gap: 14px; }
+.cloud-welcome-credit { display: flex; padding-top: 16px; }
